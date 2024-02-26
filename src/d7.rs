@@ -30,17 +30,17 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
 }
 
 fn get_dir_sizes(files_with_sizes: HashMap<PathBuf, u32>) -> HashMap<PathBuf, u32> {
-    let mut dirs_with_sizes: HashMap<PathBuf, u32> = HashMap::new();
-
-    for (file_path, file_size) in &files_with_sizes {
-        for ancestor in file_path.ancestors().skip(1) {
-            dirs_with_sizes
-                .entry(ancestor.to_path_buf())
-                .and_modify(|dir_size| *dir_size += file_size)
-                .or_insert(*file_size);
-        }
-    }
-    dirs_with_sizes
+    files_with_sizes
+        .iter()
+        .map(|(file_path, file_size)| {
+            file_path
+                .ancestors()
+                .skip(1)
+                .map(|ancestor_path| (ancestor_path.to_path_buf(), *file_size))
+        })
+        .flatten()
+        .into_grouping_map()
+        .sum()
 }
 
 pub fn p1(file: &str) -> u32 {
