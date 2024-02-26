@@ -5,10 +5,7 @@ use std::{
 
 use itertools::Itertools;
 
-pub fn p1(file: &str) -> u32 {
-    let upper_bound = 100_000u32;
-
-    let navigations = &file[2..];
+fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
     let mut current_path = PathBuf::new();
     let mut files_with_sizes: HashMap<PathBuf, u32> = HashMap::new();
 
@@ -32,17 +29,30 @@ pub fn p1(file: &str) -> u32 {
             }
         }
     }
+    files_with_sizes
+}
 
-    let mut dirs_with_sizes: HashMap<&Path, u32> = HashMap::new();
+fn get_dir_sizes(files_with_sizes: HashMap<PathBuf, u32>) -> HashMap<PathBuf, u32> {
+    let mut dirs_with_sizes: HashMap<PathBuf, u32> = HashMap::new();
 
     for (file_path, file_size) in &files_with_sizes {
         for ancestor in file_path.ancestors().skip(1) {
             dirs_with_sizes
-                .entry(ancestor)
+                .entry(ancestor.to_path_buf())
                 .and_modify(|dir_size| *dir_size += file_size)
                 .or_insert(*file_size);
         }
     }
+    dirs_with_sizes
+}
+
+pub fn p1(file: &str) -> u32 {
+    let upper_bound = 100_000u32;
+
+    let navigations = &file[2..];
+    let files_with_sizes = parse_files_from_navigation(navigations);
+
+    let dirs_with_sizes = get_dir_sizes(files_with_sizes);
 
     dirs_with_sizes
         .values()
