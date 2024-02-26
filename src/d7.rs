@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, path::PathBuf};
 
 use itertools::Itertools;
 
@@ -61,5 +58,21 @@ pub fn p1(file: &str) -> u32 {
 }
 
 pub fn p2(file: &str) -> u32 {
-    todo!()
+    let navigations = &file[2..];
+    let files_with_sizes = parse_files_from_navigation(navigations);
+
+    let dirs_with_sizes = get_dir_sizes(files_with_sizes);
+
+    let total_space = 70_000_000u32;
+    let total_used_space = *dirs_with_sizes.get(&PathBuf::from("/")).unwrap();
+    let total_available_space = total_space - total_used_space;
+    let total_to_free_up = 30_000_000u32;
+    let left_to_free_up = total_to_free_up - total_available_space;
+
+    *dirs_with_sizes
+        .values()
+        .filter(|dir_size| **dir_size >= left_to_free_up)
+        .sorted_unstable()
+        .next()
+        .unwrap()
 }

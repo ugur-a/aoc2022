@@ -12,6 +12,6 @@ fn read(file: &str) -> String {
 fn main() {
     assert_eq!(d::p1(&read("test")), 95437);
     println!("{}", d::p1(&read("real")));
-    /*     assert_eq!(d::p2(&read("test2")), "MCD");
-    println!("{}", d::p2(&read("real"))); */
+    assert_eq!(d::p2(&read("test")), 24933642);
+    println!("{}", d::p2(&read("real")));
 }
