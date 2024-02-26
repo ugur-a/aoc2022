@@ -6,10 +6,11 @@ use std::{
 use itertools::Itertools;
 
 pub fn p1(file: &str) -> u32 {
+    let upper_bound = 100_000u32;
+
     let navigations = &file[2..];
     let mut current_path = PathBuf::new();
     let mut files_with_sizes: HashMap<PathBuf, u32> = HashMap::new();
-    let upper_bound = 100_000u32;
 
     for input_and_output in navigations.split("\n$ ") {
         if let ["cd", dir_name] = input_and_output.split_whitespace().collect_vec().as_slice() {
@@ -35,7 +36,7 @@ pub fn p1(file: &str) -> u32 {
     let mut dirs_with_sizes: HashMap<&Path, u32> = HashMap::new();
 
     for (file_path, file_size) in &files_with_sizes {
-        for ancestor in file_path.ancestors() {
+        for ancestor in file_path.ancestors().skip(1) {
             dirs_with_sizes
                 .entry(ancestor)
                 .and_modify(|dir_size| *dir_size += file_size)
