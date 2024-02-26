@@ -18,9 +18,10 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
                 match line.split_once(" ").unwrap() {
                     ("dir", _dir_name) => continue,
                     (file_size, file_name) => {
-                        let file_size_parsed = file_size.parse::<u32>().unwrap();
-                        let file_path = current_path.join(file_name);
-                        files_with_sizes.insert(file_path, file_size_parsed);
+                        files_with_sizes.insert(
+                            current_path.join(file_name),
+                            file_size.parse::<u32>().unwrap(),
+                        );
                     }
                 }
             }
