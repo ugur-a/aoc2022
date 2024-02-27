@@ -1,30 +1,29 @@
-use std::{collections::HashMap, path::PathBuf};
-
 use itertools::Itertools;
+use std::{collections::HashMap, path::PathBuf};
 
 fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
     let mut current_path = PathBuf::new();
     let mut files_with_sizes: HashMap<PathBuf, u32> = HashMap::new();
 
     for input_and_output in navigations.split("\n$ ") {
-        if let ["cd", dir_name] = input_and_output.split_whitespace().collect_vec().as_slice() {
-            match *dir_name {
+        if let Some(("cd", dir_name)) = input_and_output.split_once(" ") {
+            match dir_name {
                 ".." => current_path = current_path.parent().unwrap().to_path_buf(),
                 _ => current_path.push(dir_name),
             }
         } else {
-            let (_input, output) = input_and_output.split_once("\n").unwrap();
-            for line in output.lines() {
-                match line.split_once(" ").unwrap() {
-                    ("dir", _dir_name) => continue,
-                    (file_size, file_name) => {
-                        files_with_sizes.insert(
-                            current_path.join(file_name),
-                            file_size.parse::<u32>().unwrap(),
-                        );
-                    }
-                }
-            }
+            input_and_output
+                .lines()
+                // skip the input (the call to ls)
+                .skip(1)
+                .filter_map(|line| match line.split_once(" ").unwrap() {
+                    ("dir", _dir_name) => None,
+                    (file_size, file_name) => Some((
+                        current_path.join(file_name),
+                        file_size.parse::<u32>().unwrap(),
+                    )),
+                })
+                .collect_into(&mut files_with_sizes);
         }
     }
     files_with_sizes
