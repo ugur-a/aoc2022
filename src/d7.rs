@@ -33,11 +33,11 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
 fn get_dir_sizes(files_with_sizes: HashMap<PathBuf, u32>) -> HashMap<PathBuf, u32> {
     files_with_sizes
         .iter()
-        .flat_map(|(file_path, file_size)| {
+        .flat_map(|(&file_path, &file_size)| {
             file_path
                 .ancestors()
                 .skip(1)
-                .map(|ancestor_path| (ancestor_path.to_path_buf(), *file_size))
+                .map(|ancestor_path| (ancestor_path.to_path_buf(), file_size))
         })
         .into_grouping_map()
         .sum()
@@ -53,7 +53,7 @@ pub fn p1(file: &str) -> u32 {
 
     dirs_with_sizes
         .values()
-        .filter(|dir_size| **dir_size <= upper_bound)
+        .filter(|&&dir_size| dir_size <= upper_bound)
         .sum()
 }
 
@@ -71,7 +71,7 @@ pub fn p2(file: &str) -> u32 {
 
     *dirs_with_sizes
         .values()
-        .filter(|dir_size| **dir_size >= left_to_free_up)
+        .filter(|&&dir_size| dir_size >= left_to_free_up)
         .sorted_unstable()
         .next()
         .unwrap()

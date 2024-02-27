@@ -22,13 +22,13 @@ pub fn p1(file: &str) -> usize {
             )
         })
         .map(|(compartment1, compartment2)| {
-            *compartment1
+            compartment1
                 .intersection(&compartment2)
                 .exactly_one()
                 .unwrap()
         })
         // calculate its priority
-        .map(|item| to_priority(item))
+        .map(|&item| to_priority(item))
         // add up the priorities
         .sum()
 }
