@@ -12,18 +12,19 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
                 _ => current_path.push(dir_name),
             }
         } else {
-            input_and_output
-                .lines()
-                // skip the input (the call to ls)
-                .skip(1)
-                .filter_map(|line| match line.split_once(" ").unwrap() {
-                    ("dir", _dir_name) => None,
-                    (file_size, file_name) => Some((
-                        current_path.join(file_name),
-                        file_size.parse::<u32>().unwrap(),
-                    )),
-                })
-                .collect_into(&mut files_with_sizes);
+            files_with_sizes.extend(
+                input_and_output
+                    .lines()
+                    // skip the input (the call to ls)
+                    .skip(1)
+                    .filter_map(|line| match line.split_once(" ").unwrap() {
+                        ("dir", _dir_name) => None,
+                        (file_size, file_name) => Some((
+                            current_path.join(file_name),
+                            file_size.parse::<u32>().unwrap(),
+                        )),
+                    }),
+            );
         }
     }
     files_with_sizes
@@ -31,12 +32,13 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
 
 fn get_dir_sizes(files_with_sizes: HashMap<PathBuf, u32>) -> HashMap<PathBuf, u32> {
     files_with_sizes
-        .iter()
-        .flat_map(|(&file_path, &file_size)| {
+        .into_iter()
+        .flat_map(|(file_path, file_size)| {
             file_path
                 .ancestors()
                 .skip(1)
                 .map(|ancestor_path| (ancestor_path.to_path_buf(), file_size))
+                .collect_vec()
         })
         .into_grouping_map()
         .sum()
