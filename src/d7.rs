@@ -53,7 +53,7 @@ pub fn p1(file: &str) -> u32 {
 
     dirs_with_sizes
         .values()
-        .filter(|&&dir_size| dir_size <= upper_bound)
+        .filter(|dir_size| **dir_size <= upper_bound)
         .sum()
 }
 
@@ -71,7 +71,7 @@ pub fn p2(file: &str) -> u32 {
 
     *dirs_with_sizes
         .values()
-        .filter(|&&dir_size| dir_size >= left_to_free_up)
+        .filter(|dir_size| **dir_size >= left_to_free_up)
         .sorted_unstable()
         .next()
         .unwrap()
