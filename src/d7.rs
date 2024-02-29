@@ -19,10 +19,9 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
                     .skip(1)
                     .filter_map(|line| match line.split_once(" ").unwrap() {
                         ("dir", _dir_name) => None,
-                        (file_size, file_name) => Some((
-                            current_path.join(file_name),
-                            file_size.parse::<u32>().unwrap(),
-                        )),
+                        (file_size, file_name) => {
+                            Some((current_path.join(file_name), file_size.parse().unwrap()))
+                        }
                     }),
             );
         }
