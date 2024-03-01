@@ -27,3 +27,18 @@ pub fn p1(buffer: &str) -> Option<usize> {
 pub fn p2(buffer: &str) -> Option<usize> {
     get_first_buffer_all_unique(buffer, 14)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_case::test_case;
+
+    #[test_case("mjqjpqmgbljsphdztnvjfqwrcgsmlb" => Some(7))]
+    #[test_case("bvwbjplbgvbhsrlpgdmjqwftvncz" => Some(5))]
+    #[test_case("nppdvjthqldpwncqszvftbrmjlhg" => Some(6))]
+    #[test_case("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg" => Some(10))]
+    #[test_case("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw" => Some(11))]
+    fn test_p1(inp: &str) -> Option<usize> {
+        p1(inp)
+    }
+}
