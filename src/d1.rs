@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-fn p1(file: &str) -> u32 {
+pub fn p1(file: &str) -> u32 {
     // split elves inventories
     file.split("\n\n")
         // calculate each elf's total calories
@@ -14,7 +14,7 @@ fn p1(file: &str) -> u32 {
         .unwrap()
 }
 
-fn p2(file: &str) -> u32 {
+pub fn p2(file: &str) -> u32 {
     // split elves inventories
     file.split("\n\n")
         // calculate each elf's total calories

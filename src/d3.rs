@@ -28,7 +28,7 @@ pub fn p1(file: &str) -> usize {
                 .unwrap()
         })
         // calculate its priority
-        .map(|item| to_priority(item))
+        .map(to_priority)
         // add up the priorities
         .sum()
 }
@@ -42,7 +42,7 @@ pub fn p2(file: &str) -> usize {
         // in each chunk, find the common item (the badge)
         .map(|chunk| hash_set::intersection(chunk).drain().exactly_one().unwrap())
         // calculate its priority
-        .map(|badge| to_priority(badge))
+        .map(to_priority)
         // add up the priorities
         .sum()
 }

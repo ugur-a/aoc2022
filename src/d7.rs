@@ -6,7 +6,7 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
     let mut files_with_sizes: HashMap<PathBuf, u32> = HashMap::new();
 
     for input_and_output in navigations.split("\n$ ") {
-        if let Some(("cd", dir_name)) = input_and_output.split_once(" ") {
+        if let Some(("cd", dir_name)) = input_and_output.split_once(' ') {
             match dir_name {
                 ".." => current_path = current_path.parent().unwrap().to_path_buf(),
                 _ => current_path.push(dir_name),
@@ -17,7 +17,7 @@ fn parse_files_from_navigation(navigations: &str) -> HashMap<PathBuf, u32> {
                     .lines()
                     // skip the input (the call to ls)
                     .skip(1)
-                    .filter_map(|line| match line.split_once(" ").unwrap() {
+                    .filter_map(|line| match line.split_once(' ').unwrap() {
                         ("dir", _dir_name) => None,
                         (file_size, file_name) => {
                             Some((current_path.join(file_name), file_size.parse().unwrap()))

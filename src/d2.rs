@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-fn p2(file: &str) -> u32 {
+pub fn p2(file: &str) -> u32 {
     file.lines()
         // parse a round as pair of moves
         .map(|round| round.split_whitespace().collect_tuple().unwrap())
@@ -23,7 +23,7 @@ fn p2(file: &str) -> u32 {
         .sum()
 }
 
-fn p1(file: &str) -> u32 {
+pub fn p1(file: &str) -> u32 {
     file.lines()
         .map(|round| round.split_whitespace().collect_tuple().unwrap())
         .map(|(opp_move, your_move)| {
