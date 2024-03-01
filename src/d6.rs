@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 
+/// Returns the index of the last element in the window,
+/// if such a window exists
 fn get_first_buffer_all_unique(string: &str, buffer_size: usize) -> Option<usize> {
     let mut buf: VecDeque<char> = VecDeque::with_capacity(buffer_size);
     let mut string = string.char_indices();
