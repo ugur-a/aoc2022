@@ -29,7 +29,7 @@ pub fn p1(file: &str) -> String {
             })
             .for_each(|(idx, crate_name)| {
                 warehouse.get_mut(idx).unwrap().push(crate_name);
-            })
+            });
     }
 
     // apply the rearrangements
@@ -95,7 +95,7 @@ pub fn p2(file: &str) -> String {
             })
             .for_each(|(idx, crate_name)| {
                 warehouse.get_mut(idx).unwrap().push(crate_name);
-            })
+            });
     }
 
     // apply the rearrangements
