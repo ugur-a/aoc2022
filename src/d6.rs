@@ -4,9 +4,8 @@ use std::collections::VecDeque;
 /// if such a window exists
 fn get_first_buffer_all_unique(string: &str, buffer_size: usize) -> Option<usize> {
     let mut buf: VecDeque<char> = VecDeque::with_capacity(buffer_size);
-    let mut string = string.char_indices();
     let mut chars_to_skip = 0usize;
-    while let Some((idx, letter)) = string.next() {
+    for (idx, letter) in string.char_indices() {
         while buf.contains(&letter) {
             buf.pop_front();
             chars_to_skip += 1;
