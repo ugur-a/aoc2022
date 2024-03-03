@@ -123,7 +123,21 @@ impl RopeTrait for Rope {
 }
 
 pub fn p2(file: &str) -> usize {
-    todo!()
+    let mut rope = Rope::with_length(10);
+    file.lines()
+        .flat_map(|r#move| {
+            let (direction, num_repeats) = r#move.split_once(' ').unwrap();
+            let direction = direction.parse::<Direction>().unwrap();
+            let num_repeats = num_repeats.parse::<usize>().unwrap();
+            iter::repeat(direction).take(num_repeats)
+        })
+        .map(|direction| {
+            rope.r#move(direction);
+            *rope.last().unwrap()
+        })
+        .chain(iter::once(Point2D::new()))
+        .collect::<HashSet<_>>()
+        .len()
 }
 
 #[cfg(test)]
