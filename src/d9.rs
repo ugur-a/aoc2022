@@ -147,4 +147,19 @@ mod tests {
         let inp = read_to_string("inputs/d9/real.txt").unwrap();
         assert_eq!(p1(&inp), 5960);
     }
+    #[test]
+    fn test1_p2() {
+        let inp = read_to_string("inputs/d9/test.txt").unwrap();
+        assert_eq!(p2(&inp), 1);
+    }
+    #[test]
+    fn test2_p2() {
+        let inp = read_to_string("inputs/d9/test2.txt").unwrap();
+        assert_eq!(p2(&inp), 36);
+    }
+    #[test]
+    fn real_p2() {
+        let inp = read_to_string("inputs/d9/real.txt").unwrap();
+        assert_eq!(p2(&inp), 0);
+    }
 }
