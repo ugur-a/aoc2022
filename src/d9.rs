@@ -1,4 +1,4 @@
-use std::{collections::HashSet, iter, ops::Neg, str::FromStr};
+use std::{collections::HashSet, iter, str::FromStr};
 
 #[derive(Copy, Clone)]
 enum Direction {
@@ -6,6 +6,10 @@ enum Direction {
     Down,
     Left,
     Right,
+    UpRight,
+    UpLeft,
+    DownRight,
+    DownLeft,
 }
 
 #[derive(Debug)]
@@ -25,19 +29,6 @@ impl FromStr for Direction {
     }
 }
 
-impl Neg for Direction {
-    type Output = Self;
-
-    fn neg(self) -> Self::Output {
-        match self {
-            Self::Up => Self::Down,
-            Self::Down => Self::Up,
-            Self::Left => Self::Right,
-            Self::Right => Self::Left,
-        }
-    }
-}
-
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Default, Debug)]
 struct Point2D {
     x: i32,
@@ -49,12 +40,29 @@ impl Point2D {
     }
 
     fn r#move(&mut self, direction: Direction) {
+        use Direction as D;
         match direction {
-            Direction::Up => self.y += 1,
-            Direction::Down => self.y -= 1,
-            Direction::Left => self.x -= 1,
-            Direction::Right => self.x += 1,
-        }
+            D::Up => self.y += 1,
+            D::Down => self.y -= 1,
+            D::Left => self.x -= 1,
+            D::Right => self.x += 1,
+            D::UpRight => {
+                self.r#move(D::Up);
+                self.r#move(D::Right);
+            }
+            D::UpLeft => {
+                self.r#move(D::Up);
+                self.r#move(D::Left);
+            }
+            D::DownRight => {
+                self.r#move(D::Down);
+                self.r#move(D::Right);
+            }
+            D::DownLeft => {
+                self.r#move(D::Down);
+                self.r#move(D::Left);
+            }
+        };
     }
 }
 
@@ -91,23 +99,37 @@ impl RopeTrait for Rope {
         let head = self.first_mut().unwrap();
         head.r#move(direction);
 
-        // store the copy of the previous knot to measure the distance to it
+        // store the copy of the previous knot to measure the distance to it.
         // would store the reference, but ownership rules
         let mut prev = *head;
 
-        for curr in self.iter_mut() {
-            // check the distance to the previous knot
-            // - if too big, teleport to it
-            if curr.x.abs_diff(prev.x) > 1 || curr.y.abs_diff(prev.y) > 1 {
-                *curr = prev;
-                curr.r#move(-direction);
+        for curr in self.iter_mut().skip(1) {
+            use Direction as D;
+            let move_to_catch_up = match (prev.x - curr.x, prev.y - curr.y) {
+                // knots touch - no catching-up necessary
+                (-1..=1, -1..=1) => None,
+                // catch-up diagonally
+                (1 | 2, 1 | 2) => Some(D::UpRight),
+                (-1 | -2, 1 | 2) => Some(D::UpLeft),
+                (1 | 2, -1 | -2) => Some(D::DownRight),
+                (-1 | -2, -1 | -2) => Some(D::DownLeft),
+                // catch-up vertically/horizontally
+                (0, 2) => Some(D::Up),
+                (0, -2) => Some(D::Down),
+                (2, 0) => Some(D::Right),
+                (-2, 0) => Some(D::Left),
+                _ => unreachable!(),
+            };
 
-            // - otherwise:
-            // 1. don't move at all
-            // 2. observe that all the necessary pulls have already been made and
-            //    the rest of the rope doesn't need to move, so don't check further
-            } else {
-                break;
+            match move_to_catch_up {
+                // check the distance to the previous knot
+                // - if too big, teleport to it
+                Some(direction) => curr.r#move(direction),
+                // - otherwise:
+                // 1. don't move at all
+                // 2. observe that all the necessary pulls have already been made and
+                //    the rest of the rope doesn't need to move, so don't check further
+                None => break,
             }
             prev = *curr;
         }
@@ -166,6 +188,6 @@ mod tests {
     #[test]
     fn real_p2() {
         let inp = read_to_string("inputs/d9/real.txt").unwrap();
-        assert_eq!(p2(&inp), 0);
+        assert_eq!(p2(&inp), 2327);
     }
 }
