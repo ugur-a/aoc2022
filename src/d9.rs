@@ -87,37 +87,29 @@ impl RopeTrait for Rope {
         iter::repeat(Point2D::new()).take(len).collect::<Vec<_>>()
     }
     fn r#move(&mut self, direction: Direction) {
-        let mut new_rope: Rope = Vec::with_capacity(self.len());
-        let mut early_break = false;
+        // take the head and just move it
+        let head = self.first_mut().unwrap();
+        head.r#move(direction);
+
+        // store the copy of the previous knot to measure the distance to it
+        // would store the reference, but ownership rules
+        let mut prev = *head;
+
         for curr in self.iter_mut() {
-            match new_rope.last() {
-                // no previous knot, current knot is head
-                None => curr.r#move(direction),
-                // there's a previous knot, i.e. the current knot is not the head
-                Some(prev) => {
-                    // check the distance to the previous knot
-                    // - if too big, teleport to it
-                    if curr.x.abs_diff(prev.x) > 1 || curr.y.abs_diff(prev.y) > 1 {
-                        *curr = *prev;
-                        curr.r#move(-direction);
-                    // - otherwise:
-                    // 1. don't move at all
-                    // 2. observe that all the necessary pulls have already been made
-                    // and the rest of the rope doesn't need to move, so don't bother checking it
-                    // TODO: implement a check for that
-                    } else {
-                        early_break = true;
-                        break;
-                    }
-                }
+            // check the distance to the previous knot
+            // - if too big, teleport to it
+            if curr.x.abs_diff(prev.x) > 1 || curr.y.abs_diff(prev.y) > 1 {
+                *curr = prev;
+                curr.r#move(-direction);
+
+            // - otherwise:
+            // 1. don't move at all
+            // 2. observe that all the necessary pulls have already been made and
+            //    the rest of the rope doesn't need to move, so don't check further
+            } else {
+                break;
             }
-            new_rope.push(*curr);
-        }
-        if early_break {
-            // update the moved knots' coordinates, leave the rest alone
-            self.splice(..new_rope.len(), new_rope);
-        } else {
-            *self = new_rope;
+            prev = *curr;
         }
     }
 }
