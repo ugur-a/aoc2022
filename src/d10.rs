@@ -2,7 +2,7 @@ use nohash_hasher::IntMap;
 
 pub fn p1(file: &str) -> i32 {
     let mut storage = IntMap::default();
-    let mut current_cycle = 0;
+    let mut current_cycle = 0_u32;
     let mut x = 1;
     let interesting_cycles = (20..=220).step_by(40).collect::<Vec<_>>();
     for line in file.lines() {
@@ -22,10 +22,10 @@ pub fn p1(file: &str) -> i32 {
             let mut searcher = cycle;
             loop {
                 match storage.get(&(searcher - 1)) {
-                    Some(value_of_x) => return value_of_x * cycle,
-                    None => searcher -= 1
+                    Some(value_of_x) => return value_of_x * cycle as i32,
+                    None => searcher -= 1,
                 }
-            };
+            }
         })
         .sum()
 }
