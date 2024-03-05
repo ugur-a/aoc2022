@@ -8,7 +8,6 @@ version = "0.1.0"
 dependencies = [
  "intersection",
  "itertools",
- "nohash-hasher",
  "test-case",
 ]
 
@@ -38,12 +37,6 @@ checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
 dependencies = [
  "either",
 ]
-
-[[package]]
-name = "nohash-hasher"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
 
 [[package]]
 name = "proc-macro2"
