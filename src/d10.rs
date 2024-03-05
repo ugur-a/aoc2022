@@ -1,56 +1,34 @@
-use itertools::Itertools;
-use nohash_hasher::IntMap;
-
-pub fn p1(file: &str) -> i32 {
-    let mut storage = IntMap::default();
-    let mut current_cycle = 0_u32;
+fn parse_operations(file: &str) -> Vec<i32> {
+    let mut storage = Vec::new();
     let mut x = 1;
-    let interesting_cycles = (20..=220).step_by(40).collect::<Vec<_>>();
     for line in file.lines() {
         if let Some(("addx", num)) = line.split_once(' ') {
+            storage.push(x);
+            storage.push(x);
             x += num.parse::<i32>().unwrap();
-            current_cycle += 2;
-            storage.insert(current_cycle, x);
         // noop
         } else {
-            current_cycle += 1;
+            storage.push(x);
         }
     }
+    storage
+}
+
+pub fn p1(file: &str) -> i32 {
+    let interesting_cycles = (20..=220).step_by(40).collect::<Vec<_>>();
+
+    let storage = parse_operations(file);
 
     interesting_cycles
         .into_iter()
-        .map(|cycle| {
-            let mut searcher = cycle;
-            loop {
-                match storage.get(&(searcher - 1)) {
-                    Some(value_of_x) => return value_of_x * cycle as i32,
-                    None => searcher -= 1,
-                }
-            }
-        })
+        .map(|cycle| cycle as i32 * storage[cycle - 1])
         .sum()
 }
 
 pub fn p2(file: &str) -> String {
-    let mut storage = IntMap::default();
-
-    let mut current_cycle = 0;
-    let mut x = 1;
-    storage.insert(current_cycle, x);
-    for line in file.lines() {
-        if let Some(("addx", num)) = line.split_once(' ') {
-            x += num.parse::<i32>().unwrap();
-            current_cycle += 2;
-            storage.insert(current_cycle, x);
-        // noop
-        } else {
-            current_cycle += 1;
-        }
-    }
-
     struct Crt {
-        width: u32,
-        height: u32,
+        width: usize,
+        height: usize,
     }
 
     let crt = Crt {
@@ -58,21 +36,18 @@ pub fn p2(file: &str) -> String {
         height: 6,
     };
 
-    (0..crt.height)
+    let storage = parse_operations(file);
+
+    let rows: Vec<String> = (0..crt.height)
         .map(|row_num| {
             (0..crt.width)
                 .map(|col_num| {
                     let cycle = crt.width * row_num + col_num;
+
                     // only check against the horizontal position of the sprite
                     let crt_position = col_num;
 
-                    let mut searcher = cycle;
-                    let center_of_sprite = loop {
-                        match storage.get(&searcher) {
-                            Some(value) => break value,
-                            None => searcher -= 1,
-                        }
-                    };
+                    let center_of_sprite = storage[cycle];
 
                     if center_of_sprite.abs_diff(crt_position as i32) <= 1 {
                         '#'
@@ -82,7 +57,8 @@ pub fn p2(file: &str) -> String {
                 })
                 .collect::<String>()
         })
-        .join("\n")
+        .collect();
+    rows.join("\n")
 }
 
 #[cfg(test)]
