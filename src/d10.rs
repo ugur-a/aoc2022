@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use nohash_hasher::IntMap;
 
 pub fn p1(file: &str) -> i32 {
-    let mut storage = HashMap::new();
+    let mut storage = IntMap::default();
     let mut current_cycle = 0;
     let mut x = 1;
     let interesting_cycles = (20..=220).step_by(40).collect::<Vec<_>>();
