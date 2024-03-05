@@ -2,10 +2,9 @@ use std::collections::HashMap;
 
 pub fn p1(file: &str) -> i32 {
     let mut storage = HashMap::new();
-    //storage.insert(0, 1);
     let mut current_cycle = 0;
     let mut x = 1;
-    let interesting_cycles = Vec::from_iter((20..=220).step_by(40));
+    let interesting_cycles = (20..=220).step_by(40).collect::<Vec<_>>();
     for line in file.lines() {
         if let Some(("addx", num)) = line.split_once(' ') {
             x += num.parse::<i32>().unwrap();
@@ -16,18 +15,19 @@ pub fn p1(file: &str) -> i32 {
             current_cycle += 1;
         }
     }
-    let mut res = 0;
-    for mut cycle in interesting_cycles {
-        let init = cycle;
-        loop {
-            if let Some(value_of_x) = storage.get(&(cycle - 1)) {
-                res += init * value_of_x;
-                break;
-            }
-            cycle -= 1;
-        }
-    }
-    res
+
+    interesting_cycles
+        .into_iter()
+        .map(|cycle| {
+            let mut searcher = cycle;
+            loop {
+                match storage.get(&(searcher - 1)) {
+                    Some(value_of_x) => return value_of_x * cycle,
+                    None => searcher -= 1
+                }
+            };
+        })
+        .sum()
 }
 
 pub fn p2(file: &str) -> u32 {
