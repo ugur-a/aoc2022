@@ -2,6 +2,65 @@ use std::str::FromStr;
 
 use anyhow::{bail, Context, Error, Result};
 
+struct Monkey {
+    inventory: Vec<u32>,
+    operation: Operation,
+    divisible_by: u32,
+    monkey_to_throw_to_if_test_true: u32,
+    monkey_to_throw_to_if_test_false: u32,
+}
+
+impl FromStr for Monkey {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut note_lines = s.lines().skip(1);
+        let starting_items = note_lines
+            .next()
+            .context("no starting items")?
+            .strip_prefix("  Starting items: ")
+            .context("invalid input")?
+            .split(", ")
+            .map(|elem| elem.parse::<u32>())
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let operation = note_lines
+            .next()
+            .context("no operations")?
+            .strip_prefix("  Operation: new = old ")
+            .context("invalid input")?
+            .parse::<Operation>()?;
+
+        let divisible_by = note_lines
+            .next()
+            .context("no test")?
+            .strip_prefix("  Test: divisible by ")
+            .context("invalid input")?
+            .parse::<u32>()?;
+
+        let monkey_to_throw_to_if_test_true = note_lines
+            .next()
+            .context("no first monkey")?
+            .strip_prefix("   If true: throw to monkey ")
+            .context("invalid input")?
+            .parse::<u32>()?;
+
+        let monkey_to_throw_to_if_test_false = note_lines
+            .next()
+            .context("no second monkey")?
+            .strip_prefix("    If false: throw to monkey ")
+            .context("invalid input")?
+            .parse::<u32>()?;
+
+        Ok(Self {
+            inventory: starting_items,
+            operation,
+            divisible_by,
+            monkey_to_throw_to_if_test_true,
+            monkey_to_throw_to_if_test_false,
+        })
+    }
+}
 
 enum Operation {
     Add(u32),
