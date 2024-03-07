@@ -1,7 +1,11 @@
-pub fn p1(file: &str) -> u32 {
+use anyhow::{bail, Context, Error, Result};
+
+
+pub fn p1(file: &str) -> Result<u32> {
     todo!()
 }
-pub fn p2(file: &str) -> () {
+
+pub fn p2(file: &str) -> Result<()> {
     todo!()
 }
 
@@ -12,24 +16,24 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/d11/test.txt").unwrap();
-        assert_eq!(p1(&inp), 10605);
+        assert_eq!(p1(&inp).unwrap(), 10605);
     }
     #[test]
     #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/d11/real.txt").unwrap();
-        assert_eq!(p1(&inp), 0);
+        assert_eq!(p1(&inp).unwrap(), 0);
     }
     #[test]
     #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/d11/test.txt").unwrap();
-        assert_eq!(p2(&inp), ());
+        assert_eq!(p2(&inp).unwrap(), ());
     }
     #[test]
     #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/d11/real.txt").unwrap();
-        assert_eq!(p2(&inp), ());
+        assert_eq!(p2(&inp).unwrap(), ());
     }
 }
