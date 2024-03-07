@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{bail, Context, Error, Result};
+use itertools::Itertools;
 
 struct Monkey {
     inventory: Vec<u32>,
@@ -104,7 +105,13 @@ pub fn p1(file: &str) -> Result<u32> {
         .map(|monkey_notes| monkey_notes.parse::<Monkey>())
         .collect::<Result<Vec<_>, _>>()?;
 
-    todo!()
+    Ok(monkeys
+        .iter()
+        .map(|monkey| monkey.activity)
+        .sorted_unstable()
+        .rev()
+        .take(2)
+        .product())
 }
 
 pub fn p2(file: &str) -> Result<()> {
