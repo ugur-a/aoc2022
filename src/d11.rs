@@ -8,6 +8,7 @@ struct Monkey {
     divisible_by: u32,
     monkey_to_throw_to_if_test_true: u32,
     monkey_to_throw_to_if_test_false: u32,
+    activity: u32,
 }
 
 impl FromStr for Monkey {
@@ -58,6 +59,7 @@ impl FromStr for Monkey {
             divisible_by,
             monkey_to_throw_to_if_test_true,
             monkey_to_throw_to_if_test_false,
+            activity: 0,
         })
     }
 }
@@ -101,6 +103,7 @@ pub fn p1(file: &str) -> Result<u32> {
         .split("\n\n")
         .map(|monkey_notes| monkey_notes.parse::<Monkey>())
         .collect::<Result<Vec<_>, _>>()?;
+
     todo!()
 }
 
