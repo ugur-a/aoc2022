@@ -9,7 +9,7 @@ struct Monkey {
     divisible_by: u32,
     monkey_true: u32,
     monkey_false: u32,
-    activity: u32,
+    activity: usize,
 }
 
 impl FromStr for Monkey {
@@ -99,14 +99,15 @@ impl FromStr for Operation {
     }
 }
 
-pub fn p1(file: &str, num_rounds: u32) -> Result<u32> {
-    let monkeys = file
+pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
+    let mut monkeys = file
         .split("\n\n")
         .map(|monkey_notes| monkey_notes.parse::<Monkey>())
         .collect::<Result<Vec<_>, _>>()?;
 
     for _ in 0..num_rounds {
         for monkey in monkeys.iter_mut() {
+            monkey.activity += monkey.inventory.len();
             todo!()
         }
     }
