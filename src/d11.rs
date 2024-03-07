@@ -97,6 +97,10 @@ impl FromStr for Operation {
 }
 
 pub fn p1(file: &str) -> Result<u32> {
+    let monkeys = file
+        .split("\n\n")
+        .map(|monkey_notes| monkey_notes.parse::<Monkey>())
+        .collect::<Result<Vec<_>, _>>()?;
     todo!()
 }
 
