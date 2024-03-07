@@ -7,8 +7,8 @@ struct Monkey {
     inventory: Vec<u32>,
     operation: Operation,
     divisible_by: u32,
-    monkey_to_throw_to_if_test_true: u32,
-    monkey_to_throw_to_if_test_false: u32,
+    monkey_true: u32,
+    monkey_false: u32,
     activity: u32,
 }
 
@@ -40,14 +40,14 @@ impl FromStr for Monkey {
             .context("invalid input")?
             .parse::<u32>()?;
 
-        let monkey_to_throw_to_if_test_true = note_lines
+        let monkey_true = note_lines
             .next()
             .context("no first monkey")?
             .strip_prefix("   If true: throw to monkey ")
             .context("invalid input")?
             .parse::<u32>()?;
 
-        let monkey_to_throw_to_if_test_false = note_lines
+        let monkey_false = note_lines
             .next()
             .context("no second monkey")?
             .strip_prefix("    If false: throw to monkey ")
@@ -58,8 +58,8 @@ impl FromStr for Monkey {
             inventory: starting_items,
             operation,
             divisible_by,
-            monkey_to_throw_to_if_test_true,
-            monkey_to_throw_to_if_test_false,
+            monkey_true,
+            monkey_false,
             activity: 0,
         })
     }
