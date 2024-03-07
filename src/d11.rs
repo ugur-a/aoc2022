@@ -108,6 +108,11 @@ pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
     for _ in 0..num_rounds {
         for monkey in monkeys.iter_mut() {
             monkey.activity += monkey.inventory.len();
+            let (items_monkey_true, items_monkey_false): (Vec<u32>, Vec<u32>) = monkey
+                .inventory
+                .iter_mut()
+                .map(|item_worry| todo!())
+                .partition(|_| todo!());
             todo!()
         }
     }
