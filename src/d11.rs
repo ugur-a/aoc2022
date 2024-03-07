@@ -105,6 +105,12 @@ pub fn p1(file: &str, num_rounds: u32) -> Result<u32> {
         .map(|monkey_notes| monkey_notes.parse::<Monkey>())
         .collect::<Result<Vec<_>, _>>()?;
 
+    for _ in 0..num_rounds {
+        for monkey in monkeys.iter_mut() {
+            todo!()
+        }
+    }
+
     Ok(monkeys
         .iter()
         .map(|monkey| monkey.activity)
