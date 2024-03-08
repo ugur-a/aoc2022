@@ -141,7 +141,7 @@ pub fn p2(file: &str) -> Result<u32> {
         .heights
         .iter()
         .filter(|&(_point, height)| *height == 0)
-        .map(|(lowest_point, _height)| {
+        .filter_map(|(lowest_point, _height)| {
             astar::astar(
                 lowest_point,
                 |point| {
@@ -154,13 +154,8 @@ pub fn p2(file: &str) -> Result<u32> {
                 |point| 26 - height_map.heights.get(point).unwrap(),
                 |point| *point == height_map.goal,
             )
-            .expect("there must be at least one shortest path")
-            // extract path's length
-            .1
         })
-        .inspect(|f| {
-            dbg!("{}", f);
-        })
+        .map(|(_path, path_length)| path_length)
         .min()
         .context("there must be at least one shortest path")
 }
