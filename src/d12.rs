@@ -26,6 +26,32 @@ struct HeightMap {
     heights: HashMap<Point2D, u32>,
 }
 
+impl HeightMap {
+    fn climbable_neighbours(&self, point: Point2D) -> Vec<Point2D> {
+        let Point2D { x, y } = point;
+        let this_height = self.heights[&point];
+
+        let mut potential_neighbours = Vec::new();
+        if x > 0 {
+            potential_neighbours.push(Point2D { x: x - 1, y })
+        }
+        if x < self.num_cols - 1 {
+            potential_neighbours.push(Point2D { x: x + 1, y })
+        }
+        if y > 0 {
+            potential_neighbours.push(Point2D { x, y: y - 1 })
+        }
+        if y < self.num_rows - 1 {
+            potential_neighbours.push(Point2D { x, y: y + 1 })
+        }
+
+        potential_neighbours
+            .into_iter()
+            .filter(|point| *self.heights.get(&point).unwrap() <= this_height + 1)
+            .collect::<Vec<_>>()
+    }
+}
+
 impl FromStr for HeightMap {
     type Err = Error;
 
@@ -94,26 +120,10 @@ pub fn p1(file: &str) -> Result<u32> {
     let height_map = file.parse::<HeightMap>()?;
     let shortest_path = astar::astar(
         &height_map.start,
-        |&Point2D { x, y }| {
-            let this_height = height_map.heights[&Point2D { x, y }];
-
-            let mut potential_neighbours = Vec::new();
-            if x > 0 {
-                potential_neighbours.push(Point2D { x: x - 1, y })
-            }
-            if x < height_map.num_cols - 1 {
-                potential_neighbours.push(Point2D { x: x + 1, y })
-            }
-            if y > 0 {
-                potential_neighbours.push(Point2D { x, y: y - 1 })
-            }
-            if y < height_map.num_rows - 1 {
-                potential_neighbours.push(Point2D { x, y: y + 1 })
-            }
-
-            potential_neighbours
+        |&point| {
+            height_map
+                .climbable_neighbours(point)
                 .into_iter()
-                .filter(|point| *height_map.heights.get(&point).unwrap() <= this_height + 1)
                 .map(|point| (point, 1))
                 .collect::<Vec<_>>()
         },
