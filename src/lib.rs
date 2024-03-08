@@ -1,5 +1,9 @@
 #![warn(clippy::pedantic)]
-#![allow(clippy::must_use_candidate, clippy::missing_panics_doc)]
+#![allow(
+    clippy::must_use_candidate,
+    clippy::missing_panics_doc,
+    clippy::missing_errors_doc
+)]
 pub mod d1;
 pub mod d10;
 pub mod d11;

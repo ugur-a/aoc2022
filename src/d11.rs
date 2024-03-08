@@ -4,6 +4,7 @@ use anyhow::{bail, Context, Error, Result};
 use itertools::{repeat_n, Itertools};
 use num::Integer;
 
+#[allow(clippy::struct_field_names)]
 struct Monkey<N> {
     inventory: Vec<N>,
     operation: Operation<N>,
@@ -28,7 +29,7 @@ where
             .strip_prefix("  Starting items: ")
             .context("invalid input")?
             .split(", ")
-            .map(|elem| elem.parse())
+            .map(str::parse::<N>)
             .collect::<Result<Vec<_>, _>>()?;
 
         let operation = note_lines
@@ -84,10 +85,12 @@ where
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use Operation as O;
+
         let mut operation = s.split_whitespace();
         let operand = operation.next().context("no operator")?;
         let value = operation.next().context("no operand")?;
-        use Operation as O;
+
         if let Ok(num) = value.parse() {
             match operand {
                 "+" => Ok(O::Add(num)),
@@ -110,17 +113,16 @@ where
 pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
     let mut monkeys = file
         .split("\n\n")
-        .map(|monkey_notes| monkey_notes.parse::<Monkey<u32>>())
+        .map(str::parse::<Monkey<u32>>)
         .collect::<Result<Vec<_>, _>>()?;
 
     let mut inventories_to_transfer = repeat_n(Vec::new(), monkeys.len()).collect_vec();
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
-            monkey.inventory.extend(
+            monkey.inventory.append(
                 inventories_to_transfer
                     .get_mut(idx)
-                    .context("there should've been an empty vector here if nothing else")?
-                    .drain(..),
+                    .context("there should've been an empty vector here if nothing else")?,
             );
 
             if monkey.inventory.is_empty() {
@@ -167,7 +169,7 @@ pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
 pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
     let mut monkeys = file
         .split("\n\n")
-        .map(|monkey_notes| monkey_notes.parse::<Monkey<u64>>())
+        .map(str::parse::<Monkey<u64>>)
         .collect::<Result<Vec<_>, _>>()?;
 
     let divisibility_tests_lcm = monkeys
@@ -179,11 +181,10 @@ pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
     let mut inventories_to_transfer = repeat_n(Vec::new(), monkeys.len()).collect_vec();
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
-            monkey.inventory.extend(
+            monkey.inventory.append(
                 inventories_to_transfer
                     .get_mut(idx)
-                    .context("there should've been an empty vector here if nothing else")?
-                    .drain(..),
+                    .context("there should've been an empty vector here if nothing else")?,
             );
 
             if monkey.inventory.is_empty() {

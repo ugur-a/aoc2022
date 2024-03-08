@@ -33,21 +33,21 @@ impl HeightMap {
 
         let mut potential_neighbours = Vec::new();
         if x > 0 {
-            potential_neighbours.push(Point2D { x: x - 1, y })
+            potential_neighbours.push(Point2D { x: x - 1, y });
         }
         if x < self.num_cols - 1 {
-            potential_neighbours.push(Point2D { x: x + 1, y })
+            potential_neighbours.push(Point2D { x: x + 1, y });
         }
         if y > 0 {
-            potential_neighbours.push(Point2D { x, y: y - 1 })
+            potential_neighbours.push(Point2D { x, y: y - 1 });
         }
         if y < self.num_rows - 1 {
-            potential_neighbours.push(Point2D { x, y: y + 1 })
+            potential_neighbours.push(Point2D { x, y: y + 1 });
         }
 
         potential_neighbours
             .into_iter()
-            .filter(|point| *self.heights.get(&point).unwrap() <= this_height + 1)
+            .filter(|point| *self.heights.get(point).unwrap() <= this_height + 1)
             .collect::<Vec<_>>()
     }
 }
@@ -109,8 +109,8 @@ impl FromStr for HeightMap {
         Ok(Self {
             start,
             goal,
-            num_cols,
             num_rows,
+            num_cols,
             heights,
         })
     }
