@@ -101,13 +101,13 @@ pub fn p1(file: &str) -> Result<u32> {
             if x > 0 {
                 potential_neighbours.push(Point2D { x: x - 1, y })
             }
-            if x < height_map.num_cols {
+            if x < height_map.num_cols - 1 {
                 potential_neighbours.push(Point2D { x: x + 1, y })
             }
             if y > 0 {
                 potential_neighbours.push(Point2D { x, y: y - 1 })
             }
-            if y < height_map.num_rows {
+            if y < height_map.num_rows - 1 {
                 potential_neighbours.push(Point2D { x, y: y + 1 })
             }
 
