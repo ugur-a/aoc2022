@@ -1,13 +1,8 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{Context, Error, Result};
 
-struct HeightPoint {
-    coords: Point2D,
-    height: u32,
-}
-
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 struct Point2D {
     x: usize,
     y: usize,
@@ -25,7 +20,9 @@ impl From<(usize, usize)> for Point2D {
 struct HeightMap {
     start: Point2D,
     goal: Point2D,
-    heights: Vec<HeightPoint>,
+    num_rows: usize,
+    num_cols: usize,
+    heights: HashMap<Point2D, u32>,
 }
 
 impl FromStr for HeightMap {
@@ -41,7 +38,7 @@ impl FromStr for HeightMap {
             })
             .find(|(_row_num, _col_num, char)| *char == 'S')
             .context("no starting point found")?;
-        let start = Point2D { x: s_row, y: s_col };
+        let start = Point2D { x: s_col, y: s_row };
 
         let (g_row, g_col, _g_char) = s
             .lines()
@@ -52,7 +49,11 @@ impl FromStr for HeightMap {
             })
             .find(|(_row_num, _col_num, char)| *char == 'E')
             .context("no end point found")?;
-        let goal = Point2D { x: g_row, y: g_col };
+        let goal = Point2D { x: g_col, y: g_row };
+
+        let num_cols = s.lines().next().context("at least one row")?.len();
+
+        let num_rows = s.lines().count();
 
         let heights = s
             .lines()
@@ -67,18 +68,22 @@ impl FromStr for HeightMap {
                     })
                     .map(|point| point as u32 - 97)
                     .enumerate()
-                    .map(move |(col_num, height)| HeightPoint {
-                        coords: Point2D {
-                            x: row_num,
-                            y: col_num,
+                    .map(move |(col_num, height)| {
+                        (
+                            Point2D {
+                                x: col_num,
+                                y: row_num,
                         },
                         height,
+                        )
                     })
             })
-            .collect::<Vec<_>>();
+            .collect::<HashMap<_, _>>();
         Ok(Self {
             start,
             goal,
+            num_cols,
+            num_rows,
             heights,
         })
     }
