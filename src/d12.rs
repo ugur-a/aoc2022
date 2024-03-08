@@ -120,22 +120,49 @@ pub fn p1(file: &str) -> Result<u32> {
     let height_map = file.parse::<HeightMap>()?;
     let shortest_path = astar::astar(
         &height_map.start,
-        |&point| {
+        |point| {
             height_map
-                .climbable_neighbours(point)
+                .climbable_neighbours(*point)
                 .into_iter()
                 .map(|point| (point, 1))
                 .collect::<Vec<_>>()
         },
-        |&point| 26 - height_map.heights.get(&point).unwrap(),
-        |p| *p == height_map.goal,
+        |point| 26 - height_map.heights.get(point).unwrap(),
+        |point| *point == height_map.goal,
     )
-    .expect("there must be at least one shortest path");
-    Ok(shortest_path.1)
+    .expect("there must be at least one shortest path")
+    .1;
+    Ok(shortest_path)
 }
 
 pub fn p2(file: &str) -> Result<u32> {
-    todo!()
+    let height_map = file.parse::<HeightMap>()?;
+    height_map
+        .heights
+        .iter()
+        .filter(|&(_point, height)| *height == 0)
+        .map(|(lowest_point, _height)| {
+            astar::astar(
+                lowest_point,
+                |point| {
+                    height_map
+                        .climbable_neighbours(*point)
+                        .into_iter()
+                        .map(|point| (point, 1))
+                        .collect::<Vec<_>>()
+                },
+                |point| 26 - height_map.heights.get(point).unwrap(),
+                |point| *point == height_map.goal,
+            )
+            .expect("there must be at least one shortest path")
+            // extract path's length
+            .1
+        })
+        .inspect(|f| {
+            dbg!("{}", f);
+        })
+        .min()
+        .context("there must be at least one shortest path")
 }
 
 #[cfg(test)]
@@ -150,16 +177,14 @@ mod tests {
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/d12/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 0);
+        assert_eq!(p1(&inp).unwrap(), 370);
     }
     #[test]
-    #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/d12/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 8);
+        assert_eq!(p2(&inp).unwrap(), 29);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/d12/real.txt").unwrap();
         assert_eq!(p2(&inp).unwrap(), 0);
