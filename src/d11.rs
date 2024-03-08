@@ -123,6 +123,10 @@ pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
                     .drain(..),
             );
 
+            if monkey.inventory.is_empty() {
+                continue;
+            }
+
             monkey.activity += monkey.inventory.len();
 
             let (items_monkey_true, items_monkey_false): (Vec<u32>, Vec<u32>) = monkey
@@ -182,6 +186,10 @@ pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
                     .drain(..),
             );
 
+            if monkey.inventory.is_empty() {
+                continue;
+            }
+
             monkey.activity += monkey.inventory.len();
 
             let (items_monkey_true, items_monkey_false): (Vec<u64>, Vec<u64>) = monkey
@@ -240,6 +248,6 @@ mod tests {
     #[test]
     fn real_p2() {
         let inp = read_to_string("inputs/d11/real.txt").unwrap();
-        assert_eq!(p2(&inp, 10000).unwrap(), 0);
+        assert_eq!(p2(&inp, 10000).unwrap(), 14_314_925_001);
     }
 }
