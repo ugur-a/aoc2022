@@ -134,7 +134,7 @@ pub fn p1(file: &str) -> Result<u32> {
     Ok(shortest_path.1)
 }
 
-pub fn p2(_file: &str) -> u32 {
+pub fn p2(file: &str) -> Result<u32> {
     todo!()
 }
 
@@ -156,12 +156,12 @@ mod tests {
     #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/d12/test.txt").unwrap();
-        assert_eq!(p2(&inp), 8);
+        assert_eq!(p2(&inp).unwrap(), 8);
     }
     #[test]
     #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/d12/real.txt").unwrap();
-        assert_eq!(p2(&inp), 0);
+        assert_eq!(p2(&inp).unwrap(), 0);
     }
 }
