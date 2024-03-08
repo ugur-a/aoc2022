@@ -113,7 +113,7 @@ pub fn p1(file: &str) -> Result<u32> {
 
             potential_neighbours
                 .into_iter()
-                .filter(|point| height_map.heights.get(&point).unwrap() - this_height < 1)
+                .filter(|point| *height_map.heights.get(&point).unwrap() <= this_height + 1)
                 .map(|point| (point, 1))
                 .collect::<Vec<_>>()
         },
