@@ -1,6 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{Context, Error, Result};
+use pathfinding::directed::astar;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 struct Point2D {
@@ -73,8 +74,8 @@ impl FromStr for HeightMap {
                             Point2D {
                                 x: col_num,
                                 y: row_num,
-                        },
-                        height,
+                            },
+                            height,
                         )
                     })
             })
@@ -91,6 +92,37 @@ impl FromStr for HeightMap {
 
 pub fn p1(file: &str) -> Result<u32> {
     let height_map = file.parse::<HeightMap>()?;
+    let shortest_path = astar::astar(
+        &height_map.start,
+        |&Point2D { x, y }| {
+            let this_height = height_map.heights[&Point2D { x, y }];
+
+            let mut potential_neighbours = Vec::new();
+            if x > 0 {
+                potential_neighbours.push(Point2D { x: x - 1, y })
+            }
+            if x < height_map.num_cols {
+                potential_neighbours.push(Point2D { x: x + 1, y })
+            }
+            if y > 0 {
+                potential_neighbours.push(Point2D { x, y: y - 1 })
+            }
+            if y < height_map.num_rows {
+                potential_neighbours.push(Point2D { x, y: y + 1 })
+            }
+
+            potential_neighbours
+                .into_iter()
+                .filter(|point| height_map.heights.get(&point).unwrap() - this_height < 1)
+                .map(|point| (point, 1))
+                .collect::<Vec<_>>()
+        },
+        |&point| 26 - height_map.heights.get(&point).unwrap(),
+        |p| *p == height_map.goal,
+    )
+    .expect("there must be at least one shortest path");
+    Ok(shortest_path.1)
+}
 
 pub fn p2(_file: &str) -> u32 {
     todo!()
