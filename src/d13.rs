@@ -1,7 +1,7 @@
 use std::{borrow::BorrowMut, cmp::Ordering, str::FromStr};
 
-use anyhow::{Context, Error, Result};
-use itertools::Itertools;
+use anyhow::{Error, Result};
+use itertools::{EitherOrBoth, Itertools};
 
 #[derive(Debug)]
 enum Item {
@@ -47,6 +47,48 @@ impl FromStr for Item {
     }
 }
 
+impl PartialEq for Item {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::List(l0), Self::List(r0)) => l0 == r0,
+            (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
+            (Self::List(list), Self::Integer(num)) | (Self::Integer(num), Self::List(list)) => {
+                *list == vec![Self::Integer(*num)]
+            }
+        }
+    }
+}
+
+impl PartialOrd for Item {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self, other) {
+            (Self::Integer(l0), Self::Integer(r0)) => l0.partial_cmp(r0),
+            (Self::List(left_list), Self::List(right_list)) => {
+                let mut smaller = false;
+                let mut zip = left_list.into_iter().zip_longest(right_list.into_iter());
+                loop {
+                    match zip.next() {
+                        Some(EitherOrBoth::Right(_)) => break Some(Ordering::Less),
+                        Some(EitherOrBoth::Left(_)) => break Some(Ordering::Greater),
+                        Some(EitherOrBoth::Both(left_num, right_num)) => {
+                            match left_num.partial_cmp(right_num) {
+                                Some(Ordering::Greater) => break Some(Ordering::Greater),
+                                Some(Ordering::Less) => {
+                                    smaller = true;
+                                }
+                                Some(Ordering::Equal) => continue,
+                                None => unreachable!(),
+                            }
+                        }
+                        None => match smaller {
+                            true => break Some(Ordering::Less),
+                            false => break Some(Ordering::Equal),
+                        },
+                    }
+                }
+            }
+            (Self::List(list), Self::Integer(num)) => list.partial_cmp(&vec![Self::Integer(*num)]),
+            (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].partial_cmp(list),
         }
     }
 }
@@ -67,6 +109,31 @@ pub fn p2(file: &str) -> Result<u32> {
 mod tests {
     use super::*;
     use std::fs::read_to_string;
+    use test_case::test_case;
+    use Item::{Integer as I, List as L};
+
+    #[test_case(I(5), I(6))]
+    #[test_case(I(5), L(vec![I(6)]); "Integer VS List")]
+    #[test_case(L(vec![I(5)]), L(vec![I(6)]))]
+    #[test_case(L(vec![I(5)]), L(vec![I(6), I(0)]); "Left list shorter")]
+    fn less(l0: Item, r0: Item) {
+        assert!(l0 < r0);
+    }
+
+    #[test_case(I(5), I(5))]
+    #[test_case(L(vec![I(5)]), I(5); "Integer VS List")]
+    #[test_case(L(vec![I(5), I(6)]), L(vec![I(5), I(6)]))]
+    fn equal(l0: Item, r0: Item) {
+        assert!(l0 == r0);
+    }
+
+    #[test_case(I(6), I(5))]
+    #[test_case(L(vec![I(6), I(6)]), L(vec![I(5), I(6)]))]
+    #[test_case(L(vec![I(5), I(6)]), L(vec![I(5)]); "Left list longer")]
+    fn larger(l0: Item, r0: Item) {
+        assert!(l0 > r0);
+    }
+
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/d13/test.txt").unwrap();
