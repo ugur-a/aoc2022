@@ -1,9 +1,7 @@
-use itertools::Itertools;
-
 pub fn p2(file: &str) -> u32 {
     file.lines()
         // parse a round as pair of moves
-        .map(|round| round.split_whitespace().collect_tuple().unwrap())
+        .map(|round| round.split_once(' ').unwrap())
         .map(|(opp_move, your_move)| {
             // score based on what you played
             (match (opp_move, your_move) {
@@ -25,7 +23,7 @@ pub fn p2(file: &str) -> u32 {
 
 pub fn p1(file: &str) -> u32 {
     file.lines()
-        .map(|round| round.split_whitespace().collect_tuple().unwrap())
+        .map(|round| round.split_once(' ').unwrap())
         .map(|(opp_move, your_move)| {
             // score based on round outcome
             (match (opp_move, your_move) {
