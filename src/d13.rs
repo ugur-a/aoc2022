@@ -1,8 +1,9 @@
-use std::str::FromStr;
+use std::{borrow::BorrowMut, cmp::Ordering, str::FromStr};
 
-use anyhow::{Error, Result};
+use anyhow::{Context, Error, Result};
 use itertools::Itertools;
 
+#[derive(Debug)]
 enum Item {
     List(Vec<Item>),
     Integer(u32),
@@ -12,30 +13,40 @@ impl FromStr for Item {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut s = s.chars().peekable();
-        let mut res = Vec::new();
+        let mut items = Vec::new();
+        let mut s = s.chars().skip(1).peekable();
         loop {
-            let next_elem = match s.peek() {
-                Some('[') => s
-                    .by_ref()
-                    .take_while_inclusive(|char| *char != ']')
+            let item = match s.peek() {
+                Some('[') => {
+                    let list = s
+                        .borrow_mut()
+                        .take_while(|char| *char != ']')
                     .collect::<String>()
-                    .parse::<Item>()?,
-                _ => {
+                        .parse::<Item>()?;
+                    s.next();
+                    list
+                }
+                Some(_part_of_num) => {
                     let num = s
-                        .by_ref()
-                        .take_while(|char| *char != ',')
+                        .borrow_mut()
+                        .take_while(|char| *char != ',' && *char != ']')
                         .collect::<String>()
                         .parse::<u32>()?;
                     Item::Integer(num)
                 }
-            };
-            res.push(next_elem);
-            match s.next() {
-                Some(',') => continue,
-                Some(']') => break Ok(Item::List(res)),
                 _ => unreachable!(),
             };
+            items.push(item);
+
+            if let None = s.peek() {
+                break Ok(Item::List(items));
+            } else {
+                continue;
+            };
+        }
+    }
+}
+
         }
     }
 }
@@ -43,8 +54,8 @@ impl FromStr for Item {
 pub fn p1(file: &str) -> Result<u32> {
     for pair in file.split("\n\n") {
         let (first, second) = pair.split_once('\n').unwrap();
-        first.parse::<Item>()?;
-        second.parse::<Item>()?;
+        let first = first.parse::<Item>()?;
+        let second = second.parse::<Item>()?;
     }
     todo!()
 }
@@ -59,7 +70,7 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/d13/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 21);
+        assert_eq!(p1(&inp).unwrap(), 13);
     }
     #[test]
     fn real_p1() {
