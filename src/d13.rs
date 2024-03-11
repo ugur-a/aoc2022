@@ -1,6 +1,6 @@
 use std::{borrow::BorrowMut, cmp::Ordering, str::FromStr};
 
-use anyhow::{Error, Result};
+use anyhow::{Context, Error, Result};
 use itertools::{EitherOrBoth, Itertools};
 
 #[derive(Debug)]
@@ -14,31 +14,39 @@ impl FromStr for Item {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut items = Vec::new();
-        let mut s = s.chars().skip(1).peekable();
+        let mut s_iter = s
+            .strip_prefix('[')
+            .context("invalid list formatting: no opening bracket")?
+            .chars()
+            .peekable();
         loop {
-            let item = match s.peek() {
+            let item = match s_iter.peek() {
                 Some('[') => {
-                    let list = s
+                    let list = s_iter
                         .borrow_mut()
                         .take_while(|char| *char != ']')
                     .collect::<String>()
                         .parse::<Item>()?;
-                    s.next();
+                    s_iter.next();
                     list
                 }
+                Some(']') | None => break Ok(Item::List(items)),
+                Some(',') => {
+                    s_iter.next();
+                    continue;
+                }
                 Some(_part_of_num) => {
-                    let num = s
+                    let num = s_iter
                         .borrow_mut()
                         .take_while(|char| *char != ',' && *char != ']')
                         .collect::<String>()
                         .parse::<u32>()?;
                     Item::Integer(num)
                 }
-                _ => unreachable!(),
             };
             items.push(item);
 
-            if let None = s.peek() {
+            if let None = s_iter.peek() {
                 break Ok(Item::List(items));
             } else {
                 continue;
@@ -132,6 +140,13 @@ mod tests {
     #[test_case(L(vec![I(5), I(6)]), L(vec![I(5)]); "Left list longer")]
     fn larger(l0: Item, r0: Item) {
         assert!(l0 > r0);
+    }
+
+    #[test_case("[]", L(vec![]))]
+    #[test_case("[[3],[]]", L(vec![L(vec![I(3)]), L(vec![])]))]
+    #[test_case("[[],[[]],[1]]", L(vec![L(vec![]), L(vec![L(vec![])]), L(vec![I(1)])]))]
+    fn parse_item(s: &str, item: Item) {
+        assert_eq!(s.parse::<Item>().unwrap(), item)
     }
 
     #[test]
