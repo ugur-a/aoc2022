@@ -1,6 +1,6 @@
-fn parse_operations(file: &str) -> Vec<i32> {
+fn parse_operations(file: &str, init_value: i32) -> Vec<i32> {
     let mut storage = Vec::new();
-    let mut x = 1;
+    let mut x = init_value;
     for line in file.lines() {
         if let Some(("addx", num)) = line.split_once(' ') {
             storage.push(x);
@@ -18,7 +18,7 @@ fn parse_operations(file: &str) -> Vec<i32> {
 pub fn p1(file: &str) -> i32 {
     let interesting_cycles = (20..=220).step_by(40).collect::<Vec<_>>();
 
-    let storage = parse_operations(file);
+    let storage = parse_operations(file, 1);
 
     interesting_cycles
         .into_iter()
@@ -38,7 +38,7 @@ pub fn p2(file: &str) -> String {
         height: 6,
     };
 
-    let storage = parse_operations(file);
+    let storage = parse_operations(file, 1);
 
     let rows: Vec<String> = (0..crt.height)
         .map(|row_num| {
