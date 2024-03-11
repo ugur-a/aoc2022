@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use anyhow::Error;
+use anyhow::{Error, Result};
 use itertools::Itertools;
 
 enum Item {
@@ -40,15 +40,15 @@ impl FromStr for Item {
     }
 }
 
-pub fn p1(file: &str) -> u32 {
+pub fn p1(file: &str) -> Result<u32> {
     for pair in file.split("\n\n") {
         let (first, second) = pair.split_once('\n').unwrap();
-        first.parse::<Item>();
-        second.parse::<Item>();
+        first.parse::<Item>()?;
+        second.parse::<Item>()?;
     }
     todo!()
 }
-pub fn p2(file: &str) -> u32 {
+pub fn p2(file: &str) -> Result<u32> {
     todo!()
 }
 
@@ -59,23 +59,23 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/d13/test.txt").unwrap();
-        assert_eq!(p1(&inp), 21);
+        assert_eq!(p1(&inp).unwrap(), 21);
     }
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/d13/real.txt").unwrap();
-        assert_eq!(p1(&inp), 0);
+        assert_eq!(p1(&inp).unwrap(), 0);
     }
     #[test]
     #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/d13/test.txt").unwrap();
-        assert_eq!(p2(&inp), 8);
+        assert_eq!(p2(&inp).unwrap(), 8);
     }
     #[test]
     #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/d13/real.txt").unwrap();
-        assert_eq!(p2(&inp), 0);
+        assert_eq!(p2(&inp).unwrap(), 0);
     }
 }
