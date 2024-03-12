@@ -1,4 +1,4 @@
-use std::{borrow::BorrowMut, cmp::Ordering, str::FromStr};
+use std::{borrow::BorrowMut, cmp::Ordering, fmt::Display, str::FromStr};
 
 use anyhow::{Context, Error, Result};
 use itertools::{EitherOrBoth, Itertools};
@@ -7,6 +7,15 @@ use itertools::{EitherOrBoth, Itertools};
 enum Item {
     List(Vec<Item>),
     Integer(u32),
+}
+
+impl Display for Item {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Item::List(list) => write!(f, "{list:?}"),
+            Item::Integer(num) => write!(f, "{num}"),
+        }
+    }
 }
 
 impl FromStr for Item {
