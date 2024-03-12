@@ -13,44 +13,43 @@ impl FromStr for Item {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut items = Vec::new();
-        let mut s_iter = s
-            .strip_prefix('[')
-            .context("invalid list formatting: no opening bracket")?
-            .chars()
-            .peekable();
-        loop {
-            let item = match s_iter.peek() {
-                Some('[') => {
-                    let list = s_iter
-                        .borrow_mut()
-                        .take_while(|char| *char != ']')
-                    .collect::<String>()
-                        .parse::<Item>()?;
-                    s_iter.next();
-                    list
-                }
-                Some(']') | None => break Ok(Item::List(items)),
-                Some(',') => {
-                    s_iter.next();
-                    continue;
-                }
-                Some(_part_of_num) => {
-                    let num = s_iter
-                        .borrow_mut()
-                        .take_while(|char| *char != ',' && *char != ']')
-                        .collect::<String>()
-                        .parse::<u32>()?;
-                    Item::Integer(num)
-                }
-            };
-            items.push(item);
+        let mut s_iter = s.chars().peekable();
 
-            if let None = s_iter.peek() {
-                break Ok(Item::List(items));
-            } else {
-                continue;
-            };
+        match s_iter.peek() {
+                Some('[') => {
+                    s_iter.next();
+
+                let mut items = Vec::new();
+                let mut buf = String::new();
+                let mut unclosed_brackets = 0;
+
+                for next in s_iter {
+                    if unclosed_brackets == 0 && (next == ',' || next == ']') {
+                        if buf.is_empty() {
+                            break;
+                        }
+                        let item = buf.parse::<Item>()?;
+                        items.push(item);
+                        buf.clear();
+                    } else {
+                        match next {
+                            '[' => unclosed_brackets += 1,
+                            ']' => unclosed_brackets -= 1,
+                            _ => (),
+                        }
+                        buf.push(next)
+                    }
+                }
+                Ok(Item::List(items))
+            }
+            Some(_part_of_a_num) => Ok(Item::Integer(
+                s_iter
+                        .borrow_mut()
+                    .take_while(|char| *char != ',')
+                        .collect::<String>()
+                    .parse::<u32>()?,
+            )),
+            None => unreachable!(),
         }
     }
 }
@@ -140,9 +139,13 @@ mod tests {
         assert!(l0 > r0);
     }
 
+    #[test_case("[3,4]", L(vec![I(3),I(4)]))]
     #[test_case("[]", L(vec![]))]
     #[test_case("[[3],[]]", L(vec![L(vec![I(3)]), L(vec![])]))]
     #[test_case("[[],[[]],[1]]", L(vec![L(vec![]), L(vec![L(vec![])]), L(vec![I(1)])]))]
+    #[test_case("[[[[]]],[]]", L(vec![L(vec![L(vec![L(vec![])])]), L(vec![])]))]
+    #[test_case("[[1],[2,3,4]]", L(vec![L(vec![I(1)]),L(vec![I(2),I(3),I(4)])]))]
+    #[test_case("[[1],4]", L(vec![L(vec![I(1)]),I(4)]))]
     fn parse_item(s: &str, item: Item) {
         assert_eq!(s.parse::<Item>().unwrap(), item)
     }
