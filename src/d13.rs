@@ -73,7 +73,7 @@ impl PartialOrd for Item {
             (Self::Integer(l0), Self::Integer(r0)) => l0.partial_cmp(r0),
             (Self::List(left_list), Self::List(right_list)) => {
                 let mut smaller = false;
-                let mut zip = left_list.into_iter().zip_longest(right_list.into_iter());
+                let mut zip = left_list.iter().zip_longest(right_list);
                 loop {
                     match zip.next() {
                         Some(EitherOrBoth::Right(_)) => break Some(Ordering::Less),
@@ -88,10 +88,12 @@ impl PartialOrd for Item {
                                 None => unreachable!(),
                             }
                         }
-                        None => match smaller {
-                            true => break Some(Ordering::Less),
-                            false => break Some(Ordering::Equal),
-                        },
+                        None => {
+                            if smaller {
+                                break Some(Ordering::Less);
+                            }
+                            break Some(Ordering::Equal);
+                        }
                     }
                 }
             }
