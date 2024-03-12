@@ -108,12 +108,21 @@ impl PartialOrd for Item {
     }
 }
 
-pub fn p1(file: &str) -> usize {
-    file.split("\n\n")
-        .map(|pair| pair.split_once('\n').unwrap())
-        .enumerate()
-        .filter_map(|(idx, (first, second))| if first < second { Some(idx + 1) } else { None })
-        .sum()
+pub fn p1(file: &str) -> Result<usize> {
+    let mut sum = 0;
+    for (idx, pair) in file.split("\n\n").enumerate() {
+        let (first, second) = pair
+            .split_once('\n')
+            .context("Couldn't split left and right")?;
+        let first = first.parse::<Item>()?;
+        let second = second.parse::<Item>()?;
+        if first < second {
+            sum += idx + 1;
+        } else {
+            println!("{first} > {second}")
+        }
+    }
+    Ok(sum)
 }
 pub fn p2(_file: &str) -> Result<u32> {
     todo!()
@@ -162,12 +171,12 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/d13/test.txt").unwrap();
-        assert_eq!(p1(&inp), 13);
+        assert_eq!(p1(&inp).unwrap(), 13);
     }
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/d13/real.txt").unwrap();
-        assert_eq!(p1(&inp), 0);
+        assert_eq!(p1(&inp).unwrap(), 0);
     }
     #[test]
     #[ignore]
