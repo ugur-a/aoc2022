@@ -29,9 +29,9 @@ impl FromStr for Item {
                 s_iter.next();
 
                 let mut items = Vec::new();
-                let mut buf = String::new();
-                let mut unclosed_brackets = 0;
 
+                let mut buf = String::new();
+                let mut unclosed_brackets = 0u32;
                 for next in s_iter {
                     if unclosed_brackets == 0 && (next == ',' || next == ']') {
                         if buf.is_empty() {
@@ -51,13 +51,14 @@ impl FromStr for Item {
                 }
                 Ok(Item::List(items))
             }
-            Some(_part_of_a_num) => Ok(Item::Integer(
-                s_iter
+            Some(_part_of_a_num) => {
+                let num = s_iter
                     .borrow_mut()
                     .take_while(|char| *char != ',')
                     .collect::<String>()
-                    .parse::<u32>()?,
-            )),
+                    .parse::<u32>()?;
+                Ok(Item::Integer(num))
+            }
             None => unreachable!(),
         }
     }
@@ -79,6 +80,8 @@ impl PartialOrd for Item {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         match (self, other) {
             (Self::Integer(l0), Self::Integer(r0)) => l0.partial_cmp(r0),
+            (Self::List(list), Self::Integer(num)) => list.partial_cmp(&vec![Self::Integer(*num)]),
+            (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].partial_cmp(list),
             (Self::List(left_list), Self::List(right_list)) => {
                 let mut smaller = false;
                 for pair in left_list.iter().zip_longest(right_list) {
@@ -88,10 +91,8 @@ impl PartialOrd for Item {
                         EitherOrBoth::Both(left_item, right_item) => {
                             match left_item.partial_cmp(right_item) {
                                 Some(Ordering::Greater) => return Some(Ordering::Greater),
-                                Some(Ordering::Less) => {
-                                    smaller = true;
-                                }
                                 Some(Ordering::Equal) => continue,
+                                Some(Ordering::Less) => smaller = true,
                                 None => unreachable!(),
                             }
                         }
@@ -102,8 +103,6 @@ impl PartialOrd for Item {
                 }
                 Some(Ordering::Equal)
             }
-            (Self::List(list), Self::Integer(num)) => list.partial_cmp(&vec![Self::Integer(*num)]),
-            (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].partial_cmp(list),
         }
     }
 }
