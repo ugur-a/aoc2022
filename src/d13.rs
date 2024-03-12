@@ -25,8 +25,8 @@ impl FromStr for Item {
         let mut s_iter = s.chars().peekable();
 
         match s_iter.peek() {
-                Some('[') => {
-                    s_iter.next();
+            Some('[') => {
+                s_iter.next();
 
                 let mut items = Vec::new();
                 let mut buf = String::new();
@@ -53,9 +53,9 @@ impl FromStr for Item {
             }
             Some(_part_of_a_num) => Ok(Item::Integer(
                 s_iter
-                        .borrow_mut()
+                    .borrow_mut()
                     .take_while(|char| *char != ',')
-                        .collect::<String>()
+                    .collect::<String>()
                     .parse::<u32>()?,
             )),
             None => unreachable!(),
@@ -97,9 +97,9 @@ impl PartialOrd for Item {
                         }
                     }
                 }
-                            if smaller {
+                if smaller {
                     return Some(Ordering::Less);
-                            }
+                }
                 Some(Ordering::Equal)
             }
             (Self::List(list), Self::Integer(num)) => list.partial_cmp(&vec![Self::Integer(*num)]),
@@ -139,6 +139,7 @@ mod tests {
     #[test_case(I(5), L(vec![I(6)]); "Integer VS List")]
     #[test_case(L(vec![I(5)]), L(vec![I(6)]))]
     #[test_case(L(vec![I(5)]), L(vec![I(6), I(0)]); "Left list shorter")]
+    #[test_case(L(vec![L(vec![I(1)]),L(vec![I(2),I(3),I(4)])]), L(vec![L(vec![I(1)]),I(4)]))]
     fn less(l0: Item, r0: Item) {
         assert!(l0 < r0);
     }
@@ -153,6 +154,7 @@ mod tests {
     #[test_case(I(6), I(5))]
     #[test_case(L(vec![I(6), I(6)]), L(vec![I(5), I(6)]))]
     #[test_case(L(vec![I(5), I(6)]), L(vec![I(5)]); "Left list longer")]
+    #[test_case(L(vec![L(vec![L(vec![])])]), L(vec![L(vec![])]))]
     fn larger(l0: Item, r0: Item) {
         assert!(l0 > r0);
     }
