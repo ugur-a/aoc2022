@@ -73,14 +73,13 @@ impl PartialOrd for Item {
             (Self::Integer(l0), Self::Integer(r0)) => l0.partial_cmp(r0),
             (Self::List(left_list), Self::List(right_list)) => {
                 let mut smaller = false;
-                let mut zip = left_list.iter().zip_longest(right_list);
-                loop {
-                    match zip.next() {
-                        Some(EitherOrBoth::Right(_)) => break Some(Ordering::Less),
-                        Some(EitherOrBoth::Left(_)) => break Some(Ordering::Greater),
-                        Some(EitherOrBoth::Both(left_num, right_num)) => {
-                            match left_num.partial_cmp(right_num) {
-                                Some(Ordering::Greater) => break Some(Ordering::Greater),
+                for pair in left_list.iter().zip_longest(right_list) {
+                    match pair {
+                        EitherOrBoth::Right(_) => return Some(Ordering::Less),
+                        EitherOrBoth::Left(_) => return Some(Ordering::Greater),
+                        EitherOrBoth::Both(left_item, right_item) => {
+                            match left_item.partial_cmp(right_item) {
+                                Some(Ordering::Greater) => return Some(Ordering::Greater),
                                 Some(Ordering::Less) => {
                                     smaller = true;
                                 }
@@ -88,14 +87,12 @@ impl PartialOrd for Item {
                                 None => unreachable!(),
                             }
                         }
-                        None => {
-                            if smaller {
-                                break Some(Ordering::Less);
-                            }
-                            break Some(Ordering::Equal);
-                        }
                     }
                 }
+                            if smaller {
+                    return Some(Ordering::Less);
+                            }
+                Some(Ordering::Equal)
             }
             (Self::List(list), Self::Integer(num)) => list.partial_cmp(&vec![Self::Integer(*num)]),
             (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].partial_cmp(list),
