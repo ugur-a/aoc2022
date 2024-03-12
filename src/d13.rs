@@ -1,7 +1,6 @@
 use std::{borrow::BorrowMut, cmp::Ordering, fmt::Display, str::FromStr};
 
 use anyhow::{Context, Error, Result};
-use itertools::{EitherOrBoth, Itertools};
 
 #[derive(Debug)]
 enum Item {
@@ -82,27 +81,7 @@ impl PartialOrd for Item {
             (Self::Integer(l0), Self::Integer(r0)) => l0.partial_cmp(r0),
             (Self::List(list), Self::Integer(num)) => list.partial_cmp(&vec![Self::Integer(*num)]),
             (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].partial_cmp(list),
-            (Self::List(left_list), Self::List(right_list)) => {
-                let mut smaller = false;
-                for pair in left_list.iter().zip_longest(right_list) {
-                    match pair {
-                        EitherOrBoth::Right(_) => return Some(Ordering::Less),
-                        EitherOrBoth::Left(_) => return Some(Ordering::Greater),
-                        EitherOrBoth::Both(left_item, right_item) => {
-                            match left_item.partial_cmp(right_item) {
-                                Some(Ordering::Greater) => return Some(Ordering::Greater),
-                                Some(Ordering::Equal) => continue,
-                                Some(Ordering::Less) => smaller = true,
-                                None => unreachable!(),
-                            }
-                        }
-                    }
-                }
-                if smaller {
-                    return Some(Ordering::Less);
-                }
-                Some(Ordering::Equal)
-            }
+            (Self::List(left_list), Self::List(right_list)) => left_list.partial_cmp(right_list),
         }
     }
 }
