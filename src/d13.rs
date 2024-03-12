@@ -37,7 +37,7 @@ impl FromStr for Item {
                             ']' => unclosed_brackets -= 1,
                             _ => (),
                         }
-                        buf.push(next)
+                        buf.push(next);
                     }
                 }
                 Ok(Item::List(items))
