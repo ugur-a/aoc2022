@@ -1,6 +1,6 @@
 use std::{borrow::BorrowMut, cmp::Ordering, fmt::Display, str::FromStr};
 
-use anyhow::{Context, Error, Result};
+use anyhow::{Error, Result};
 
 #[derive(Debug, Eq)]
 enum Item {
@@ -93,20 +93,20 @@ impl Ord for Item {
 }
 
 pub fn p1(file: &str) -> Result<usize> {
-    let mut sum = 0;
-    for (idx, pair) in file.split("\n\n").enumerate() {
-        let (first, second) = pair
-            .split_once('\n')
-            .context("Couldn't split left and right")?;
-        let first = first.parse::<Item>()?;
-        let second = second.parse::<Item>()?;
-        if first < second {
-            sum += idx + 1;
-        } else {
-            println!("{first} > {second}")
-        }
-    }
-    Ok(sum)
+    let res = file
+        .split("\n\n")
+        .map(|pair| pair.split_once('\n').unwrap())
+        .map(|(left, right)| {
+            (
+                left.parse::<Item>().unwrap(),
+                right.parse::<Item>().unwrap(),
+            )
+        })
+        .enumerate()
+        .filter_map(|(idx, (left, right))| if left < right { Some(idx + 1) } else { None })
+        .sum();
+
+    Ok(res)
 }
 pub fn p2(_file: &str) -> Result<u32> {
     todo!()
@@ -162,7 +162,7 @@ mod tests {
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/d13/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 0);
+        assert_eq!(p1(&inp).unwrap(), 5503);
     }
     #[test]
     #[ignore]
