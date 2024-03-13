@@ -109,27 +109,23 @@ pub fn p1(file: &str) -> Result<usize> {
     Ok(res)
 }
 pub fn p2(file: &str) -> Result<usize> {
-    let (divider1, divider2) = ("[[2]]", "[[6]]");
+    let dividers = ["[[2]]", "[[6]]"];
 
     let mut packets = file
         .lines()
         .filter(|line| !line.is_empty())
-        .chain([divider1, divider2])
+        .chain(dividers)
         .map(|packet| packet.parse())
         .collect::<Result<Vec<Item>>>()?;
     packets.sort_unstable();
 
-    let divider2_position = packets
-        .binary_search(&divider1.parse()?)
-        .ok()
-        .expect("we just put 1st div here, where is it?")
-        + 1;
-    let divider1_position = packets
-        .binary_search(&divider2.parse()?)
-        .expect("we just put 2nd div here, where is it?")
-        + 1;
+    let res: usize = dividers
+        .map(|divider| divider.parse::<Item>().unwrap())
+        .map(|divider| packets.binary_search(&divider).unwrap() + 1)
+        .iter()
+        .product();
 
-    Ok(divider1_position * divider2_position)
+    Ok(res)
 }
 
 #[cfg(test)]
