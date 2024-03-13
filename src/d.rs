@@ -5,7 +5,7 @@ use anyhow::{Error, Result};
 pub fn p1(file: &str) -> Result<u32> {
     todo!()
 }
-pub fn p2(file: &str) -> Result<u32> {
+pub fn p2(_file: &str) -> Result<u32> {
     todo!()
 }
 
