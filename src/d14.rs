@@ -48,11 +48,10 @@ impl FromStr for Cave {
             .lines()
             .flat_map(|line| {
                 line.split(" -> ")
-                    .map(|point| point.split_once(',').unwrap().1)
+                    .map(|point| point.split_once(',').unwrap().1.parse::<u32>().unwrap())
             })
             .max()
-            .unwrap()
-            .parse::<u32>()?;
+            .unwrap();
         let borders = Border { left, right, down };
 
         let mut resting: HashMap<Point2D, UnitType> = HashMap::new();
