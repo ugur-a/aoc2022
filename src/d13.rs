@@ -66,8 +66,8 @@ impl FromStr for Item {
 impl PartialEq for Item {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Self::List(l0), Self::List(r0)) => l0 == r0,
             (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
+            (Self::List(l0), Self::List(r0)) => l0 == r0,
             (Self::List(list), Self::Integer(num)) | (Self::Integer(num), Self::List(list)) => {
                 *list == vec![Self::Integer(*num)]
             }
@@ -85,9 +85,9 @@ impl Ord for Item {
     fn cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
             (Self::Integer(l0), Self::Integer(r0)) => l0.cmp(r0),
-            (Self::List(list), Self::Integer(num)) => list.cmp(&vec![Self::Integer(*num)]),
+            (Self::List(l0), Self::List(r0)) => l0.cmp(r0),
             (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].cmp(list),
-            (Self::List(left_list), Self::List(right_list)) => left_list.cmp(right_list),
+            (Self::List(list), Self::Integer(num)) => list.cmp(&vec![Self::Integer(*num)]),
         }
     }
 }
