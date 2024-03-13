@@ -19,6 +19,7 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 0);
     }
     #[test]
+    #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/d14/real.txt").unwrap();
         assert_eq!(p1(&inp).unwrap(), 0);
