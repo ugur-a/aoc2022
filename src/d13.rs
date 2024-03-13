@@ -108,8 +108,28 @@ pub fn p1(file: &str) -> Result<usize> {
 
     Ok(res)
 }
-pub fn p2(_file: &str) -> Result<u32> {
-    todo!()
+pub fn p2(file: &str) -> Result<usize> {
+    let (divider1, divider2) = ("[[2]]", "[[6]]");
+
+    let mut packets = file
+        .lines()
+        .filter(|line| !line.is_empty())
+        .chain([divider1, divider2])
+        .map(|packet| packet.parse())
+        .collect::<Result<Vec<Item>>>()?;
+    packets.sort_unstable();
+
+    let divider2_position = packets
+        .binary_search(&divider1.parse()?)
+        .ok()
+        .expect("we just put 1st div here, where is it?")
+        + 1;
+    let divider1_position = packets
+        .binary_search(&divider2.parse()?)
+        .expect("we just put 2nd div here, where is it?")
+        + 1;
+
+    Ok(divider1_position * divider2_position)
 }
 
 #[cfg(test)]
@@ -165,15 +185,13 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 5503);
     }
     #[test]
-    #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/d13/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 8);
+        assert_eq!(p2(&inp).unwrap(), 140);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/d13/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp).unwrap(), 20952);
     }
 }
