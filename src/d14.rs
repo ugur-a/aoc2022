@@ -1,6 +1,7 @@
 use std::{
     cmp::{max, min},
-    collections::HashSet,
+    collections::HashMap,
+    fmt::Display,
     iter::repeat,
     str::FromStr,
 };
@@ -17,9 +18,14 @@ struct Border {
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 struct Point2D(u32, u32);
 
+enum UnitType {
+    Sand,
+    Stone,
+}
+
 struct Cave {
     borders: Border,
-    resting: HashSet<Point2D>,
+    resting: HashMap<Point2D, UnitType>,
 }
 
 impl FromStr for Cave {
@@ -49,7 +55,7 @@ impl FromStr for Cave {
             .parse::<u32>()?;
         let borders = Border { left, right, down };
 
-        let mut resting: HashSet<Point2D> = HashSet::new();
+        let mut resting: HashMap<Point2D, UnitType> = HashMap::new();
         for line in s.lines() {
             let line = line
                 .split(" -> ")
@@ -74,7 +80,7 @@ impl FromStr for Cave {
                         .collect()
                 };
 
-                resting.extend(points);
+                resting.extend(points.iter().map(|&point| (point, UnitType::Stone)));
             }
         }
 
@@ -82,16 +88,17 @@ impl FromStr for Cave {
     }
 }
 
-impl std::fmt::Display for Cave {
+impl Display for Cave {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut res = String::new();
         for y in 0..=self.borders.down {
             for x in self.borders.left..=self.borders.right {
-                if self.resting.contains(&Point2D(x, y)) {
-                    res.push('#');
-                } else {
-                    res.push('.');
-                }
+                let char = match self.resting.get(&Point2D(x, y)) {
+                    Some(UnitType::Stone) => '#',
+                    Some(UnitType::Sand) => 'o',
+                    None => '.',
+                };
+                res.push(char);
             }
             res.push('\n');
         }
@@ -101,7 +108,7 @@ impl std::fmt::Display for Cave {
 
 pub fn p1(file: &str) -> Result<u32> {
     let mut cave = file.parse::<Cave>()?;
-    println!("{}", cave);
+    // println!("{}", cave);
 
     let init_sand = Point2D(500, 0);
     let mut sands = 0;
@@ -117,22 +124,23 @@ pub fn p1(file: &str) -> Result<u32> {
             {
                 break 'outer;
             }
-            if !cave.resting.contains(&Point2D(sand.0, sand.1 + 1)) {
+            if !cave.resting.get(&Point2D(sand.0, sand.1 + 1)).is_some() {
                 sand.1 += 1;
-            } else if !cave.resting.contains(&Point2D(sand.0 - 1, sand.1 + 1)) {
+            } else if !cave.resting.get(&Point2D(sand.0 - 1, sand.1 + 1)).is_some() {
                 sand.0 -= 1;
                 sand.1 += 1;
-            } else if !cave.resting.contains(&Point2D(sand.0 + 1, sand.1 + 1)) {
+            } else if !cave.resting.get(&Point2D(sand.0 + 1, sand.1 + 1)).is_some() {
                 sand.0 += 1;
                 sand.1 += 1;
             } else {
-                cave.resting.insert(sand);
+                cave.resting.insert(sand, UnitType::Sand);
                 sands += 1;
-                println!("{}", cave);
                 break 'inner;
             }
         }
     }
+    // println!("{}", cave);
+    // println!("{}", sands);
     Ok(sands)
 }
 pub fn p2(_file: &str) -> Result<u32> {
