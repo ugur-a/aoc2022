@@ -82,6 +82,23 @@ impl FromStr for Cave {
     }
 }
 
+impl std::fmt::Display for Cave {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut res = String::new();
+        for y in 0..=self.borders.down {
+            for x in self.borders.left..=self.borders.right {
+                if self.resting.contains(&Point2D(x, y)) {
+                    res.push('#');
+                } else {
+                    res.push('.');
+                }
+            }
+            res.push('\n');
+        }
+        write!(f, "{}", res)
+    }
+}
+
 pub fn p1(file: &str) -> Result<u32> {
     todo!()
 }
