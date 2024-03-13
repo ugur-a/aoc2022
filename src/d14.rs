@@ -100,7 +100,40 @@ impl std::fmt::Display for Cave {
 }
 
 pub fn p1(file: &str) -> Result<u32> {
-    todo!()
+    let mut cave = file.parse::<Cave>()?;
+    println!("{}", cave);
+
+    let init_sand = Point2D(500, 0);
+    let mut sands = 0;
+    'outer: loop {
+        let mut sand = init_sand;
+        'inner: loop {
+            if sand.1 > cave.borders.down
+                || sand.0 < cave.borders.left
+                || cave.borders.right < sand.0
+            // || (sand.1..=cave.borders.down)
+            //     .map(|y| Point2D(sand.0, y))
+            //     .all(|point| !cave.resting.contains(&point))
+            {
+                break 'outer;
+            }
+            if !cave.resting.contains(&Point2D(sand.0, sand.1 + 1)) {
+                sand.1 += 1;
+            } else if !cave.resting.contains(&Point2D(sand.0 - 1, sand.1 + 1)) {
+                sand.0 -= 1;
+                sand.1 += 1;
+            } else if !cave.resting.contains(&Point2D(sand.0 + 1, sand.1 + 1)) {
+                sand.0 += 1;
+                sand.1 += 1;
+            } else {
+                cave.resting.insert(sand);
+                sands += 1;
+                println!("{}", cave);
+                break 'inner;
+            }
+        }
+    }
+    Ok(sands)
 }
 pub fn p2(_file: &str) -> Result<u32> {
     todo!()
@@ -113,13 +146,12 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/d14/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 0);
+        assert_eq!(p1(&inp).unwrap(), 24);
     }
     #[test]
-    #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/d14/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 0);
+        assert_eq!(p1(&inp).unwrap(), 897);
     }
     #[test]
     #[ignore]
