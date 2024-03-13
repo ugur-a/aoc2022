@@ -2,7 +2,7 @@ use std::{borrow::BorrowMut, cmp::Ordering, fmt::Display, str::FromStr};
 
 use anyhow::{Context, Error, Result};
 
-#[derive(Debug)]
+#[derive(Debug, Eq)]
 enum Item {
     List(Vec<Item>),
     Integer(u32),
@@ -77,11 +77,17 @@ impl PartialEq for Item {
 
 impl PartialOrd for Item {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Item {
+    fn cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
-            (Self::Integer(l0), Self::Integer(r0)) => l0.partial_cmp(r0),
-            (Self::List(list), Self::Integer(num)) => list.partial_cmp(&vec![Self::Integer(*num)]),
-            (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].partial_cmp(list),
-            (Self::List(left_list), Self::List(right_list)) => left_list.partial_cmp(right_list),
+            (Self::Integer(l0), Self::Integer(r0)) => l0.cmp(r0),
+            (Self::List(list), Self::Integer(num)) => list.cmp(&vec![Self::Integer(*num)]),
+            (Self::Integer(num), Self::List(list)) => vec![Self::Integer(*num)].cmp(list),
+            (Self::List(left_list), Self::List(right_list)) => left_list.cmp(right_list),
         }
     }
 }
