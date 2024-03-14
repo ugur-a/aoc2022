@@ -90,8 +90,8 @@ impl FromStr for Cave {
 impl Display for Cave {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut res = String::new();
-        for y in 0..=self.borders.down {
-            for x in self.borders.left..=self.borders.right {
+        for y in 0..=(self.borders.down + 2) {
+            for x in (self.borders.left - 2)..=(self.borders.right + 2) {
                 let char = match self.resting.get(&Point2D(x, y)) {
                     Some(UnitType::Stone) => '#',
                     Some(UnitType::Sand) => 'o',
