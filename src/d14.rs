@@ -140,8 +140,39 @@ pub fn p1(file: &str) -> Result<u32> {
 
     Ok(sands)
 }
-pub fn p2(_file: &str) -> Result<u32> {
-    todo!()
+pub fn p2(file: &str) -> Result<u32> {
+    let mut cave = file.parse::<Cave>()?;
+
+    let init_sand = Point2D(500, 0);
+    let mut sands = 0;
+    loop {
+        if cave.resting.get(&init_sand).is_some() {
+            break;
+        }
+        let mut sand = init_sand;
+        loop {
+            if sand.1 == cave.borders.down + 2 {
+                cave.resting.insert(sand, UnitType::Sand);
+                sands += 1;
+                break;
+            }
+            if !cave.resting.get(&Point2D(sand.0, sand.1 + 1)).is_some() {
+                sand.1 += 1;
+            } else if !cave.resting.get(&Point2D(sand.0 - 1, sand.1 + 1)).is_some() {
+                sand.0 -= 1;
+                sand.1 += 1;
+            } else if !cave.resting.get(&Point2D(sand.0 + 1, sand.1 + 1)).is_some() {
+                sand.0 += 1;
+                sand.1 += 1;
+            } else {
+                cave.resting.insert(sand, UnitType::Sand);
+                sands += 1;
+                break;
+            }
+        }
+    }
+
+    Ok(sands)
 }
 
 #[cfg(test)]
@@ -159,10 +190,9 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 897);
     }
     #[test]
-    #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/d14/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp).unwrap(), 93);
     }
     #[test]
     #[ignore]
