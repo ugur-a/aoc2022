@@ -116,9 +116,6 @@ pub fn p1(file: &str) -> Result<u32> {
             if sand.1 > cave.borders.down
                 || sand.0 < cave.borders.left
                 || cave.borders.right < sand.0
-            // || (sand.1..=cave.borders.down)
-            //     .map(|y| Point2D(sand.0, y))
-            //     .all(|point| !cave.resting.contains(&point))
             {
                 break 'outer;
             }
