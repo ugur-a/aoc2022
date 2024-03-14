@@ -107,7 +107,6 @@ impl Display for Cave {
 
 pub fn p1(file: &str) -> Result<u32> {
     let mut cave = file.parse::<Cave>()?;
-    // println!("{}", cave);
 
     let init_sand = Point2D(500, 0);
     let mut sands = 0;
@@ -138,8 +137,7 @@ pub fn p1(file: &str) -> Result<u32> {
             }
         }
     }
-    // println!("{}", cave);
-    // println!("{}", sands);
+
     Ok(sands)
 }
 pub fn p2(_file: &str) -> Result<u32> {
