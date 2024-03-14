@@ -115,7 +115,7 @@ pub fn p2(file: &str) -> Result<usize> {
         .lines()
         .filter(|line| !line.is_empty())
         .chain(dividers)
-        .map(|packet| packet.parse())
+        .map(str::parse)
         .collect::<Result<Vec<Item>>>()?;
     packets.sort_unstable();
 
@@ -128,6 +128,7 @@ pub fn p2(file: &str) -> Result<usize> {
     Ok(res)
 }
 
+#[allow(clippy::needless_pass_by_value)]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -167,7 +168,7 @@ mod tests {
     #[test_case("[[1],[2,3,4]]", L(vec![L(vec![I(1)]),L(vec![I(2),I(3),I(4)])]))]
     #[test_case("[[1],4]", L(vec![L(vec![I(1)]),I(4)]))]
     fn parse_item(s: &str, item: Item) {
-        assert_eq!(s.parse::<Item>().unwrap(), item)
+        assert_eq!(s.parse::<Item>().unwrap(), item);
     }
 
     #[test]

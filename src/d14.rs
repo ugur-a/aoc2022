@@ -101,7 +101,7 @@ impl Display for Cave {
             }
             res.push('\n');
         }
-        write!(f, "{}", res)
+        write!(f, "{res}")
     }
 }
 
