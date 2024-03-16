@@ -22,19 +22,23 @@ impl FromStr for FilesWithSizes {
 
         for input_and_output in s.split("\n$ ") {
             if let Some(("cd", dir_name)) = input_and_output.split_once(' ') {
-                match dir_name {
-                    ".." => current_path = current_path.parent().unwrap().to_path_buf(),
-                    _ => current_path.push(dir_name),
+                current_path = match dir_name {
+                    ".." => current_path.parent().unwrap().to_path_buf(),
+                    _ => current_path.join(dir_name),
                 }
             } else if let Some(("ls", dir_contents)) = input_and_output.split_once('\n') {
-                files_with_sizes.extend(dir_contents.lines().filter_map(|line| {
-                    match line.split_once(' ').unwrap() {
-                        ("dir", _dir_name) => None,
-                        (file_size, file_name) => {
-                            Some((current_path.join(file_name), file_size.parse().unwrap()))
-                        }
-                    }
-                }));
+                let new_files =
+                    dir_contents
+                        .lines()
+                        .filter_map(|line| match line.split_once(' ').unwrap() {
+                            ("dir", _dir_name) => None,
+                            (file_size, file_name) => {
+                                let file_path = current_path.join(file_name);
+                                let file_size = file_size.parse().unwrap();
+                                Some((file_path, file_size))
+                            }
+                        });
+                files_with_sizes.extend(new_files);
             }
         }
         Ok(Self(files_with_sizes))
