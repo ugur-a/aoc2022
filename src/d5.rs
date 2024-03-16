@@ -6,6 +6,10 @@ use std::{
 use anyhow::{Error, Result};
 use itertools::{repeat_n, Itertools};
 
+enum CraneModel {
+    CrateMover9000,
+    CrateMover9001,
+}
 struct Rearrangement {
     num_crates_to_move: usize,
     stack_to_move_to: usize,
