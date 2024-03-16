@@ -88,32 +88,29 @@ impl FromStr for Map {
 pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
     let map = Map::from_str(file)?;
 
-    let mut impossible_locations_of_distress_beacon =
-        HashSet::with_capacity((map.borders.right - map.borders.left) as usize);
+    let mut impossible_locations_of_distress_beacon: HashSet<i32> = map
+        .sensors_with_beacons
+        .iter()
+        .filter_map(|(signal, beacon)| {
+            let distance_to_beacon = signal.manhattan_distance(beacon);
+            let distance_to_analyzed_row = signal.1.abs_diff(analyzed_row_num);
 
-    for (signal, beacon) in &map.sensors_with_beacons {
-        let distance_to_beacon = signal.manhattan_distance(&beacon);
-        let distance_to_analyzed_row = signal.1.abs_diff(analyzed_row_num);
+            match distance_to_analyzed_row.cmp(&distance_to_beacon) {
+                std::cmp::Ordering::Greater => None,
+                std::cmp::Ordering::Equal => Some(signal.0..=signal.0),
+                std::cmp::Ordering::Less => {
+                    let width_of_covered_space_on_the_analyzed_row =
+                        distance_to_beacon - distance_to_analyzed_row;
 
-        match distance_to_analyzed_row.cmp(&distance_to_beacon) {
-            std::cmp::Ordering::Greater => continue,
-            std::cmp::Ordering::Equal => {
-                impossible_locations_of_distress_beacon.insert(signal.0);
+                    Some(
+                        (signal.0 - width_of_covered_space_on_the_analyzed_row as i32)
+                            ..=(signal.0 + width_of_covered_space_on_the_analyzed_row as i32),
+                    )
+                }
             }
-            std::cmp::Ordering::Less => {
-                let width_of_covered_space_on_the_analyzed_row =
-                    distance_to_beacon - distance_to_analyzed_row;
-
-                let leftmost_impossible_location =
-                    signal.0 - width_of_covered_space_on_the_analyzed_row as i32;
-                let rightmost_impossible_location =
-                    signal.0 + width_of_covered_space_on_the_analyzed_row as i32;
-
-                impossible_locations_of_distress_beacon
-                    .extend(leftmost_impossible_location..=rightmost_impossible_location);
-            }
-        }
-    }
+        })
+        .flatten()
+        .collect();
 
     // "is `x=2,y=10` a "position where a beacon cannot be present"?"
     for beacon in map.sensors_with_beacons.values() {
