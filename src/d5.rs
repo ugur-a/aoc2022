@@ -3,7 +3,7 @@ use std::{
     str::FromStr,
 };
 
-use anyhow::{Error, Result};
+use anyhow::{Context, Error, Result};
 use itertools::{repeat_n, Itertools};
 
 enum CraneModel {
@@ -121,6 +121,13 @@ impl Warehouse {
 
         Some(())
     }
+
+    fn crates_at_the_top(&self) -> Result<String> {
+        self.iter()
+            .map(|stack| stack.last())
+            .collect::<Option<String>>()
+            .context("One or more stack ended up empty")
+    }
 }
 
 pub fn p1(file: &str) -> Result<String> {
@@ -135,11 +142,8 @@ pub fn p1(file: &str) -> Result<String> {
         warehouse.apply_rearrangement(rearrangement, CraneModel::CrateMover9000);
     }
 
-    // format the final arrangement
-    Ok(warehouse
-        .iter()
-        .map(|stack| stack.last().unwrap())
-        .collect())
+    // get the final arrangement
+    warehouse.crates_at_the_top()
 }
 
 pub fn p2(file: &str) -> Result<String> {
@@ -155,8 +159,5 @@ pub fn p2(file: &str) -> Result<String> {
     }
 
     // format the final arrangement
-    Ok(warehouse
-        .iter()
-        .map(|stack| stack.last().unwrap())
-        .collect())
+    warehouse.crates_at_the_top()
 }
