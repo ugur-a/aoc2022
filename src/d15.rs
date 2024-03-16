@@ -1,11 +1,15 @@
-use std::{
-    ops::{Deref, DerefMut},
-    str::FromStr,
-};
+use std::str::FromStr;
 
 use anyhow::{Error, Result};
 use itertools::Itertools;
 use regex::Regex;
+
+struct Border {
+    left: i32,
+    right: i32,
+    up: i32,
+    down: i32,
+}
 
 struct Point2D(i32, i32);
 
@@ -16,20 +20,7 @@ struct Sensor {
 
 struct Map {
     sensors: Vec<Sensor>,
-}
-
-impl Deref for Map {
-    type Target = Vec<Sensor>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.sensors
-    }
-}
-
-impl DerefMut for Map {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.sensors
-    }
+    borders: Border,
 }
 
 impl FromStr for Map {
@@ -54,7 +45,42 @@ impl FromStr for Map {
             })
             .collect::<Vec<_>>();
 
-        Ok(Self { sensors })
+        let borders = {
+            let itertools::MinMaxResult::MinMax(left, right) = sensors
+                .iter()
+                .flat_map(
+                    |Sensor {
+                         coords,
+                         nearest_beacon_coords,
+                     }| [coords.0, nearest_beacon_coords.0],
+                )
+                .minmax()
+            else {
+                unreachable!()
+            };
+
+            let itertools::MinMaxResult::MinMax(up, down) = sensors
+                .iter()
+                .flat_map(
+                    |Sensor {
+                         coords,
+                         nearest_beacon_coords,
+                     }| [coords.1, nearest_beacon_coords.1],
+                )
+                .minmax()
+            else {
+                unreachable!()
+            };
+
+            Border {
+                left,
+                right,
+                up,
+                down,
+            }
+        };
+
+        Ok(Self { sensors, borders })
     }
 }
 
