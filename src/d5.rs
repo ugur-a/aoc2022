@@ -1,6 +1,7 @@
+use anyhow::Result;
 use itertools::{repeat_n, Itertools};
 
-pub fn p1(file: &str) -> String {
+pub fn p1(file: &str) -> Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
     // remove the last row of the stack arrangement schema - the one with stack numbers
@@ -37,9 +38,9 @@ pub fn p1(file: &str) -> String {
         let (num_crates_to_move, stack_to_move_to, stack_to_take_from) =
             match rearrangement.split_whitespace().collect_vec().as_slice() {
                 [_, num_crates_to_move, _, stack_to_move_from, _, stack_to_move_to, ..] => (
-                    num_crates_to_move.parse::<usize>().unwrap(),
-                    stack_to_move_to.parse::<usize>().unwrap() - 1,
-                    stack_to_move_from.parse::<usize>().unwrap() - 1,
+                    num_crates_to_move.parse::<usize>()?,
+                    stack_to_move_to.parse::<usize>()? - 1,
+                    stack_to_move_from.parse::<usize>()? - 1,
                 ),
                 _ => unreachable!(),
             };
@@ -60,13 +61,13 @@ pub fn p1(file: &str) -> String {
     }
 
     // format the final arrangement
-    warehouse
+    Ok(warehouse
         .iter()
         .map(|stack| stack.last().unwrap())
-        .collect()
+        .collect())
 }
 
-pub fn p2(file: &str) -> String {
+pub fn p2(file: &str) -> Result<String> {
     let (initial_stack_arrangement, rearrangements) = file.split_once("\n\n").unwrap();
 
     // remove the last row of the stack arrangement schema - the one with stack numbers
@@ -103,9 +104,9 @@ pub fn p2(file: &str) -> String {
         let (num_crates_to_move, stack_to_move_to, stack_to_take_from) =
             match rearrangement.split_whitespace().collect_vec().as_slice() {
                 [_, num_crates_to_move, _, stack_to_move_from, _, stack_to_move_to, ..] => (
-                    num_crates_to_move.parse::<usize>().unwrap(),
-                    stack_to_move_to.parse::<usize>().unwrap() - 1,
-                    stack_to_move_from.parse::<usize>().unwrap() - 1,
+                    num_crates_to_move.parse::<usize>()?,
+                    stack_to_move_to.parse::<usize>()? - 1,
+                    stack_to_move_from.parse::<usize>()? - 1,
                 ),
                 _ => unreachable!(),
             };
@@ -126,8 +127,8 @@ pub fn p2(file: &str) -> String {
     }
 
     // format the final arrangement
-    warehouse
+    Ok(warehouse
         .iter()
         .map(|stack| stack.last().unwrap())
-        .collect()
+        .collect())
 }
