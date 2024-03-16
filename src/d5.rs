@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use itertools::{repeat_n, Itertools};
 
 pub fn p1(file: &str) -> String {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
@@ -11,7 +11,7 @@ pub fn p1(file: &str) -> String {
     let num_stacks = (stack_numbers.len() + 1) / 4;
 
     // initialize the warehouse (collection of stacks)
-    let mut warehouse: Vec<Vec<char>> = (0..num_stacks).map(|_| Vec::new()).collect_vec();
+    let mut warehouse: Vec<Vec<char>> = repeat_n(Vec::new(), num_stacks).collect_vec();
 
     // parse the initial stack arrangement - fill up the warehouse
     // comment: go over lines bottom-up, since that's how the crates are stacked
