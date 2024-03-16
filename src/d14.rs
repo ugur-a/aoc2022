@@ -112,27 +112,24 @@ pub fn p1(file: &str) -> Result<u32> {
     let mut sands = 0;
     'outer: loop {
         let mut sand = init_sand;
-        'inner: loop {
+
+        while let Some(next_sand) = [
+            Point2D(sand.0, sand.1 + 1),
+            Point2D(sand.0 - 1, sand.1 + 1),
+            Point2D(sand.0 + 1, sand.1 + 1),
+        ]
+        .into_iter()
+        .find(|point| !cave.resting.contains_key(point))
+        {
             if !((cave.borders.left..=cave.borders.right).contains(&sand.0)
                 && (..cave.borders.down).contains(&sand.1))
             {
                 break 'outer;
             }
-            if let Some(next_sand) = [
-                Point2D(sand.0, sand.1 + 1),
-                Point2D(sand.0 - 1, sand.1 + 1),
-                Point2D(sand.0 + 1, sand.1 + 1),
-            ]
-            .into_iter()
-            .find(|point| !cave.resting.contains_key(point))
-            {
-                sand = next_sand;
-            } else {
-                cave.resting.insert(sand, UnitType::Sand);
-                sands += 1;
-                break 'inner;
-            }
+            sand = next_sand;
         }
+        cave.resting.insert(sand, UnitType::Sand);
+        sands += 1;
     }
 
     Ok(sands)
