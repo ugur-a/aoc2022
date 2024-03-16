@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{bail, Context, Error, Result};
-use itertools::{repeat_n, Itertools};
+use itertools::Itertools;
 use num::Integer;
 
 #[allow(clippy::struct_field_names)]
@@ -116,7 +116,7 @@ pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
         .map(str::parse::<Monkey<u32>>)
         .collect::<Result<Vec<_>, _>>()?;
 
-    let mut inventories_to_transfer = repeat_n(Vec::new(), monkeys.len()).collect_vec();
+    let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
             monkey.inventory.append(
@@ -178,7 +178,7 @@ pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
         .reduce(|acc, e| acc.lcm(&e))
         .context("non-zero amount of monkeys")?;
 
-    let mut inventories_to_transfer = repeat_n(Vec::new(), monkeys.len()).collect_vec();
+    let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
             monkey.inventory.append(

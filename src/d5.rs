@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::{Context, Error, Result};
 use derive_deref::{Deref, DerefMut};
-use itertools::{repeat_n, Itertools};
+use itertools::Itertools;
 
 enum CraneModel {
     CrateMover9000,
@@ -58,7 +58,7 @@ impl FromStr for Warehouse {
         let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
 
         // initialize the warehouse (collection of stacks)
-        let mut stacks: Vec<Vec<char>> = repeat_n(Vec::new(), num_stacks).collect_vec();
+        let mut stacks: Vec<Vec<char>> = vec![Vec::new(); num_stacks];
 
         // parse the initial stack arrangement - fill up the warehouse
         // comment: go over lines bottom-up, since that's how the crates are stacked
