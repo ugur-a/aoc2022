@@ -25,9 +25,7 @@ type SensorPosition = Point2D;
 type BeaconPosition = Point2D;
 
 #[derive(Deref)]
-struct SensorsWithBeacons {
-    inner: HashMap<SensorPosition, BeaconPosition>,
-}
+struct SensorsWithBeacons(HashMap<SensorPosition, BeaconPosition>);
 
 impl FromStr for SensorsWithBeacons {
     type Err = Error;
@@ -50,9 +48,7 @@ impl FromStr for SensorsWithBeacons {
             })
             .collect::<HashMap<_, _>>();
 
-        Ok(Self {
-            inner: sensors_with_beacons,
-        })
+        Ok(Self(sensors_with_beacons))
     }
 }
 
