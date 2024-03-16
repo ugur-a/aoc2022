@@ -119,14 +119,15 @@ pub fn p1(file: &str) -> Result<u32> {
             {
                 break 'outer;
             }
-            if !cave.resting.contains_key(&Point2D(sand.0, sand.1 + 1)) {
-                sand.1 += 1;
-            } else if !cave.resting.contains_key(&Point2D(sand.0 - 1, sand.1 + 1)) {
-                sand.0 -= 1;
-                sand.1 += 1;
-            } else if !cave.resting.contains_key(&Point2D(sand.0 + 1, sand.1 + 1)) {
-                sand.0 += 1;
-                sand.1 += 1;
+            if let Some(next_sand) = [
+                Point2D(sand.0, sand.1 + 1),
+                Point2D(sand.0 - 1, sand.1 + 1),
+                Point2D(sand.0 + 1, sand.1 + 1),
+            ]
+            .into_iter()
+            .find(|point| !cave.resting.contains_key(point))
+            {
+                sand = next_sand
             } else {
                 cave.resting.insert(sand, UnitType::Sand);
                 sands += 1;
@@ -153,14 +154,15 @@ pub fn p2(file: &str) -> Result<u32> {
                 sands += 1;
                 break;
             }
-            if !cave.resting.contains_key(&Point2D(sand.0, sand.1 + 1)) {
-                sand.1 += 1;
-            } else if !cave.resting.contains_key(&Point2D(sand.0 - 1, sand.1 + 1)) {
-                sand.0 -= 1;
-                sand.1 += 1;
-            } else if !cave.resting.contains_key(&Point2D(sand.0 + 1, sand.1 + 1)) {
-                sand.0 += 1;
-                sand.1 += 1;
+            if let Some(next_sand) = [
+                Point2D(sand.0, sand.1 + 1),
+                Point2D(sand.0 - 1, sand.1 + 1),
+                Point2D(sand.0 + 1, sand.1 + 1),
+            ]
+            .into_iter()
+            .find(|point| !cave.resting.contains_key(point))
+            {
+                sand = next_sand
             } else {
                 cave.resting.insert(sand, UnitType::Sand);
                 sands += 1;
