@@ -144,7 +144,13 @@ pub fn p2(file: &str) -> Result<u32> {
     let mut sands = 0;
     while !cave.resting.contains_key(&init_sand) {
         let mut sand = init_sand;
+        // while:
+        // the next point downwards isn't on the Ultimate Lower Border
         while sand.1 + 1 < cave.borders.down + 2 {
+            // and there's somewhere to fall to
+            // comment: these two conditions (where+if let) should really be
+            // checked simulatenously but this is not stable yet
+            // (Reference: `https://github.com/rust-lang/rust/issues/53667`)
             if let Some(next_sand) = [
                 Point2D(sand.0, sand.1 + 1),
                 Point2D(sand.0 - 1, sand.1 + 1),
@@ -153,6 +159,7 @@ pub fn p2(file: &str) -> Result<u32> {
             .into_iter()
             .find(|point| !cave.resting.contains_key(point))
             {
+                // fall
                 sand = next_sand;
             } else {
                 break;
