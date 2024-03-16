@@ -119,12 +119,12 @@ pub fn p1(file: &str) -> Result<u32> {
             {
                 break 'outer;
             }
-            if !cave.resting.get(&Point2D(sand.0, sand.1 + 1)).is_some() {
+            if !cave.resting.contains_key(&Point2D(sand.0, sand.1 + 1)) {
                 sand.1 += 1;
-            } else if !cave.resting.get(&Point2D(sand.0 - 1, sand.1 + 1)).is_some() {
+            } else if !cave.resting.contains_key(&Point2D(sand.0 - 1, sand.1 + 1)) {
                 sand.0 -= 1;
                 sand.1 += 1;
-            } else if !cave.resting.get(&Point2D(sand.0 + 1, sand.1 + 1)).is_some() {
+            } else if !cave.resting.contains_key(&Point2D(sand.0 + 1, sand.1 + 1)) {
                 sand.0 += 1;
                 sand.1 += 1;
             } else {
@@ -153,12 +153,12 @@ pub fn p2(file: &str) -> Result<u32> {
                 sands += 1;
                 break;
             }
-            if !cave.resting.get(&Point2D(sand.0, sand.1 + 1)).is_some() {
+            if !cave.resting.contains_key(&Point2D(sand.0, sand.1 + 1)) {
                 sand.1 += 1;
-            } else if !cave.resting.get(&Point2D(sand.0 - 1, sand.1 + 1)).is_some() {
+            } else if !cave.resting.contains_key(&Point2D(sand.0 - 1, sand.1 + 1)) {
                 sand.0 -= 1;
                 sand.1 += 1;
-            } else if !cave.resting.get(&Point2D(sand.0 + 1, sand.1 + 1)).is_some() {
+            } else if !cave.resting.contains_key(&Point2D(sand.0 + 1, sand.1 + 1)) {
                 sand.0 += 1;
                 sand.1 += 1;
             } else {
