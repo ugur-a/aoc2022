@@ -14,6 +14,12 @@ struct Border {
 #[derive(PartialEq, Eq, Hash)]
 struct Point2D(i32, i32);
 
+impl Point2D {
+    fn manhattan_distance(&self, other: &Point2D) -> u32 {
+        self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
+    }
+}
+
 type SensorPosition = Point2D;
 type BeaconPosition = Point2D;
 
