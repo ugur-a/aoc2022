@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+    ops::{Deref, DerefMut},
+    str::FromStr,
+};
 
 use anyhow::{Error, Result};
 use itertools::Itertools;
@@ -13,6 +16,20 @@ struct Sensor {
 
 struct Map {
     sensors: Vec<Sensor>,
+}
+
+impl Deref for Map {
+    type Target = Vec<Sensor>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.sensors
+    }
+}
+
+impl DerefMut for Map {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.sensors
+    }
 }
 
 impl FromStr for Map {
