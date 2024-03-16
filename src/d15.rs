@@ -1,4 +1,7 @@
-use std::{collections::HashMap, fmt::Display, str::FromStr};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+};
 
 use anyhow::{Error, Result};
 use itertools::Itertools;
@@ -78,29 +81,6 @@ impl FromStr for Map {
             sensors_with_beacons,
             borders,
         })
-    }
-}
-
-impl Display for Map {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut res = String::new();
-        for row in self.borders.up..=self.borders.down {
-            for col in self.borders.left..=self.borders.right {
-                let point = Point2D(col, row);
-                let chr = {
-                    if self.sensors_with_beacons.contains_key(&point) {
-                        'S'
-                    } else if self.sensors_with_beacons.values().contains(&point) {
-                        'B'
-                    } else {
-                        '.'
-                    }
-                };
-                res.push(chr);
-            }
-            res.push('\n');
-        }
-        write!(f, "{res}")
     }
 }
 
