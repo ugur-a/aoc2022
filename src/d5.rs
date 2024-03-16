@@ -1,9 +1,7 @@
-use std::{
-    ops::{Deref, DerefMut},
-    str::FromStr,
-};
+use std::str::FromStr;
 
 use anyhow::{Context, Error, Result};
+use derive_deref::{Deref, DerefMut};
 use itertools::{repeat_n, Itertools};
 
 enum CraneModel {
@@ -42,22 +40,10 @@ impl FromStr for Rearrangement {
         })
     }
 }
+
+#[derive(Deref, DerefMut)]
 struct Warehouse {
     stacks: Vec<Vec<char>>,
-}
-
-impl Deref for Warehouse {
-    type Target = Vec<Vec<char>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.stacks
-    }
-}
-
-impl DerefMut for Warehouse {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.stacks
-    }
 }
 
 impl FromStr for Warehouse {

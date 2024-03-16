@@ -22,6 +22,8 @@ name = "aoc2022"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "array2d",
+ "derive_deref",
  "intersection",
  "itertools",
  "num",
@@ -29,6 +31,12 @@ dependencies = [
  "regex",
  "test-case",
 ]
+
+[[package]]
+name = "array2d"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8b39cb2c1bf5a7c0dd097aa95ab859cf87dab5a4328900f5388942dc1889f74"
 
 [[package]]
 name = "autocfg"
@@ -51,7 +59,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "semver",
- "syn",
+ "syn 2.0.52",
+]
+
+[[package]]
+name = "derive_deref"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcdbcee2d9941369faba772587a565f4f534e42cb8d17e5295871de730163b2b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -269,6 +288,17 @@ checksum = "92d43fe69e652f3df9bdc2b85b2854a0825b86e4fb76bc44d945137d053639ca"
 
 [[package]]
 name = "syn"
+version = "1.0.109"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
+name = "syn"
 version = "2.0.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b699d15b36d1f02c3e7c69f8ffef53de37aefae075d8488d4ba1a7788d574a07"
@@ -296,7 +326,7 @@ dependencies = [
  "cfg-if",
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.52",
 ]
 
 [[package]]
@@ -307,7 +337,7 @@ checksum = "5c89e72a01ed4c579669add59014b9a524d609c0c88c6a585ce37485879f6ffb"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.52",
  "test-case-core",
 ]
 
@@ -328,7 +358,7 @@ checksum = "a953cb265bef375dae3de6663da4d3804eee9682ea80d8e2542529b73c531c81"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.52",
 ]
 
 [[package]]

@@ -1,5 +1,7 @@
 use std::{collections::HashSet, iter, str::FromStr};
 
+use derive_deref::{Deref, DerefMut};
+
 #[derive(Copy, Clone)]
 enum Direction {
     Up,
@@ -34,6 +36,7 @@ struct Point2D {
     x: i32,
     y: i32,
 }
+
 impl Point2D {
     fn new() -> Self {
         Self::default()
@@ -65,6 +68,9 @@ impl Point2D {
         };
     }
 }
+
+#[derive(Deref, DerefMut)]
+struct Moves(Vec<Direction>);
 
 pub fn p1(file: &str) -> usize {
     let mut rope = Rope::with_length(2);

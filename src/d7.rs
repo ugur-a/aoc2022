@@ -1,17 +1,11 @@
-use std::{collections::HashMap, ops::Deref, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::{Context, Error, Result};
+use derive_deref::{Deref, DerefMut};
 use itertools::Itertools;
 
+#[derive(Deref)]
 struct FilesWithSizes(HashMap<PathBuf, u32>);
-
-impl Deref for FilesWithSizes {
-    type Target = HashMap<PathBuf, u32>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 impl FromStr for FilesWithSizes {
     type Err = Error;
