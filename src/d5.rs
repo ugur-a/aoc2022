@@ -1,6 +1,10 @@
 use anyhow::Result;
 use itertools::{repeat_n, Itertools};
 
+struct Warehouse {
+    stacks: Vec<Vec<char>>,
+}
+
 pub fn p1(file: &str) -> Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
