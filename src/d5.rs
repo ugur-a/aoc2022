@@ -1,14 +1,14 @@
 use itertools::Itertools;
 
 pub fn p1(file: &str) -> String {
-    let (initial_stack_arrangement, rearrangements) = file.split_once("\n\n").unwrap();
+    let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
     // remove the last row of the stack arrangement schema - the one with stack numbers
-    let (initial_stack_arrangement, last_row_of_stack_arrangement) =
-        initial_stack_arrangement.rsplit_once('\n').unwrap();
+    let (initial_stack_arrangement, stack_numbers) =
+        initial_stack_schema.rsplit_once('\n').unwrap();
 
     // since we don't need the last row anyway, use it to indirectly calculate the number of stacks
-    let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
+    let num_stacks = (stack_numbers.len() + 1) / 4;
 
     // initialize the warehouse (collection of stacks)
     let mut warehouse: Vec<Vec<char>> = (0..num_stacks).map(|_| Vec::new()).collect_vec();
