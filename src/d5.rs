@@ -85,8 +85,8 @@ impl FromStr for Warehouse {
 impl Warehouse {
     fn apply_rearrangement(
         &mut self,
-        rearrangement: Rearrangement,
-        crane_model: CraneModel,
+        rearrangement: &Rearrangement,
+        crane_model: &CraneModel,
     ) -> Option<()> {
         let current_length_of_stack_to_move_from =
             self.get(rearrangement.stack_to_take_from)?.len();
@@ -125,7 +125,7 @@ pub fn p1(file: &str) -> Result<String> {
     for rearrangement in rearrangements.lines() {
         let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        warehouse.apply_rearrangement(rearrangement, CraneModel::CrateMover9000);
+        warehouse.apply_rearrangement(&rearrangement, &CraneModel::CrateMover9000);
     }
 
     // get the final arrangement
@@ -141,7 +141,7 @@ pub fn p2(file: &str) -> Result<String> {
     for rearrangement in rearrangements.lines() {
         let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        warehouse.apply_rearrangement(rearrangement, CraneModel::CrateMover9001);
+        warehouse.apply_rearrangement(&rearrangement, &CraneModel::CrateMover9001);
     }
 
     // format the final arrangement

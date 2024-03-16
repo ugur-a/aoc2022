@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::{Context, Error, Result};
-use derive_deref::{Deref, DerefMut};
+use derive_deref::Deref;
 use itertools::Itertools;
 
 #[derive(Deref)]
