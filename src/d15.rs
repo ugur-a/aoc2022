@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use anyhow::{Error, Result};
 use itertools::Itertools;
@@ -11,15 +11,14 @@ struct Border {
     down: i32,
 }
 
+#[derive(PartialEq, Eq, Hash)]
 struct Point2D(i32, i32);
 
-struct Sensor {
-    coords: Point2D,
-    nearest_beacon_coords: Point2D,
-}
+type SensorPosition = Point2D;
+type BeaconPosition = Point2D;
 
 struct Map {
-    sensors: Vec<Sensor>,
+    sensors_with_beacons: HashMap<SensorPosition, BeaconPosition>,
     borders: Border,
 }
 
@@ -30,7 +29,7 @@ impl FromStr for Map {
         let coords_regex = Regex::new(
             r"Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)",
         )?;
-        let sensors = s
+        let sensors_with_beacons = s
             .lines()
             .map(|line| {
                 coords_regex
@@ -39,34 +38,23 @@ impl FromStr for Map {
                     .exactly_one()
                     .unwrap()
             })
-            .map(|[sensor_x, sensor_y, beacon_x, beacon_y]| Sensor {
-                coords: Point2D(sensor_x, sensor_y),
-                nearest_beacon_coords: Point2D(beacon_x, beacon_y),
+            .map(|[sensor_x, sensor_y, beacon_x, beacon_y]| {
+                (Point2D(sensor_x, sensor_y), Point2D(beacon_x, beacon_y))
             })
-            .collect::<Vec<_>>();
+            .collect::<HashMap<_, _>>();
 
         let borders = {
-            let itertools::MinMaxResult::MinMax(left, right) = sensors
+            let itertools::MinMaxResult::MinMax(left, right) = sensors_with_beacons
                 .iter()
-                .flat_map(
-                    |Sensor {
-                         coords,
-                         nearest_beacon_coords,
-                     }| [coords.0, nearest_beacon_coords.0],
-                )
+                .flat_map(|(coords, nearest_beacon_coords)| [coords.0, nearest_beacon_coords.0])
                 .minmax()
             else {
                 unreachable!()
             };
 
-            let itertools::MinMaxResult::MinMax(up, down) = sensors
+            let itertools::MinMaxResult::MinMax(up, down) = sensors_with_beacons
                 .iter()
-                .flat_map(
-                    |Sensor {
-                         coords,
-                         nearest_beacon_coords,
-                     }| [coords.1, nearest_beacon_coords.1],
-                )
+                .flat_map(|(coords, nearest_beacon_coords)| [coords.1, nearest_beacon_coords.1])
                 .minmax()
             else {
                 unreachable!()
@@ -80,7 +68,10 @@ impl FromStr for Map {
             }
         };
 
-        Ok(Self { sensors, borders })
+        Ok(Self {
+            sensors_with_beacons,
+            borders,
+        })
     }
 }
 
