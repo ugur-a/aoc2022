@@ -121,9 +121,10 @@ pub fn p1(file: &str) -> Result<u32> {
         .into_iter()
         .find(|point| !cave.resting.contains_key(point))
         {
-            if !((cave.borders.left..=cave.borders.right).contains(&sand.0)
-                && (..cave.borders.down).contains(&sand.1))
-            {
+            let sand_in_bounds = (cave.borders.left..=cave.borders.right).contains(&sand.0)
+                && (..cave.borders.down).contains(&sand.1);
+
+            if !sand_in_bounds {
                 break 'outer;
             }
             sand = next_sand;
