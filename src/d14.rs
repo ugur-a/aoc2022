@@ -127,7 +127,7 @@ pub fn p1(file: &str) -> Result<u32> {
             .into_iter()
             .find(|point| !cave.resting.contains_key(point))
             {
-                sand = next_sand
+                sand = next_sand;
             } else {
                 cave.resting.insert(sand, UnitType::Sand);
                 sands += 1;
@@ -154,7 +154,7 @@ pub fn p2(file: &str) -> Result<u32> {
             .into_iter()
             .find(|point| !cave.resting.contains_key(point))
             {
-                sand = next_sand
+                sand = next_sand;
             } else {
                 break;
             }
