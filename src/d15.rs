@@ -16,7 +16,7 @@ use regex::Regex;
 struct Point2D(i32, i32);
 
 impl Point2D {
-    fn manhattan_distance(&self, other: &Point2D) -> u32 {
+    fn manhattan_distance(self, other: Point2D) -> u32 {
         self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
     }
 }
@@ -59,7 +59,7 @@ pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
     let mut impossible_locations_of_distress_beacon: HashSet<i32> = sensors_with_beacons
         .par_iter()
         .filter_map(|(signal, beacon)| {
-            let distance_to_beacon = signal.manhattan_distance(&beacon);
+            let distance_to_beacon = signal.manhattan_distance(*beacon);
             let distance_to_analyzed_row = signal.1.abs_diff(analyzed_row_num);
 
             match distance_to_analyzed_row.cmp(&distance_to_beacon) {
