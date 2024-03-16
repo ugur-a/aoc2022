@@ -4,15 +4,9 @@ use std::{
 };
 
 use anyhow::{Error, Result};
+use derive_deref::Deref;
 use itertools::Itertools;
 use regex::Regex;
-
-struct Border {
-    left: i32,
-    right: i32,
-    up: i32,
-    down: i32,
-}
 
 #[derive(PartialEq, Eq, Hash)]
 struct Point2D(i32, i32);
@@ -26,12 +20,12 @@ impl Point2D {
 type SensorPosition = Point2D;
 type BeaconPosition = Point2D;
 
-struct Map {
-    sensors_with_beacons: HashMap<SensorPosition, BeaconPosition>,
-    borders: Border,
+#[derive(Deref)]
+struct SensorsWithBeacons {
+    inner: HashMap<SensorPosition, BeaconPosition>,
 }
 
-impl FromStr for Map {
+impl FromStr for SensorsWithBeacons {
     type Err = Error;
 
     fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
@@ -52,44 +46,17 @@ impl FromStr for Map {
             })
             .collect::<HashMap<_, _>>();
 
-        let borders = {
-            let itertools::MinMaxResult::MinMax(left, right) = sensors_with_beacons
-                .iter()
-                .flat_map(|(coords, nearest_beacon_coords)| [coords.0, nearest_beacon_coords.0])
-                .minmax()
-            else {
-                unreachable!()
-            };
-
-            let itertools::MinMaxResult::MinMax(up, down) = sensors_with_beacons
-                .iter()
-                .flat_map(|(coords, nearest_beacon_coords)| [coords.1, nearest_beacon_coords.1])
-                .minmax()
-            else {
-                unreachable!()
-            };
-
-            Border {
-                left,
-                right,
-                up,
-                down,
-            }
-        };
-
         Ok(Self {
-            sensors_with_beacons,
-            borders,
+            inner: sensors_with_beacons,
         })
     }
 }
 
 #[allow(clippy::cast_sign_loss, clippy::cast_possible_wrap)]
 pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
-    let map = Map::from_str(file)?;
+    let sensors_with_beacons = SensorsWithBeacons::from_str(file)?;
 
-    let mut impossible_locations_of_distress_beacon: HashSet<i32> = map
-        .sensors_with_beacons
+    let mut impossible_locations_of_distress_beacon: HashSet<i32> = sensors_with_beacons
         .iter()
         .filter_map(|(signal, beacon)| {
             let distance_to_beacon = signal.manhattan_distance(beacon);
@@ -113,7 +80,7 @@ pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
         .collect();
 
     // "is `x=2,y=10` a "position where a beacon cannot be present"?"
-    for beacon in map.sensors_with_beacons.values() {
+    for beacon in sensors_with_beacons.values() {
         if beacon.1 == analyzed_row_num {
             impossible_locations_of_distress_beacon.remove(&beacon.0);
         }
@@ -136,7 +103,6 @@ mod tests {
         assert_eq!(p1(&inp, 10).unwrap(), 26);
     }
     #[test]
-    #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/d15/real.txt").unwrap();
         assert_eq!(p1(&inp, 2_000_000).unwrap(), 4748135);
