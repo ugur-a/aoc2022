@@ -1,8 +1,24 @@
+use std::ops::{Deref, DerefMut};
+
 use anyhow::Result;
 use itertools::{repeat_n, Itertools};
 
 struct Warehouse {
     stacks: Vec<Vec<char>>,
+}
+
+impl Deref for Warehouse {
+    type Target = Vec<Vec<char>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.stacks
+    }
+}
+
+impl DerefMut for Warehouse {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.stacks
+    }
 }
 
 pub fn p1(file: &str) -> Result<String> {
