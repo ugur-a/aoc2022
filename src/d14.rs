@@ -113,9 +113,8 @@ pub fn p1(file: &str) -> Result<u32> {
     'outer: loop {
         let mut sand = init_sand;
         'inner: loop {
-            if sand.1 > cave.borders.down
-                || sand.0 < cave.borders.left
-                || cave.borders.right < sand.0
+            if !((cave.borders.left..=cave.borders.right).contains(&sand.0)
+                && (..cave.borders.down).contains(&sand.1))
             {
                 break 'outer;
             }
