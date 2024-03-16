@@ -12,6 +12,32 @@ struct Rearrangement {
     stack_to_take_from: usize,
 }
 
+impl FromStr for Rearrangement {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+        let (num_crates_to_move, stack_to_move_to, stack_to_take_from) = match s
+            .split_whitespace()
+            .collect_vec()
+            .as_slice()
+        {
+            ["move", num_crates_to_move, "from", stack_to_move_from, "to", stack_to_move_to, ..] => {
+                (
+                    num_crates_to_move.parse::<usize>()?,
+                    stack_to_move_to.parse::<usize>()? - 1,
+                    stack_to_move_from.parse::<usize>()? - 1,
+                )
+            }
+            _ => unreachable!(),
+        };
+
+        Ok(Self {
+            num_crates_to_move,
+            stack_to_move_to,
+            stack_to_take_from,
+        })
+    }
+}
 struct Warehouse {
     stacks: Vec<Vec<char>>,
 }
@@ -73,27 +99,22 @@ pub fn p1(file: &str) -> Result<String> {
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {
-        let (num_crates_to_move, stack_to_move_to, stack_to_take_from) =
-            match rearrangement.split_whitespace().collect_vec().as_slice() {
-                [_, num_crates_to_move, _, stack_to_move_from, _, stack_to_move_to, ..] => (
-                    num_crates_to_move.parse::<usize>()?,
-                    stack_to_move_to.parse::<usize>()? - 1,
-                    stack_to_move_from.parse::<usize>()? - 1,
-                ),
-                _ => unreachable!(),
-            };
+        let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        let current_length_of_stack_to_move_from = warehouse.get(stack_to_take_from).unwrap().len();
+        let current_length_of_stack_to_move_from = warehouse
+            .get(rearrangement.stack_to_take_from)
+            .unwrap()
+            .len();
 
         let crates_to_move = warehouse
-            .get_mut(stack_to_take_from)
+            .get_mut(rearrangement.stack_to_take_from)
             .unwrap()
-            .drain((current_length_of_stack_to_move_from - num_crates_to_move)..)
+            .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..)
             .rev()
             .collect_vec();
 
         warehouse
-            .get_mut(stack_to_move_to)
+            .get_mut(rearrangement.stack_to_move_to)
             .unwrap()
             .extend(crates_to_move);
     }
@@ -112,27 +133,22 @@ pub fn p2(file: &str) -> Result<String> {
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {
-        let (num_crates_to_move, stack_to_move_to, stack_to_take_from) =
-            match rearrangement.split_whitespace().collect_vec().as_slice() {
-                [_, num_crates_to_move, _, stack_to_move_from, _, stack_to_move_to, ..] => (
-                    num_crates_to_move.parse::<usize>()?,
-                    stack_to_move_to.parse::<usize>()? - 1,
-                    stack_to_move_from.parse::<usize>()? - 1,
-                ),
-                _ => unreachable!(),
-            };
+        let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        let current_length_of_stack_to_move_from = warehouse.get(stack_to_take_from).unwrap().len();
+        let current_length_of_stack_to_move_from = warehouse
+            .get(rearrangement.stack_to_take_from)
+            .unwrap()
+            .len();
 
         let crates_to_move = warehouse
-            .get_mut(stack_to_take_from)
+            .get_mut(rearrangement.stack_to_take_from)
             .unwrap()
-            .drain((current_length_of_stack_to_move_from - num_crates_to_move)..)
+            .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..)
             // the only difference from p1 - don't reverse the crates when moving
             .collect_vec();
 
         warehouse
-            .get_mut(stack_to_move_to)
+            .get_mut(rearrangement.stack_to_move_to)
             .unwrap()
             .extend(crates_to_move);
     }
