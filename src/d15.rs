@@ -6,9 +6,13 @@ use std::{
 use anyhow::{Error, Result};
 use derive_deref::Deref;
 use itertools::Itertools;
+use rayon::{
+    iter::{IntoParallelRefIterator, ParallelIterator},
+    str::ParallelString,
+};
 use regex::Regex;
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 struct Point2D(i32, i32);
 
 impl Point2D {
@@ -33,7 +37,7 @@ impl FromStr for SensorsWithBeacons {
             r"Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)",
         )?;
         let sensors_with_beacons = s
-            .lines()
+            .par_lines()
             .map(|line| {
                 coords_regex
                     .captures_iter(line)
@@ -57,9 +61,9 @@ pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
     let sensors_with_beacons = SensorsWithBeacons::from_str(file)?;
 
     let mut impossible_locations_of_distress_beacon: HashSet<i32> = sensors_with_beacons
-        .iter()
+        .par_iter()
         .filter_map(|(signal, beacon)| {
-            let distance_to_beacon = signal.manhattan_distance(beacon);
+            let distance_to_beacon = signal.manhattan_distance(&beacon);
             let distance_to_analyzed_row = signal.1.abs_diff(analyzed_row_num);
 
             match distance_to_analyzed_row.cmp(&distance_to_beacon) {
