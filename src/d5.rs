@@ -72,7 +72,7 @@ impl FromStr for Warehouse {
         let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
 
         // initialize the warehouse (collection of stacks)
-        let mut stacks: Vec<Vec<char>> = (0..num_stacks).map(|_| Vec::new()).collect_vec();
+        let mut stacks: Vec<Vec<char>> = repeat_n(Vec::new(), num_stacks).collect_vec();
 
         // parse the initial stack arrangement - fill up the warehouse
         // comment: go over lines bottom-up, since that's how the crates are stacked
