@@ -23,42 +23,36 @@ impl FromStr for Item {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut s_iter = s.chars().peekable();
 
-        match s_iter.peek() {
-            Some('[') => {
-                s_iter.next();
+        if let Some('[') = s_iter.peek() {
+            let mut items = Vec::new();
 
-                let mut items = Vec::new();
-
-                let mut buf = String::new();
-                let mut unclosed_brackets = 0u32;
-                for next in s_iter {
-                    if unclosed_brackets == 0 && (next == ',' || next == ']') {
-                        if buf.is_empty() {
-                            break;
-                        }
-                        let item = buf.parse::<Item>()?;
-                        items.push(item);
-                        buf.clear();
-                    } else {
-                        match next {
-                            '[' => unclosed_brackets += 1,
-                            ']' => unclosed_brackets -= 1,
-                            _ => (),
-                        }
-                        buf.push(next);
+            let mut buf = String::new();
+            let mut unclosed_brackets = 0u32;
+            for next in s_iter {
+                if unclosed_brackets == 0 && (next == ',' || next == ']') {
+                    if buf.is_empty() {
+                        break;
                     }
+                    let item = buf.parse::<Item>()?;
+                    items.push(item);
+                    buf.clear();
+                } else {
+                    match next {
+                        '[' => unclosed_brackets += 1,
+                        ']' => unclosed_brackets -= 1,
+                        _ => (),
+                    }
+                    buf.push(next);
                 }
-                Ok(Item::List(items))
             }
-            Some(_part_of_a_num) => {
-                let num = s_iter
-                    .borrow_mut()
-                    .take_while(|char| *char != ',')
-                    .collect::<String>()
-                    .parse::<u32>()?;
-                Ok(Item::Integer(num))
-            }
-            None => unreachable!(),
+            Ok(Item::List(items))
+        } else {
+            let num = s_iter
+                .borrow_mut()
+                .take_while(|char| *char != ',')
+                .collect::<String>()
+                .parse::<u32>()?;
+            Ok(Item::Integer(num))
         }
     }
 }
