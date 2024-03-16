@@ -185,9 +185,8 @@ mod tests {
         assert_eq!(p2(&inp).unwrap(), 93);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/d14/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp).unwrap(), 26683);
     }
 }
