@@ -96,6 +96,33 @@ impl FromStr for Warehouse {
     }
 }
 
+impl Warehouse {
+    fn apply_rearrangement(
+        &mut self,
+        rearrangement: Rearrangement,
+        crane_model: CraneModel,
+    ) -> Option<()> {
+        let current_length_of_stack_to_move_from =
+            self.get(rearrangement.stack_to_take_from)?.len();
+
+        let crates_to_move = {
+            let crates = self
+                .get_mut(rearrangement.stack_to_take_from)?
+                .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..);
+
+            match crane_model {
+                CraneModel::CrateMover9000 => crates.rev().collect_vec(),
+                CraneModel::CrateMover9001 => crates.collect(),
+            }
+        };
+
+        self.get_mut(rearrangement.stack_to_move_to)?
+            .extend(crates_to_move);
+
+        Some(())
+    }
+}
+
 pub fn p1(file: &str) -> Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
@@ -105,22 +132,7 @@ pub fn p1(file: &str) -> Result<String> {
     for rearrangement in rearrangements.lines() {
         let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        let current_length_of_stack_to_move_from = warehouse
-            .get(rearrangement.stack_to_take_from)
-            .unwrap()
-            .len();
-
-        let crates_to_move = warehouse
-            .get_mut(rearrangement.stack_to_take_from)
-            .unwrap()
-            .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..)
-            .rev()
-            .collect_vec();
-
-        warehouse
-            .get_mut(rearrangement.stack_to_move_to)
-            .unwrap()
-            .extend(crates_to_move);
+        warehouse.apply_rearrangement(rearrangement, CraneModel::CrateMover9000);
     }
 
     // format the final arrangement
@@ -139,22 +151,7 @@ pub fn p2(file: &str) -> Result<String> {
     for rearrangement in rearrangements.lines() {
         let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        let current_length_of_stack_to_move_from = warehouse
-            .get(rearrangement.stack_to_take_from)
-            .unwrap()
-            .len();
-
-        let crates_to_move = warehouse
-            .get_mut(rearrangement.stack_to_take_from)
-            .unwrap()
-            .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..)
-            // the only difference from p1 - don't reverse the crates when moving
-            .collect_vec();
-
-        warehouse
-            .get_mut(rearrangement.stack_to_move_to)
-            .unwrap()
-            .extend(crates_to_move);
+        warehouse.apply_rearrangement(rearrangement, CraneModel::CrateMover9001);
     }
 
     // format the final arrangement
