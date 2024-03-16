@@ -1,6 +1,9 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+    str::FromStr,
+};
 
-use anyhow::Result;
+use anyhow::{Error, Result};
 use itertools::{repeat_n, Itertools};
 
 struct Warehouse {
@@ -21,37 +24,46 @@ impl DerefMut for Warehouse {
     }
 }
 
+impl FromStr for Warehouse {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+        // remove the last row of the stack arrangement schema - the one with stack numbers
+        let (initial_stack_arrangement, last_row_of_stack_arrangement) =
+            s.rsplit_once('\n').unwrap();
+
+        // since we don't need the last row anyway, use it to indirectly calculate the number of stacks
+        let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
+
+        // initialize the warehouse (collection of stacks)
+        let mut stacks: Vec<Vec<char>> = (0..num_stacks).map(|_| Vec::new()).collect_vec();
+
+        // parse the initial stack arrangement - fill up the warehouse
+        // comment: go over lines bottom-up, since that's how the crates are stacked
+        for line in initial_stack_arrangement.lines().rev() {
+            line.chars()
+                .chunks(4)
+                .into_iter()
+                // provide the stack number for each maybe-crate
+                .enumerate()
+                // if there's a crate, add it to the corresponding stack, skip if only air
+                .filter_map(|(idx, chunk)| match chunk.collect_vec().as_slice() {
+                    ['[', crate_name, ']', ..] => Some((idx, *crate_name)),
+                    [' ', ' ', ' ', ..] => None,
+                    _ => unreachable!(),
+                })
+                .for_each(|(idx, crate_name)| {
+                    stacks.get_mut(idx).unwrap().push(crate_name);
+                });
+        }
+        Ok(Self { stacks })
+    }
+}
+
 pub fn p1(file: &str) -> Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
-    // remove the last row of the stack arrangement schema - the one with stack numbers
-    let (initial_stack_arrangement, stack_numbers) =
-        initial_stack_schema.rsplit_once('\n').unwrap();
-
-    // since we don't need the last row anyway, use it to indirectly calculate the number of stacks
-    let num_stacks = (stack_numbers.len() + 1) / 4;
-
-    // initialize the warehouse (collection of stacks)
-    let mut warehouse: Vec<Vec<char>> = repeat_n(Vec::new(), num_stacks).collect_vec();
-
-    // parse the initial stack arrangement - fill up the warehouse
-    // comment: go over lines bottom-up, since that's how the crates are stacked
-    for line in initial_stack_arrangement.lines().rev() {
-        line.chars()
-            .chunks(4)
-            .into_iter()
-            // provide the stack number for each maybe-crate
-            .enumerate()
-            // if there's a crate, add it to the corresponding stack, skip if only air
-            .filter_map(|(idx, chunk)| match chunk.collect_vec().as_slice() {
-                ['[', crate_name, ']', ..] => Some((idx, *crate_name)),
-                [' ', ' ', ' ', ..] => None,
-                _ => unreachable!(),
-            })
-            .for_each(|(idx, crate_name)| {
-                warehouse.get_mut(idx).unwrap().push(crate_name);
-            });
-    }
+    let mut warehouse = Warehouse::from_str(initial_stack_schema)?;
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {
@@ -90,34 +102,7 @@ pub fn p1(file: &str) -> Result<String> {
 pub fn p2(file: &str) -> Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
-    // remove the last row of the stack arrangement schema - the one with stack numbers
-    let (initial_stack_arrangement, last_row_of_stack_arrangement) =
-        initial_stack_schema.rsplit_once('\n').unwrap();
-
-    // since we don't need the last row anyway, use it to indirectly calculate the number of stacks
-    let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
-
-    // initialize the warehouse (collection of stacks)
-    let mut warehouse: Vec<Vec<char>> = (0..num_stacks).map(|_| Vec::new()).collect_vec();
-
-    // parse the initial stack arrangement - fill up the warehouse
-    // comment: go over lines bottom-up, since that's how the crates are stacked
-    for line in initial_stack_arrangement.lines().rev() {
-        line.chars()
-            .chunks(4)
-            .into_iter()
-            // provide the stack number for each maybe-crate
-            .enumerate()
-            // if there's a crate, add it to the corresponding stack, skip if only air
-            .filter_map(|(idx, chunk)| match chunk.collect_vec().as_slice() {
-                ['[', crate_name, ']', ..] => Some((idx, *crate_name)),
-                [' ', ' ', ' ', ..] => None,
-                _ => unreachable!(),
-            })
-            .for_each(|(idx, crate_name)| {
-                warehouse.get_mut(idx).unwrap().push(crate_name);
-            });
-    }
+    let mut warehouse = Warehouse::from_str(initial_stack_schema)?;
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {
