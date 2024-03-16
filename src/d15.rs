@@ -104,9 +104,47 @@ impl Display for Map {
     }
 }
 
-pub fn p1(file: &str, row_to_analyze: usize) -> Result<usize> {
-    todo!()
+#[allow(clippy::cast_sign_loss, clippy::cast_possible_wrap)]
+pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
+    let map = Map::from_str(file)?;
+
+    let mut impossible_locations_of_distress_beacon =
+        HashSet::with_capacity((map.borders.right - map.borders.left) as usize);
+
+    for (signal, beacon) in &map.sensors_with_beacons {
+        let distance_to_beacon = signal.manhattan_distance(&beacon);
+        let distance_to_analyzed_row = signal.1.abs_diff(analyzed_row_num);
+
+        match distance_to_analyzed_row.cmp(&distance_to_beacon) {
+            std::cmp::Ordering::Greater => continue,
+            std::cmp::Ordering::Equal => {
+                impossible_locations_of_distress_beacon.insert(signal.0);
+            }
+            std::cmp::Ordering::Less => {
+                let width_of_covered_space_on_the_analyzed_row =
+                    distance_to_beacon - distance_to_analyzed_row;
+
+                let leftmost_impossible_location =
+                    signal.0 - width_of_covered_space_on_the_analyzed_row as i32;
+                let rightmost_impossible_location =
+                    signal.0 + width_of_covered_space_on_the_analyzed_row as i32;
+
+                impossible_locations_of_distress_beacon
+                    .extend(leftmost_impossible_location..=rightmost_impossible_location);
+            }
+        }
+    }
+
+    // "is `x=2,y=10` a "position where a beacon cannot be present"?"
+    for beacon in map.sensors_with_beacons.values() {
+        if beacon.1 == analyzed_row_num {
+            impossible_locations_of_distress_beacon.remove(&beacon.0);
+        }
+    }
+
+    Ok(impossible_locations_of_distress_beacon.len())
 }
+
 pub fn p2(_file: &str) -> Result<u32> {
     todo!()
 }
@@ -124,7 +162,7 @@ mod tests {
     #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/d15/real.txt").unwrap();
-        assert_eq!(p1(&inp, 2000000).unwrap(), 0);
+        assert_eq!(p1(&inp, 2_000_000).unwrap(), 4748135);
     }
     #[test]
     #[ignore]
