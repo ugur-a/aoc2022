@@ -7,7 +7,7 @@ use anyhow::{Context, Error, Result};
 use derive_deref::Deref;
 use itertools::Itertools;
 use rayon::{
-    iter::{IntoParallelRefIterator, ParallelBridge, ParallelIterator},
+    iter::{IntoParallelRefIterator, ParallelIterator},
     str::ParallelString,
 };
 use regex::Regex;
