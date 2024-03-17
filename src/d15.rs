@@ -123,9 +123,30 @@ impl FromStr for SensorsWithDistances {
 #[allow(clippy::cast_possible_wrap)]
 pub fn p2(file: &str, search_space_side_size: i32) -> Result<u64> {
     let sensors_with_distances = SensorsWithDistances::from_str(file)?;
-    let distress_beacon = (0..=search_space_side_size)
-        .cartesian_product(0..=search_space_side_size)
-        .par_bridge()
+    let distress_beacon = sensors_with_distances
+        .par_iter()
+        .flat_map(|(point, radius)| {
+            // the vertices
+            let radius = *radius as i32;
+            let left = point.0 - radius - 1;
+            let right = point.0 + radius + 1;
+            let up = point.1 - radius - 1;
+            let down = point.1 + radius + 1;
+            // the sides (moving clockwise)
+            let left_upper = (left..point.0).zip((up..point.1).rev());
+            let right_upper = (point.0..right).zip(up..point.1);
+            let right_lower = ((point.0..right).rev()).zip(point.1..down);
+            let left_lower = ((left..point.0).rev()).zip((point.1..down).rev());
+
+            left_upper
+                .chain(right_upper)
+                .chain(right_lower)
+                .chain(left_lower)
+                .collect_vec()
+        })
+        .filter(|(x, y)| {
+            0 <= *x && *x <= search_space_side_size && 0 <= *y && *y <= search_space_side_size
+        })
         .map(|(x, y)| Point2D(x, y))
         .find_any(|point| {
             sensors_with_distances
@@ -161,6 +182,6 @@ mod tests {
     #[test]
     fn real_p2() {
         let inp = read_to_string("inputs/d15/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp, 4_000_000).unwrap(), 13_743_542_639_657);
     }
 }
