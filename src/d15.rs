@@ -36,13 +36,8 @@ impl FromStr for SensorsWithBeacons {
         )?;
         let sensors_with_beacons = s
             .par_lines()
-            .map(|line| {
-                coords_regex
-                    .captures_iter(line)
-                    .map(|caps| caps.extract().1.map(|coord| i32::from_str(coord).unwrap()))
-                    .exactly_one()
-                    .unwrap()
-            })
+            .map(|line| coords_regex.captures(line).unwrap().extract().1)
+            .map(|coords_pair| coords_pair.map(|coord| i32::from_str(coord).unwrap()))
             .map(|[sensor_x, sensor_y, beacon_x, beacon_y]| {
                 (Point2D(sensor_x, sensor_y), Point2D(beacon_x, beacon_y))
             })
