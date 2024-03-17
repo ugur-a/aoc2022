@@ -1,29 +1,4 @@
-use anyhow::{Context, Error, Result};
 use itertools::Itertools;
-
-trait IntoForest {
-    type Err;
-
-    fn to_forest(self) -> Result<Vec<Vec<Tree>>, Self::Err>
-    where
-        Self: Sized;
-}
-
-impl IntoForest for &str {
-    type Err = Error;
-
-    fn to_forest(self) -> Result<Vec<Vec<Tree>>, Self::Err> {
-        Ok(self
-            .lines()
-            .map(|line| {
-                line.chars()
-                    .map(|char| char.to_digit(10).unwrap() + 1)
-                    .map(Tree::with_height)
-                    .collect()
-            })
-            .collect())
-    }
-}
 
 /// Returns the transposed copy of a collection
 trait TransposeOutOfPlace {
@@ -65,118 +40,117 @@ impl Tree {
     }
 }
 
-trait Visibility {
-    fn check_visibilities(&mut self);
+fn parse_forest(file: &str) -> Vec<Vec<Tree>> {
+    file.lines()
+        .map(|line| {
+            line.chars()
+                .map(|char| char.to_digit(10).unwrap() + 1)
+                .map(Tree::with_height)
+                .collect()
+        })
+        .collect()
 }
 
-impl Visibility for &mut Vec<Tree> {
-    /// Less exact than [`check_scenicities_in_a_line`] - checks whether
-    /// each tree is visible, i.e. has a scenicity value of 0
-    fn check_visibilities(&mut self) {
-        // save the highest tree of the line so that we
-        // don't check past it coming from both directions
-        let position_highest_tree = self.iter().position_max_by_key(|tree| tree.height).unwrap();
+/// Less exact than [`check_scenicities_in_a_line`] - checks whether
+/// each tree is visible, i.e. has a scenicity value of 0
+fn check_visibilities_in_a_line(line: &mut [Tree]) {
+    // save the highest tree of the line so that we
+    // don't check past it coming from both directions
+    let position_highest_tree = line.iter().position_max_by_key(|tree| tree.height).unwrap();
 
-        // check the line forwards until the highest tree
-        let mut current_max_height = u32::MIN;
-        for tree in &mut self[..position_highest_tree] {
-            if tree.height <= current_max_height {
-                continue;
-            }
-            current_max_height = tree.height;
-            tree.mark_visible();
+    // check the line forwards until the highest tree
+    let mut current_max_height = u32::MIN;
+    for tree in &mut line[..position_highest_tree] {
+        if tree.height <= current_max_height {
+            continue;
         }
+        current_max_height = tree.height;
+        tree.mark_visible();
+    }
 
-        let mut current_max_height = u32::MIN;
-        for tree in self[position_highest_tree..].iter_mut().rev() {
-            if tree.height <= current_max_height {
-                continue;
-            }
-            current_max_height = tree.height;
-            tree.mark_visible();
+    let mut current_max_height = u32::MIN;
+    for tree in line[position_highest_tree..].iter_mut().rev() {
+        if tree.height <= current_max_height {
+            continue;
         }
+        current_max_height = tree.height;
+        tree.mark_visible();
     }
 }
 
-pub fn p1(file: &str) -> Result<usize> {
+pub fn p1(file: &str) -> usize {
     // create the map
-    let mut forest = file.to_forest()?;
+    let mut forest: Vec<Vec<Tree>> = parse_forest(file);
 
     // analyze visibility horizontally
-    for mut row in &mut forest {
-        row.check_visibilities();
+    for row in &mut forest {
+        check_visibilities_in_a_line(row);
     }
 
     // transpose the map so that iterating vertically isn't so cache-miss-prone
     forest = forest.transpose_out_of_place();
 
     // analyze visibility vertically
-    for mut col in &mut forest {
-        col.check_visibilities();
+    for col in &mut forest {
+        check_visibilities_in_a_line(col);
     }
 
-    Ok(forest
-        .iter()
+    forest
+        .into_iter()
         .flatten()
-        .filter(|tree| tree.is_visible())
-        .count())
+        .filter(Tree::is_visible)
+        .count()
 }
 
-trait Scenicity {
-    fn check_scenicities(&mut self);
+/// More exact than [`check_visibilities_in_a_line`] - gets the exact scenicity values
+fn check_scenicities_in_a_line(line: &mut [Tree]) {
+    let scenicities = line
+        .iter()
+        .enumerate()
+        .map(|(tree_position, tree)| {
+            if tree.is_visible() {
+                return 0;
+            }
+
+            let current_scenicity_forward = line[(tree_position + 1)..]
+                .iter()
+                .take_while_inclusive(|other_tree| tree.height > other_tree.height)
+                .count();
+
+            let current_scenicity_backwards = line[..tree_position]
+                .iter()
+                .rev()
+                .take_while_inclusive(|other_tree| tree.height > other_tree.height)
+                .count();
+
+            current_scenicity_backwards * current_scenicity_forward
+        })
+        .collect_vec();
+
+    line.iter_mut()
+        .zip(scenicities.iter())
+        .for_each(|(tree, scenicity)| tree.scenicity *= scenicity);
 }
 
-impl Scenicity for Vec<Tree> {
-    /// More exact than [`check_visibilities_in_a_line`] - gets the exact scenicity values
-    fn check_scenicities(&mut self) {
-        let scenicities = self
-            .iter()
-            .enumerate()
-            .map(|(tree_position, tree)| {
-                if tree.is_visible() {
-                    return 0;
-                }
-
-                let current_scenicity_forward = self[(tree_position + 1)..]
-                    .iter()
-                    .take_while_inclusive(|other_tree| tree.height > other_tree.height)
-                    .count();
-
-                let current_scenicity_backwards = self[..tree_position]
-                    .iter()
-                    .rev()
-                    .take_while_inclusive(|other_tree| tree.height > other_tree.height)
-                    .count();
-
-                current_scenicity_backwards * current_scenicity_forward
-            })
-            .collect_vec();
-
-        self.iter_mut()
-            .zip(scenicities.iter())
-            .for_each(|(tree, scenicity)| tree.scenicity *= scenicity);
-    }
-}
-
-pub fn p2(file: &str) -> Result<usize> {
-    let mut forest = file.to_forest()?;
+pub fn p2(file: &str) -> usize {
+    let mut forest: Vec<Vec<Tree>> = parse_forest(file);
 
     for row in &mut forest {
-        row.check_scenicities();
+        check_scenicities_in_a_line(row);
     }
 
     forest = forest.transpose_out_of_place();
 
     for col in &mut forest {
-        col.check_scenicities();
+        check_scenicities_in_a_line(col);
     }
 
     forest
-        .iter()
+        .into_iter()
         .flatten()
         .map(|tree| tree.scenicity)
         .max()
-        .context("No trees to get the heighest")
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -187,21 +161,21 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/d8/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 21);
+        assert_eq!(p1(&inp), 21);
     }
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/d8/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 1708);
+        assert_eq!(p1(&inp), 1708);
     }
     #[test]
     fn test_p2() {
         let inp = read_to_string("inputs/d8/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 8);
+        assert_eq!(p2(&inp), 8);
     }
     #[test]
     fn real_p2() {
         let inp = read_to_string("inputs/d8/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 504_000);
+        assert_eq!(p2(&inp), 504_000);
     }
 }
