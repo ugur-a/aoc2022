@@ -91,27 +91,16 @@ impl FromStr for SensorsWithDistances {
     type Err = Error;
 
     fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
-        let coords_regex = Regex::new(
-            r"Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)",
-        )?;
-        let sensors_with_beacons = s
-            .par_lines()
-            .map(|line| {
-                coords_regex
-                    .captures_iter(line)
-                    .map(|caps| caps.extract().1.map(|coord| i32::from_str(coord).unwrap()))
-                    .exactly_one()
-                    .unwrap()
-            })
-            .map(|[sensor_x, sensor_y, beacon_x, beacon_y]| {
-                let sensor_coords = Point2D(sensor_x, sensor_y);
-                let beacon_coords = Point2D(beacon_x, beacon_y);
-                let distance = sensor_coords.manhattan_distance(beacon_coords);
-                (sensor_coords, distance)
+        let sensors_with_distances = s
+            .parse::<SensorsWithBeacons>()?
+            .par_iter()
+            .map(|(sensor_coords, beacon_coords)| {
+                let distance = sensor_coords.manhattan_distance(*beacon_coords);
+                (*sensor_coords, distance)
             })
             .collect::<HashMap<_, _>>();
 
-        Ok(Self(sensors_with_beacons))
+        Ok(Self(sensors_with_distances))
     }
 }
 
