@@ -1,6 +1,37 @@
-use std::str::FromStr;
+use std::{collections::HashMap, iter::repeat};
 
-use anyhow::{Error, Result};
+use anyhow::Result;
+use petgraph::graphmap::UnGraphMap;
+use regex::Regex;
+
+#[derive(Clone, Copy)]
+struct Valve {
+    flow_rate: u32,
+    is_opened: bool,
+}
+
+impl Valve {
+    fn new(flow_rate: u32) -> Self {
+        Self {
+            flow_rate,
+            is_opened: false,
+        }
+    }
+
+    fn is_opened(&self) -> bool {
+        self.is_opened
+    }
+
+    fn open(&mut self) {
+        self.is_opened = true;
+    }
+}
+
+struct Network<'a> {
+    valves: HashMap<&'a str, Valve>,
+    tunnel_graph: UnGraphMap<&'a str, u32>,
+}
+
 
 pub fn p1(file: &str) -> Result<u32> {
     todo!()
