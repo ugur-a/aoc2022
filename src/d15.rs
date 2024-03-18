@@ -3,6 +3,8 @@ use std::{
     str::FromStr,
 };
 
+use crate::points::Point2D;
+
 use anyhow::{Context, Error, Result};
 use derive_deref::Deref;
 use itertools::Itertools;
@@ -12,17 +14,18 @@ use rayon::{
 };
 use regex::Regex;
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
-struct Point2D(i32, i32);
+trait ManhattanDistance {
+    fn manhattan_distance(self, other: Self) -> u32;
+}
 
-impl Point2D {
-    fn manhattan_distance(self, other: Point2D) -> u32 {
+impl Point2D<i32> {
+    fn manhattan_distance(self, other: Self) -> u32 {
         self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
     }
 }
 
-type SensorPosition = Point2D;
-type BeaconPosition = Point2D;
+type SensorPosition = Point2D<i32>;
+type BeaconPosition = Point2D<i32>;
 
 #[derive(Deref)]
 struct SensorsWithBeacons(HashMap<SensorPosition, BeaconPosition>);

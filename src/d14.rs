@@ -6,6 +6,8 @@ use std::{
     str::FromStr,
 };
 
+use crate::points::Point2D;
+
 use anyhow::{Error, Result};
 use itertools::Itertools;
 
@@ -15,9 +17,6 @@ struct Border {
     down: u32,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
-struct Point2D(u32, u32);
-
 enum UnitType {
     Sand,
     Stone,
@@ -25,7 +24,7 @@ enum UnitType {
 
 struct Cave {
     borders: Border,
-    resting: HashMap<Point2D, UnitType>,
+    resting: HashMap<Point2D<u32>, UnitType>,
 }
 
 impl FromStr for Cave {
@@ -54,7 +53,7 @@ impl FromStr for Cave {
             .unwrap();
         let borders = Border { left, right, down };
 
-        let mut resting: HashMap<Point2D, UnitType> = HashMap::new();
+        let mut resting: HashMap<Point2D<u32>, UnitType> = HashMap::new();
         for line in s.lines() {
             let line = line
                 .split(" -> ")
@@ -67,7 +66,7 @@ impl FromStr for Cave {
                 let &[Point2D(x1, y1), Point2D(x2, y2)] = pair else {
                     unreachable!()
                 };
-                let points: Vec<Point2D> = if y1 == y2 {
+                let points: Vec<Point2D<u32>> = if y1 == y2 {
                     (min(x1, x2)..=max(x1, x2))
                         .zip(repeat(y1))
                         .map(|(x, y)| Point2D(x, y))

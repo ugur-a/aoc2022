@@ -2,8 +2,10 @@ use std::{collections::HashSet, iter, str::FromStr};
 
 use derive_deref::{Deref, DerefMut};
 
+use crate::points::Point2D;
+
 #[derive(Copy, Clone)]
-enum Direction {
+enum Direction2D {
     Up,
     Down,
     Left,
@@ -17,38 +19,32 @@ enum Direction {
 #[derive(Debug)]
 struct ParseDirectionError;
 
-impl FromStr for Direction {
+impl FromStr for Direction2D {
     type Err = ParseDirectionError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "U" => Ok(Direction::Up),
-            "D" => Ok(Direction::Down),
-            "L" => Ok(Direction::Left),
-            "R" => Ok(Direction::Right),
+            "U" => Ok(Direction2D::Up),
+            "D" => Ok(Direction2D::Down),
+            "L" => Ok(Direction2D::Left),
+            "R" => Ok(Direction2D::Right),
             _ => Err(ParseDirectionError),
         }
     }
 }
 
-#[derive(Copy, Clone, Hash, Eq, PartialEq, Default, Debug)]
-struct Point2D {
-    x: i32,
-    y: i32,
+trait Move2D {
+    fn r#move(&mut self, direction: Direction2D);
 }
 
-impl Point2D {
-    fn new() -> Self {
-        Self::default()
-    }
-
-    fn r#move(&mut self, direction: Direction) {
-        use Direction as D;
+impl Move2D for Point2D<i32> {
+    fn r#move(&mut self, direction: Direction2D) {
+        use Direction2D as D;
         match direction {
-            D::Up => self.y += 1,
-            D::Down => self.y -= 1,
-            D::Left => self.x -= 1,
-            D::Right => self.x += 1,
+            D::Up => self.1 += 1,
+            D::Down => self.1 -= 1,
+            D::Left => self.0 -= 1,
+            D::Right => self.0 += 1,
             D::UpRight => {
                 self.r#move(D::Up);
                 self.r#move(D::Right);
@@ -70,14 +66,14 @@ impl Point2D {
 }
 
 #[derive(Deref, DerefMut)]
-struct Moves(Vec<Direction>);
+struct Moves(Vec<Direction2D>);
 
 pub fn p1(file: &str) -> usize {
     let mut rope = Rope::with_length(2);
     file.lines()
         .flat_map(|r#move| {
             let (direction, num_repeats) = r#move.split_once(' ').unwrap();
-            let direction = direction.parse::<Direction>().unwrap();
+            let direction = direction.parse::<Direction2D>().unwrap();
             let num_repeats = num_repeats.parse::<usize>().unwrap();
             iter::repeat(direction).take(num_repeats)
         })
@@ -85,22 +81,24 @@ pub fn p1(file: &str) -> usize {
             rope.r#move(direction);
             *rope.last().unwrap()
         })
-        .chain(iter::once(Point2D::new()))
+        .chain(iter::once(Point2D(0, 0)))
         .collect::<HashSet<_>>()
         .len()
 }
 
-type Rope = Vec<Point2D>;
+type Rope = Vec<Point2D<i32>>;
 trait RopeTrait {
     fn with_length(len: usize) -> Self;
-    fn r#move(&mut self, direction: Direction);
 }
 
 impl RopeTrait for Rope {
     fn with_length(len: usize) -> Self {
-        iter::repeat(Point2D::new()).take(len).collect::<Vec<_>>()
+        vec![Point2D(0, 0); len]
     }
-    fn r#move(&mut self, direction: Direction) {
+}
+
+impl Move2D for Rope {
+    fn r#move(&mut self, direction: Direction2D) {
         // take the head and just move it
         let head = self.first_mut().unwrap();
         head.r#move(direction);
@@ -110,8 +108,8 @@ impl RopeTrait for Rope {
         let mut prev = *head;
 
         for curr in self.iter_mut().skip(1) {
-            use Direction as D;
-            let move_to_catch_up = match (prev.x - curr.x, prev.y - curr.y) {
+            use Direction2D as D;
+            let move_to_catch_up = match (prev.0 - curr.0, prev.1 - curr.1) {
                 // knots touch - no catching-up necessary
                 (-1..=1, -1..=1) => None,
                 // catch-up diagonally
@@ -147,7 +145,7 @@ pub fn p2(file: &str) -> usize {
     file.lines()
         .flat_map(|r#move| {
             let (direction, num_repeats) = r#move.split_once(' ').unwrap();
-            let direction = direction.parse::<Direction>().unwrap();
+            let direction = direction.parse::<Direction2D>().unwrap();
             let num_repeats = num_repeats.parse::<usize>().unwrap();
             iter::repeat(direction).take(num_repeats)
         })
@@ -155,7 +153,7 @@ pub fn p2(file: &str) -> usize {
             rope.r#move(direction);
             *rope.last().unwrap()
         })
-        .chain(iter::once(Point2D::new()))
+        .chain(iter::once(Point2D(0, 0)))
         .collect::<HashSet<_>>()
         .len()
 }
@@ -168,8 +166,8 @@ mod tests {
     #[test]
     fn move_2_rope() {
         let mut rope = Rope::with_length(2);
-        rope.r#move(Direction::Up);
-        assert_eq!(rope, vec![Point2D { x: 0, y: 1 }, Point2D { x: 0, y: 0 }]);
+        rope.r#move(Direction2D::Up);
+        assert_eq!(rope, vec![Point2D(0, 1), Point2D(0, 0)]);
     }
     #[test]
     fn test_p1() {

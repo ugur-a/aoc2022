@@ -1,48 +1,34 @@
 use std::{collections::HashMap, str::FromStr};
 
+use crate::points::Point2D;
 use anyhow::{Context, Error, Result};
 use pathfinding::directed::astar;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
-struct Point2D {
-    x: usize,
-    y: usize,
-}
-
-impl From<(usize, usize)> for Point2D {
-    fn from(value: (usize, usize)) -> Self {
-        Self {
-            x: value.0,
-            y: value.1,
-        }
-    }
-}
-
-struct HeightMap {
-    start: Point2D,
-    goal: Point2D,
+struct HeightMap<T> {
+    start: Point2D<T>,
+    goal: Point2D<T>,
     num_rows: usize,
     num_cols: usize,
-    heights: HashMap<Point2D, u32>,
+    heights: HashMap<Point2D<T>, u32>,
 }
 
-impl HeightMap {
-    fn climbable_neighbours(&self, point: Point2D) -> Vec<Point2D> {
-        let Point2D { x, y } = point;
+impl HeightMap<usize> {
+    fn climbable_neighbours(&self, point: Point2D<usize>) -> Vec<Point2D<usize>> {
+        let Point2D(x, y) = point;
         let this_height = self.heights[&point];
 
         let mut potential_neighbours = Vec::new();
         if x > 0 {
-            potential_neighbours.push(Point2D { x: x - 1, y });
+            potential_neighbours.push(Point2D(x - 1, y));
         }
         if x < self.num_cols - 1 {
-            potential_neighbours.push(Point2D { x: x + 1, y });
+            potential_neighbours.push(Point2D(x + 1, y));
         }
         if y > 0 {
-            potential_neighbours.push(Point2D { x, y: y - 1 });
+            potential_neighbours.push(Point2D(x, y - 1));
         }
         if y < self.num_rows - 1 {
-            potential_neighbours.push(Point2D { x, y: y + 1 });
+            potential_neighbours.push(Point2D(x, y + 1));
         }
 
         potential_neighbours
@@ -52,7 +38,7 @@ impl HeightMap {
     }
 }
 
-impl FromStr for HeightMap {
+impl FromStr for HeightMap<usize> {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -65,7 +51,7 @@ impl FromStr for HeightMap {
             })
             .find(|(_row_num, _col_num, char)| *char == 'S')
             .context("no starting point found")?;
-        let start = Point2D { x: s_col, y: s_row };
+        let start = Point2D(s_col, s_row);
 
         let (g_row, g_col, _g_char) = s
             .lines()
@@ -76,13 +62,13 @@ impl FromStr for HeightMap {
             })
             .find(|(_row_num, _col_num, char)| *char == 'E')
             .context("no end point found")?;
-        let goal = Point2D { x: g_col, y: g_row };
+        let goal = Point2D(g_col, g_row);
 
         let num_cols = s.lines().next().context("at least one row")?.len();
 
         let num_rows = s.lines().count();
 
-        let heights = s
+        let heights: HashMap<Point2D<usize>, u32> = s
             .lines()
             .enumerate()
             .flat_map(|(row_num, row)| {
@@ -95,17 +81,9 @@ impl FromStr for HeightMap {
                     })
                     .map(|point| point as u32 - 97)
                     .enumerate()
-                    .map(move |(col_num, height)| {
-                        (
-                            Point2D {
-                                x: col_num,
-                                y: row_num,
-                            },
-                            height,
-                        )
-                    })
+                    .map(move |(col_num, height)| (Point2D(col_num, row_num), height))
             })
-            .collect::<HashMap<_, _>>();
+            .collect();
         Ok(Self {
             start,
             goal,
@@ -117,7 +95,7 @@ impl FromStr for HeightMap {
 }
 
 pub fn p1(file: &str) -> Result<u32> {
-    let height_map = file.parse::<HeightMap>()?;
+    let height_map = HeightMap::from_str(file)?;
     let shortest_path = astar::astar(
         &height_map.start,
         |point| {
@@ -136,7 +114,7 @@ pub fn p1(file: &str) -> Result<u32> {
 }
 
 pub fn p2(file: &str) -> Result<u32> {
-    let height_map = file.parse::<HeightMap>()?;
+    let height_map = HeightMap::from_str(file)?;
     height_map
         .heights
         .iter()
