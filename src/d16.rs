@@ -32,6 +32,43 @@ struct Network<'a> {
     tunnel_graph: UnGraphMap<&'a str, u32>,
 }
 
+fn parse_network(s: &str) -> Result<Network> {
+    let re = Regex::new(
+        r"Valve ([A-Z]{2}) has flow rate=(\d+); tunnels lead to valves ((?:[A-Z]{2}, )*[A-Z]{2})",
+    )?;
+    let initially_parsed_input: Vec<(&str, u32, Vec<&str>)> = s
+        .lines()
+        .map(|line| re.captures(line).unwrap().extract::<3>().1)
+        .map(|[valve, flow_rate, neighbours]| {
+            (
+                valve,
+                flow_rate.parse::<u32>().unwrap(),
+                neighbours.split(", ").collect::<Vec<_>>(),
+            )
+        })
+        .collect();
+
+    let valves: HashMap<&str, Valve> = initially_parsed_input
+        .iter()
+        .map(|(valve, flow_rate, _neighbours)| (*valve, Valve::new(*flow_rate)))
+        .collect();
+
+    let tunnel_graph: UnGraphMap<&str, u32> = initially_parsed_input
+        .iter()
+        .flat_map(|(valve, _flow_rate, neighbours)| repeat(valve).zip(neighbours))
+        .fold(
+            UnGraphMap::with_capacity(s.lines().count(), 0),
+            |mut tunnels_graph, (valve1, valve2)| {
+                tunnels_graph.add_edge(&valve1, &valve2, 1);
+                tunnels_graph
+            },
+        );
+
+    Ok(Network {
+        valves,
+        tunnel_graph,
+    })
+}
 
 pub fn p1(file: &str) -> Result<u32> {
     todo!()
