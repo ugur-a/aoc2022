@@ -14,6 +14,23 @@ const RightLRock: [Point2D<u32>; 5] = rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 
 const IRock: [Point2D<u32>; 4] = rock![(0, 0), (0, 1), (0, 2), (0, 3)];
 const SquareRock: [Point2D<u32>; 4] = rock![(0, 0), (0, 1), (1, 0), (1, 1)];
 
+enum PushDirection {
+    Left,
+    Right,
+}
+
+impl FromStr for PushDirection {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+        match s {
+            "<" => Ok(Self::Left),
+            ">" => Ok(Self::Right),
+            _ => unimplemented!(),
+        }
+    }
+}
+
 pub fn p1(file: &str) -> Result<usize> {
     todo!()
 }
