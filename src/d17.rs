@@ -2,6 +2,18 @@ use std::str::FromStr;
 
 use anyhow::{Error, Result};
 
+use crate::points::Point2D;
+
+macro_rules! rock {
+    [$( ( $p1:expr, $p2:expr ) ),+] => {[$( Point2D($p1, $p2) ),+]};
+}
+
+const MinusRock: [Point2D<u32>; 4] = rock![(0, 0), (1, 0), (2, 0), (3, 0)];
+const PlusRock: [Point2D<u32>; 5] = rock![(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)];
+const RightLRock: [Point2D<u32>; 5] = rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)];
+const IRock: [Point2D<u32>; 4] = rock![(0, 0), (0, 1), (0, 2), (0, 3)];
+const SquareRock: [Point2D<u32>; 4] = rock![(0, 0), (0, 1), (1, 0), (1, 1)];
+
 pub fn p1(file: &str) -> Result<usize> {
     todo!()
 }
