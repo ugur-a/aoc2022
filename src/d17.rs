@@ -9,6 +9,17 @@ struct Rock {
     width: u32,
 }
 
+impl Rock {
+    fn moved_by_relative_offset(&self, relative_offset: Point2D<u32>) -> Self {
+        let new_rock_points: [Point2D<u32>; 5] = self
+            .rock_points
+            .map(|relative_position_in_rock| relative_position_in_rock + relative_offset);
+        Self {
+            rock_points: new_rock_points,
+            width: self.width,
+        }
+    }
+}
 
 macro_rules! rock {
     [$( ( $p1:expr, $p2:expr ) ),+] => {[$( Point2D($p1, $p2) ),+]};
