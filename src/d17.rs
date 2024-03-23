@@ -35,18 +35,19 @@ const SQUARE_ROCK: Rock = Rock {
     width: 2,
 };
 
-enum PushDirection {
+#[derive(Clone, Copy)]
+enum JetStreamDirection {
     Left,
     Right,
 }
 
-impl FromStr for PushDirection {
-    type Err = Error;
+impl TryFrom<char> for JetStreamDirection {
+    type Error = Error;
 
-    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
-        match s {
-            "<" => Ok(Self::Left),
-            ">" => Ok(Self::Right),
+    fn try_from(value: char) -> Result<Self> {
+        match value {
+            '<' => Ok(Self::Left),
+            '>' => Ok(Self::Right),
             _ => unimplemented!(),
         }
     }
