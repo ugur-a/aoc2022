@@ -94,6 +94,27 @@ impl Chamber {
     }
 }
 
+impl Display for Chamber {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let res = (0..=self.highest_point())
+            .rev()
+            .map(|y| {
+                (0..=self.width)
+                    .map(move |x| (Point2D(x, y)))
+                    .map(|point| {
+                        if self.occupied_points.contains(&point) {
+                            '#'
+                        } else {
+                            '.'
+                        }
+                    })
+                    .join("")
+            })
+            .join("\n");
+
+        write!(f, "{res}")
+    }
+}
 
 pub fn p1(file: &str) -> Result<usize> {
     todo!()
