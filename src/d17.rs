@@ -1,6 +1,7 @@
 use std::{collections::HashSet, fmt::Display};
 
 use anyhow::{Error, Result};
+use itertools::Itertools;
 
 use crate::points::Point2D;
 #[derive(Clone, Copy)]
@@ -116,8 +117,71 @@ impl Display for Chamber {
     }
 }
 
-pub fn p1(file: &str) -> Result<usize> {
-    todo!()
+pub fn p1(file: &str) -> Result<u32> {
+    let num_rounds = 2022;
+    let mut chamber = Chamber::new(7);
+    let rocks = vec![MINUS_ROCK, PLUS_ROCK, RIGHT_LROCK, IROCK, SQUARE_ROCK]
+        .into_iter()
+        .cycle()
+        .take(num_rounds);
+    let mut pushes = file
+        .chars()
+        .map(|s| JetStreamDirection::try_from(s))
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .cycle();
+
+    for rock in rocks {
+        let spawn_height = chamber
+            .occupied_points
+            .iter()
+            .map(|Point2D(_x, y)| *y)
+            .max()
+            .map_or(3, |height| height + 1 + 3);
+        let mut rock_position_in_chamber = Point2D(2, spawn_height);
+        loop {
+            // jet stream
+            match pushes.next().unwrap() {
+                JetStreamDirection::Left => {
+                    if rock_position_in_chamber.0 > 0 {
+                        rock_position_in_chamber.0 -= 1;
+                    }
+                }
+                JetStreamDirection::Right => {
+                    if rock_position_in_chamber.0 + rock.width < chamber.width {
+                        rock_position_in_chamber.0 += 1;
+                    }
+                }
+            }
+            // come to rest if:
+            // 1) arrived at the lowest point
+            if rock_position_in_chamber.1 == 0 {
+                chamber.add_rock(rock.moved_by_relative_offset(rock_position_in_chamber));
+                break;
+            }
+            // 2) there's a rock point directly underneath
+            let mut rock_stops = false;
+            for &Point2D(x, y) in &rock.rock_points {
+                if chamber.contains(
+                    &(Point2D(
+                        x + rock_position_in_chamber.0,
+                        y + rock_position_in_chamber.1 - 1,
+                    )),
+                ) {
+                    rock_stops = true;
+                    break;
+                }
+            }
+            if rock_stops {
+                chamber.add_rock(rock.moved_by_relative_offset(rock_position_in_chamber));
+                break;
+            //fall
+            } else {
+                rock_position_in_chamber.1 -= 1;
+            }
+        }
+    }
+    Ok(chamber.highest_point())
 }
 pub fn p2(_file: &str) -> Result<usize> {
     todo!()
