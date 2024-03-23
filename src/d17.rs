@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashSet, fmt::Display};
 
 use anyhow::{Error, Result};
 
@@ -63,6 +63,37 @@ impl TryFrom<char> for JetStreamDirection {
         }
     }
 }
+
+struct Chamber {
+    width: u32,
+    occupied_points: HashSet<Point2D<u32>>,
+}
+
+impl Chamber {
+    fn new(width: u32) -> Self {
+        Self {
+            width,
+            occupied_points: HashSet::new(),
+        }
+    }
+
+    fn contains(&self, q: &Point2D<u32>) -> bool {
+        self.occupied_points.contains(q)
+    }
+
+    fn add_rock(&mut self, rock: Rock) {
+        self.occupied_points.extend(rock.rock_points);
+    }
+
+    fn highest_point(&self) -> u32 {
+        self.occupied_points
+            .iter()
+            .map(|Point2D(_x, y)| *y)
+            .max()
+            .map_or(0, |y| y + 1)
+    }
+}
+
 
 pub fn p1(file: &str) -> Result<usize> {
     todo!()
