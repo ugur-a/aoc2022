@@ -1,65 +1,60 @@
-use std::{collections::HashMap, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, path::PathBuf};
 
-use anyhow::{Context, Error, Result};
-use derive_deref::Deref;
+use anyhow::{Context, Result};
 use itertools::Itertools;
 
-#[derive(Deref)]
-struct FilesWithSizes(HashMap<PathBuf, u32>);
+type FilesWithSizes = HashMap<PathBuf, u32>;
 
-impl FromStr for FilesWithSizes {
-    type Err = Error;
+fn parse_files_with_sizes(s: &str) -> Result<FilesWithSizes> {
+    let mut current_path = PathBuf::new();
+    let mut files_with_sizes: FilesWithSizes = HashMap::new();
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut current_path = PathBuf::new();
-        let mut files_with_sizes: HashMap<PathBuf, u32> = HashMap::new();
-
-        for input_and_output in s.split("\n$ ") {
-            if let Some(("cd", dir_name)) = input_and_output.split_once(' ') {
-                current_path = match dir_name {
-                    ".." => current_path.parent().unwrap().to_path_buf(),
-                    _ => current_path.join(dir_name),
-                }
-            } else if let Some(("ls", dir_contents)) = input_and_output.split_once('\n') {
-                let new_files =
-                    dir_contents
-                        .lines()
-                        .filter_map(|line| match line.split_once(' ').unwrap() {
-                            ("dir", _dir_name) => None,
-                            (file_size, file_name) => {
-                                let file_path = current_path.join(file_name);
-                                let file_size = file_size.parse().unwrap();
-                                Some((file_path, file_size))
-                            }
-                        });
-                files_with_sizes.extend(new_files);
+    for input_and_output in s.split("\n$ ") {
+        if let Some(("cd", dir_name)) = input_and_output.split_once(' ') {
+            current_path = match dir_name {
+                ".." => current_path.parent().unwrap().to_path_buf(),
+                _ => current_path.join(dir_name),
             }
+        } else if let Some(("ls", dir_contents)) = input_and_output.split_once('\n') {
+            let new_files =
+                dir_contents
+                    .lines()
+                    .filter_map(|line| match line.split_once(' ').unwrap() {
+                        ("dir", _dir_name) => None,
+                        (file_size, file_name) => {
+                            let file_path = current_path.join(file_name);
+                            let file_size = file_size.parse().unwrap();
+                            Some((file_path, file_size))
+                        }
+                    });
+            files_with_sizes.extend(new_files);
         }
-        Ok(Self(files_with_sizes))
     }
+    Ok(files_with_sizes)
 }
 
-impl FilesWithSizes {
-    fn get_dir_sizes(self) -> HashMap<PathBuf, u32> {
-        self.iter()
-            .flat_map(|(file_path, file_size)| {
-                file_path
-                    .ancestors()
-                    .skip(1)
-                    .map(|ancestor_path| (ancestor_path.to_path_buf(), *file_size))
-            })
-            .into_grouping_map()
-            .sum()
-    }
+type DirsWithSizes = HashMap<PathBuf, u32>;
+
+fn get_dir_sizes(files_with_sizes: &FilesWithSizes) -> DirsWithSizes {
+    files_with_sizes
+        .iter()
+        .flat_map(|(file_path, file_size)| {
+            file_path
+                .ancestors()
+                .skip(1)
+                .map(|ancestor_path| (ancestor_path.to_path_buf(), *file_size))
+        })
+        .into_grouping_map()
+        .sum()
 }
 
 pub fn p1(file: &str) -> Result<u32> {
     let upper_bound = 100_000u32;
 
     let navigations = &file[2..];
-    let files_with_sizes = navigations.parse::<FilesWithSizes>()?;
+    let files_with_sizes = parse_files_with_sizes(navigations)?;
 
-    let dirs_with_sizes = files_with_sizes.get_dir_sizes();
+    let dirs_with_sizes = get_dir_sizes(&files_with_sizes);
 
     Ok(dirs_with_sizes
         .values()
@@ -69,9 +64,9 @@ pub fn p1(file: &str) -> Result<u32> {
 
 pub fn p2(file: &str) -> Result<u32> {
     let navigations = &file[2..];
-    let files_with_sizes = navigations.parse::<FilesWithSizes>()?;
+    let files_with_sizes = parse_files_with_sizes(navigations)?;
 
-    let dirs_with_sizes = files_with_sizes.get_dir_sizes();
+    let dirs_with_sizes = get_dir_sizes(&files_with_sizes);
 
     let total_space = 70_000_000u32;
     let total_used_space = *dirs_with_sizes.get(&PathBuf::from("/")).unwrap();

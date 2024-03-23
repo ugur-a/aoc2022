@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use anyhow::{Context, Error, Result};
-use derive_deref::{Deref, DerefMut};
 use itertools::Itertools;
 
 enum CraneModel {
@@ -41,109 +40,101 @@ impl FromStr for Rearrangement {
     }
 }
 
-#[derive(Deref, DerefMut)]
-struct Warehouse {
-    stacks: Vec<Vec<char>>,
+type Warehouse = Vec<Vec<char>>;
+
+fn parse_warehouse(s: &str) -> Result<Warehouse> {
+    // remove the last row of the stack arrangement schema - the one with stack numbers
+    let (initial_stack_arrangement, last_row_of_stack_arrangement) = s.rsplit_once('\n').unwrap();
+
+    // since we don't need the last row anyway, use it to indirectly calculate the number of stacks
+    let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
+
+    // initialize the warehouse (collection of stacks)
+    let mut stacks: Vec<Vec<char>> = vec![Vec::new(); num_stacks];
+
+    // parse the initial stack arrangement - fill up the warehouse
+    // comment: go over lines bottom-up, since that's how the crates are stacked
+    for line in initial_stack_arrangement.lines().rev() {
+        line.chars()
+            .chunks(4)
+            .into_iter()
+            // provide the stack number for each maybe-crate
+            .enumerate()
+            // if there's a crate, add it to the corresponding stack, skip if only air
+            .filter_map(|(idx, chunk)| match chunk.collect_vec().as_slice() {
+                ['[', crate_name, ']', ..] => Some((idx, *crate_name)),
+                [' ', ' ', ' ', ..] => None,
+                _ => unreachable!(),
+            })
+            .for_each(|(idx, crate_name)| {
+                stacks.get_mut(idx).unwrap().push(crate_name);
+            });
+    }
+    Ok(stacks)
 }
 
-impl FromStr for Warehouse {
-    type Err = Error;
+fn apply_rearrangement(
+    warehouse: &mut Warehouse,
+    rearrangement: &Rearrangement,
+    crane_model: &CraneModel,
+) -> Option<()> {
+    let current_length_of_stack_to_move_from =
+        warehouse.get(rearrangement.stack_to_take_from)?.len();
 
-    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
-        // remove the last row of the stack arrangement schema - the one with stack numbers
-        let (initial_stack_arrangement, last_row_of_stack_arrangement) =
-            s.rsplit_once('\n').unwrap();
+    let crates_to_move = {
+        let crates = warehouse
+            .get_mut(rearrangement.stack_to_take_from)?
+            .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..);
 
-        // since we don't need the last row anyway, use it to indirectly calculate the number of stacks
-        let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
-
-        // initialize the warehouse (collection of stacks)
-        let mut stacks: Vec<Vec<char>> = vec![Vec::new(); num_stacks];
-
-        // parse the initial stack arrangement - fill up the warehouse
-        // comment: go over lines bottom-up, since that's how the crates are stacked
-        for line in initial_stack_arrangement.lines().rev() {
-            line.chars()
-                .chunks(4)
-                .into_iter()
-                // provide the stack number for each maybe-crate
-                .enumerate()
-                // if there's a crate, add it to the corresponding stack, skip if only air
-                .filter_map(|(idx, chunk)| match chunk.collect_vec().as_slice() {
-                    ['[', crate_name, ']', ..] => Some((idx, *crate_name)),
-                    [' ', ' ', ' ', ..] => None,
-                    _ => unreachable!(),
-                })
-                .for_each(|(idx, crate_name)| {
-                    stacks.get_mut(idx).unwrap().push(crate_name);
-                });
+        match crane_model {
+            CraneModel::CrateMover9000 => crates.rev().collect_vec(),
+            CraneModel::CrateMover9001 => crates.collect(),
         }
-        Ok(Self { stacks })
-    }
+    };
+
+    warehouse
+        .get_mut(rearrangement.stack_to_move_to)?
+        .extend(crates_to_move);
+
+    Some(())
 }
 
-impl Warehouse {
-    fn apply_rearrangement(
-        &mut self,
-        rearrangement: &Rearrangement,
-        crane_model: &CraneModel,
-    ) -> Option<()> {
-        let current_length_of_stack_to_move_from =
-            self.get(rearrangement.stack_to_take_from)?.len();
-
-        let crates_to_move = {
-            let crates = self
-                .get_mut(rearrangement.stack_to_take_from)?
-                .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..);
-
-            match crane_model {
-                CraneModel::CrateMover9000 => crates.rev().collect_vec(),
-                CraneModel::CrateMover9001 => crates.collect(),
-            }
-        };
-
-        self.get_mut(rearrangement.stack_to_move_to)?
-            .extend(crates_to_move);
-
-        Some(())
-    }
-
-    fn crates_at_the_top(&self) -> Result<String> {
-        self.iter()
-            .map(|stack| stack.last())
-            .collect::<Option<String>>()
-            .context("One or more stack ended up empty")
-    }
+fn crates_at_the_top(warehouse: &Warehouse) -> Result<String> {
+    warehouse
+        .iter()
+        .map(|stack| stack.last())
+        .collect::<Option<String>>()
+        .context("One or more stack ended up empty")
 }
 
 pub fn p1(file: &str) -> Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
-    let mut warehouse = Warehouse::from_str(initial_stack_schema)?;
+    let mut warehouse = parse_warehouse(initial_stack_schema)?;
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {
         let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        warehouse.apply_rearrangement(&rearrangement, &CraneModel::CrateMover9000);
+        apply_rearrangement(&mut warehouse, &rearrangement, &CraneModel::CrateMover9000);
     }
 
     // get the final arrangement
-    warehouse.crates_at_the_top()
+    crates_at_the_top(&warehouse)
 }
 
 pub fn p2(file: &str) -> Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
-    let mut warehouse = Warehouse::from_str(initial_stack_schema)?;
+    let mut warehouse: Warehouse = parse_warehouse(initial_stack_schema)?;
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {
         let rearrangement = Rearrangement::from_str(rearrangement)?;
 
-        warehouse.apply_rearrangement(&rearrangement, &CraneModel::CrateMover9001);
+        apply_rearrangement(&mut warehouse, &rearrangement, &CraneModel::CrateMover9001);
     }
 
     // format the final arrangement
-    warehouse.crates_at_the_top()
+    crates_at_the_top(&warehouse)
 }
