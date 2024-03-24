@@ -23,8 +23,8 @@ macro_rules! rock {
     [$( ( $p1:expr, $p2:expr ) ),+] => {[$( Point2D($p1, $p2) ),+]};
 }
 
-impl From<RockType> for Rock {
-    fn from(r#type: RockType) -> Self {
+impl Rock {
+    fn new(r#type: RockType) -> Self {
         let (points, width) = match r#type {
             RockType::Minus => (rock![(0, 0), (1, 0), (2, 0), (3, 0), (0, 0)], 4),
             RockType::Plus => (rock![(1, 0), (0, 1), (2, 1), (1, 2), (1, 1)], 3),
@@ -112,7 +112,7 @@ pub fn p1(file: &str) -> Result<u32> {
     use RockType as RT;
     let rocks = vec![RT::Minus, RT::Plus, RT::RightL, RT::I, RT::Square]
         .into_iter()
-        .map(Rock::from)
+        .map(Rock::new)
         .cycle()
         .take(num_rounds);
     let mut pushes = file
