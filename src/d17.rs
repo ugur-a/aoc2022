@@ -160,18 +160,16 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
                 break;
             }
             // 2) there's a rock point directly underneath
-            let mut rock_stops = false;
-            for &Point2D(x, y) in &rock.points {
-                if chamber.contains(
-                    &(Point2D(
+            let rock_stops = rock
+                .points
+                .map(|Point2D(x, y)| {
+                    Point2D(
                         x + rock_position_relative.0,
                         y + rock_position_relative.1 - 1,
-                    )),
-                ) {
-                    rock_stops = true;
-                    break;
-                }
-            }
+                    )
+                })
+                .iter()
+                .any(|point| chamber.contains(&point));
             if rock_stops {
                 chamber.add_points(&rock.points.map(|point| point + rock_position_relative));
                 break;
