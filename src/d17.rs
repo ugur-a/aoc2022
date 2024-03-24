@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display};
+use std::{collections::HashSet, fmt::Display, thread::sleep, time::Duration};
 
 use anyhow::{anyhow, Error, Result};
 use itertools::Itertools;
@@ -131,6 +131,7 @@ pub fn p1(file: &str) -> Result<u32> {
             .map_or(3, |height| height + 1 + 3);
         let mut rock_position_relative = Point2D(2, spawn_height);
         loop {
+            println!("{}\n", chamber);
             // jet stream
             match pushes.next().unwrap() {
                 JetStreamDirection::Left => {
@@ -203,16 +204,14 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 3068);
     }
     #[test]
-    #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/d17/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 0);
+        assert_eq!(p1(&inp).unwrap(), 3206);
     }
     #[test]
-    #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/d17/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp).unwrap(), 1_514_285_714_288);
     }
     #[test]
     #[ignore]
