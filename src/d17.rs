@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display, thread::sleep, time::Duration};
+use std::{cmp::max, collections::HashSet, fmt::Display};
 
 use anyhow::{anyhow, Error, Result};
 use itertools::Itertools;
@@ -8,6 +8,7 @@ use crate::points::Point2D;
 struct Rock {
     points: [Point2D<u64>; 5],
     width: u64,
+    height: u64,
 }
 
 #[derive(Clone, Copy)]
@@ -25,14 +26,18 @@ macro_rules! rock {
 
 impl Rock {
     fn new(r#type: RockType) -> Self {
-        let (points, width) = match r#type {
-            RockType::Minus => (rock![(0, 0), (1, 0), (2, 0), (3, 0), (0, 0)], 4),
-            RockType::Plus => (rock![(1, 0), (0, 1), (2, 1), (1, 2), (1, 1)], 3),
-            RockType::RightL => (rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)], 3),
-            RockType::I => (rock![(0, 0), (0, 1), (0, 2), (0, 3), (0, 0)], 1),
-            RockType::Square => (rock![(0, 0), (0, 1), (1, 0), (1, 1), (0, 0)], 2),
+        let (points, width, height) = match r#type {
+            RockType::Minus => (rock![(0, 0), (1, 0), (2, 0), (3, 0), (0, 0)], 4, 1),
+            RockType::Plus => (rock![(1, 0), (0, 1), (2, 1), (1, 2), (1, 1)], 3, 3),
+            RockType::RightL => (rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)], 3, 3),
+            RockType::I => (rock![(0, 0), (0, 1), (0, 2), (0, 3), (0, 0)], 1, 4),
+            RockType::Square => (rock![(0, 0), (0, 1), (1, 0), (1, 1), (0, 0)], 2, 2),
         };
-        Self { points, width }
+        Self {
+            points,
+            width,
+            height,
+        }
     }
 }
 
@@ -56,6 +61,7 @@ impl TryFrom<char> for JetStreamDirection {
 
 struct Chamber {
     width: u64,
+    height: u64,
     occupied_points: HashSet<Point2D<u64>>,
 }
 
@@ -63,6 +69,7 @@ impl Chamber {
     fn new(width: u64) -> Self {
         Self {
             width,
+            height: 0,
             occupied_points: HashSet::new(),
         }
     }
@@ -71,16 +78,14 @@ impl Chamber {
         self.occupied_points.contains(q)
     }
 
-    fn add_points(&mut self, points: &[Point2D<u64>; 5]) {
-        self.occupied_points.extend(points);
+    fn add_rock(&mut self, rock: Rock, rock_position_relative: Point2D<u64>) {
+        self.occupied_points
+            .extend(&rock.points.map(|point| point + rock_position_relative));
+        self.height = max(self.height, rock_position_relative.1 + rock.height);
     }
 
     fn height(&self) -> u64 {
-        self.occupied_points
-            .iter()
-            .map(|point| point.1)
-            .max()
-            .map_or(0, |y| y + 1)
+        self.height
     }
 }
 
@@ -156,7 +161,7 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
             // come to rest if:
             // 1) arrived at the lowest point
             if rock_position_relative.1 == 0 {
-                chamber.add_points(&rock.points.map(|point| point + rock_position_relative));
+                chamber.add_rock(rock, rock_position_relative);
                 break;
             }
             // 2) there's a rock point directly underneath
@@ -171,7 +176,7 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
                 .iter()
                 .any(|point| chamber.contains(&point));
             if rock_stops {
-                chamber.add_points(&rock.points.map(|point| point + rock_position_relative));
+                chamber.add_rock(rock, rock_position_relative);
                 break;
             //fall
             } else {
