@@ -78,10 +78,20 @@ impl Chamber {
         self.occupied_points.contains(q)
     }
 
+    fn trim_to(&mut self, height_to_trim_to: u64) {
+        self.occupied_points
+            .retain(|point| point.1 > self.height - height_to_trim_to);
+    }
+
+    const MAX_HEIGHT_BEFORE_TRIMMING: u64 = 1024 * 1024 * 1024;
+    const HEIGHT_TO_TRIM_TO: u64 = 512;
     fn add_rock(&mut self, rock: Rock, rock_position_relative: Point2D<u8, u64>) {
         self.occupied_points
             .extend(&rock.points.map(|point| point + rock_position_relative));
         self.height = max(self.height, rock_position_relative.1 + rock.height);
+        if self.height > Self::MAX_HEIGHT_BEFORE_TRIMMING {
+            self.trim_to(Self::HEIGHT_TO_TRIM_TO)
+        }
     }
 
     fn height(&self) -> u64 {
