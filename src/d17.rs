@@ -6,8 +6,8 @@ use itertools::Itertools;
 use crate::points::Point2D;
 #[derive(Clone, Copy)]
 struct Rock {
-    points: [Point2D<u64>; 5],
-    width: u64,
+    points: [Point2D<u8, u64>; 5],
+    width: u8,
     height: u64,
 }
 
@@ -60,13 +60,13 @@ impl TryFrom<char> for JetStreamDirection {
 }
 
 struct Chamber {
-    width: u64,
+    width: u8,
     height: u64,
-    occupied_points: HashSet<Point2D<u64>>,
+    occupied_points: HashSet<Point2D<u8, u64>>,
 }
 
 impl Chamber {
-    fn new(width: u64) -> Self {
+    fn new(width: u8) -> Self {
         Self {
             width,
             height: 0,
@@ -74,11 +74,11 @@ impl Chamber {
         }
     }
 
-    fn contains(&self, q: &Point2D<u64>) -> bool {
+    fn contains(&self, q: &Point2D<u8, u64>) -> bool {
         self.occupied_points.contains(q)
     }
 
-    fn add_rock(&mut self, rock: Rock, rock_position_relative: Point2D<u64>) {
+    fn add_rock(&mut self, rock: Rock, rock_position_relative: Point2D<u8, u64>) {
         self.occupied_points
             .extend(&rock.points.map(|point| point + rock_position_relative));
         self.height = max(self.height, rock_position_relative.1 + rock.height);
