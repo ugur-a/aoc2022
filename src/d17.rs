@@ -6,8 +6,8 @@ use itertools::Itertools;
 use crate::points::Point2D;
 #[derive(Clone, Copy)]
 struct Rock {
-    points: [Point2D<u32>; 5],
-    width: u32,
+    points: [Point2D<u64>; 5],
+    width: u64,
 }
 
 #[derive(Clone, Copy)]
@@ -55,27 +55,27 @@ impl TryFrom<char> for JetStreamDirection {
 }
 
 struct Chamber {
-    width: u32,
-    occupied_points: HashSet<Point2D<u32>>,
+    width: u64,
+    occupied_points: HashSet<Point2D<u64>>,
 }
 
 impl Chamber {
-    fn new(width: u32) -> Self {
+    fn new(width: u64) -> Self {
         Self {
             width,
             occupied_points: HashSet::new(),
         }
     }
 
-    fn contains(&self, q: &Point2D<u32>) -> bool {
+    fn contains(&self, q: &Point2D<u64>) -> bool {
         self.occupied_points.contains(q)
     }
 
-    fn add_points(&mut self, points: &[Point2D<u32>; 5]) {
+    fn add_points(&mut self, points: &[Point2D<u64>; 5]) {
         self.occupied_points.extend(points);
     }
 
-    fn height(&self) -> u32 {
+    fn height(&self) -> u64 {
         self.occupied_points
             .iter()
             .map(|point| point.1)
@@ -106,8 +106,7 @@ impl Display for Chamber {
     }
 }
 
-pub fn p1(file: &str) -> Result<u32> {
-    let num_rounds = 2022;
+fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
     let mut chamber = Chamber::new(7);
     use RockType as RT;
     let rocks = vec![RT::Minus, RT::Plus, RT::RightL, RT::I, RT::Square]
@@ -185,8 +184,12 @@ pub fn p1(file: &str) -> Result<u32> {
     Ok(chamber.height())
 }
 
-pub fn p2(_file: &str) -> Result<usize> {
-    todo!()
+pub fn p1(file: &str) -> Result<u64> {
+    tetris(file, 2022)
+}
+
+pub fn p2(file: &str) -> Result<u64> {
+    tetris(file, 1_000_000_000_000)
 }
 
 #[cfg(test)]
