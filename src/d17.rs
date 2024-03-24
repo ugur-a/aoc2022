@@ -91,7 +91,7 @@ impl Chamber {
 
 impl Display for Chamber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let res = (0..=self.height())
+        let res = ((self.height().saturating_sub(20))..=self.height())
             .rev()
             .map(|y| {
                 (0..=self.width)
