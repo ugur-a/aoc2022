@@ -187,6 +187,10 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
     Ok(chamber.height())
 }
 
+pub fn p_mid(file: &str) -> Result<u64> {
+    tetris(file, 1_000_000)
+}
+
 pub fn p1(file: &str) -> Result<u64> {
     tetris(file, 2022)
 }
@@ -219,5 +223,11 @@ mod tests {
     fn real_p2() {
         let inp = read_to_string("inputs/d17/real.txt").unwrap();
         assert_eq!(p2(&inp).unwrap(), 0);
+    }
+
+    #[test]
+    fn test_p_mid() {
+        let inp = read_to_string("inputs/d17/real.txt").unwrap();
+        assert_eq!(p_mid(&inp).unwrap(), 1_602_842);
     }
 }
