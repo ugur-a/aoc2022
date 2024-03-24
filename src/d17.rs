@@ -59,6 +59,7 @@ impl TryFrom<char> for JetStreamDirection {
     }
 }
 
+#[derive(Default)]
 struct Chamber {
     width: u8,
     height: u64,
@@ -69,8 +70,7 @@ impl Chamber {
     fn new(width: u8) -> Self {
         Self {
             width,
-            height: 0,
-            occupied_points: HashSet::new(),
+            ..Default::default()
         }
     }
 
