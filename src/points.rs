@@ -1,10 +1,10 @@
 use std::ops::Add;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Default, Debug)]
-pub struct Point2D<T>(pub T, pub T);
+pub struct Point2D<T, U = T>(pub T, pub U);
 
-impl<T: Copy> Point2D<T> {
-    pub fn new(x: T, y: T) -> Self {
+impl<T: Copy, U: Copy> Point2D<T, U> {
+    pub fn new(x: T, y: U) -> Self {
         Self(x, y)
     }
 
@@ -12,14 +12,15 @@ impl<T: Copy> Point2D<T> {
         self.0
     }
 
-    pub fn y(&self) -> T {
+    pub fn y(&self) -> U {
         self.1
     }
 }
 
-impl<T> Add for Point2D<T>
+impl<T, U> Add for Point2D<T, U>
 where
     T: Add<Output = T>,
+    U: Add<Output = U>,
 {
     type Output = Self;
 
