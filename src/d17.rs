@@ -75,10 +75,10 @@ impl Chamber {
         self.occupied_points.extend(points);
     }
 
-    fn highest_point(&self) -> u32 {
+    fn height(&self) -> u32 {
         self.occupied_points
             .iter()
-            .map(|Point2D(_x, y)| *y)
+            .map(|point| point.1)
             .max()
             .map_or(0, |y| y + 1)
     }
@@ -86,7 +86,7 @@ impl Chamber {
 
 impl Display for Chamber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let res = (0..=self.highest_point())
+        let res = (0..=self.height())
             .rev()
             .map(|y| {
                 (0..=self.width)
@@ -123,12 +123,7 @@ pub fn p1(file: &str) -> Result<u32> {
         .cycle();
 
     for rock in rocks {
-        let spawn_height = chamber
-            .occupied_points
-            .iter()
-            .map(|Point2D(_x, y)| *y)
-            .max()
-            .map_or(3, |height| height + 1 + 3);
+        let spawn_height = chamber.height() + 3;
         let mut rock_position_relative = Point2D(2, spawn_height);
         loop {
             println!("{}\n", chamber);
@@ -187,7 +182,7 @@ pub fn p1(file: &str) -> Result<u32> {
             }
         }
     }
-    Ok(chamber.highest_point())
+    Ok(chamber.height())
 }
 
 pub fn p2(_file: &str) -> Result<usize> {
