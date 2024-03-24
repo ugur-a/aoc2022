@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fmt::Display};
 
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use itertools::Itertools;
 
 use crate::points::Point2D;
@@ -49,7 +49,7 @@ impl TryFrom<char> for JetStreamDirection {
         match value {
             '<' => Ok(Self::Left),
             '>' => Ok(Self::Right),
-            _ => unimplemented!(),
+            chr => Err(anyhow!("Invalid char: '{}'", chr)),
         }
     }
 }
