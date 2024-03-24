@@ -6,46 +6,35 @@ use itertools::Itertools;
 use crate::points::Point2D;
 #[derive(Clone, Copy)]
 struct Rock {
-    rock_points: [Point2D<u32>; 5],
+    points: [Point2D<u32>; 5],
     width: u32,
 }
 
-impl Rock {
-    fn moved_by_relative_offset(&self, relative_offset: Point2D<u32>) -> Self {
-        let new_rock_points: [Point2D<u32>; 5] = self
-            .rock_points
-            .map(|relative_position_in_rock| relative_position_in_rock + relative_offset);
-        Self {
-            rock_points: new_rock_points,
-            width: self.width,
-        }
-    }
+#[derive(Clone, Copy)]
+enum RockType {
+    Minus,
+    Plus,
+    RightL,
+    I,
+    Square,
 }
 
 macro_rules! rock {
     [$( ( $p1:expr, $p2:expr ) ),+] => {[$( Point2D($p1, $p2) ),+]};
 }
 
-const MINUS_ROCK: Rock = Rock {
-    rock_points: rock![(0, 0), (0, 0), (1, 0), (2, 0), (3, 0)],
-    width: 4,
-};
-const PLUS_ROCK: Rock = Rock {
-    rock_points: rock![(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)],
-    width: 3,
-};
-const RIGHT_LROCK: Rock = Rock {
-    rock_points: rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)],
-    width: 3,
-};
-const IROCK: Rock = Rock {
-    rock_points: rock![(0, 0), (0, 0), (0, 1), (0, 2), (0, 3)],
-    width: 1,
-};
-const SQUARE_ROCK: Rock = Rock {
-    rock_points: rock![(0, 0), (0, 0), (0, 1), (1, 0), (1, 1)],
-    width: 2,
-};
+impl From<RockType> for Rock {
+    fn from(r#type: RockType) -> Self {
+        let (points, width) = match r#type {
+            RockType::Minus => (rock![(0, 0), (1, 0), (2, 0), (3, 0), (0, 0)], 4),
+            RockType::Plus => (rock![(1, 0), (0, 1), (2, 1), (1, 2), (1, 1)], 3),
+            RockType::RightL => (rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)], 3),
+            RockType::I => (rock![(0, 0), (0, 1), (0, 2), (0, 3), (0, 0)], 1),
+            RockType::Square => (rock![(0, 0), (0, 1), (1, 0), (1, 1), (0, 0)], 2),
+        };
+        Self { points, width }
+    }
+}
 
 #[derive(Clone, Copy)]
 enum JetStreamDirection {
@@ -82,8 +71,8 @@ impl Chamber {
         self.occupied_points.contains(q)
     }
 
-    fn add_rock(&mut self, rock: Rock) {
-        self.occupied_points.extend(rock.rock_points);
+    fn add_points(&mut self, points: &[Point2D<u32>; 5]) {
+        self.occupied_points.extend(points);
     }
 
     fn highest_point(&self) -> u32 {
@@ -120,8 +109,10 @@ impl Display for Chamber {
 pub fn p1(file: &str) -> Result<u32> {
     let num_rounds = 2022;
     let mut chamber = Chamber::new(7);
-    let rocks = vec![MINUS_ROCK, PLUS_ROCK, RIGHT_LROCK, IROCK, SQUARE_ROCK]
+    use RockType as RT;
+    let rocks = vec![RT::Minus, RT::Plus, RT::RightL, RT::I, RT::Square]
         .into_iter()
+        .map(Rock::from)
         .cycle()
         .take(num_rounds);
     let mut pushes = file
@@ -138,34 +129,48 @@ pub fn p1(file: &str) -> Result<u32> {
             .map(|Point2D(_x, y)| *y)
             .max()
             .map_or(3, |height| height + 1 + 3);
-        let mut rock_position_in_chamber = Point2D(2, spawn_height);
+        let mut rock_position_relative = Point2D(2, spawn_height);
         loop {
             // jet stream
             match pushes.next().unwrap() {
                 JetStreamDirection::Left => {
-                    if rock_position_in_chamber.0 > 0 {
-                        rock_position_in_chamber.0 -= 1;
+                    if rock_position_relative.0 > 0
+                        && rock
+                            .points
+                            .iter()
+                            .map(|point| *point + rock_position_relative)
+                            .map(|Point2D(x, y)| Point2D(x - 1, y))
+                            .all(|point| !chamber.contains(&point))
+                    {
+                        rock_position_relative.0 -= 1;
                     }
                 }
                 JetStreamDirection::Right => {
-                    if rock_position_in_chamber.0 + rock.width < chamber.width {
-                        rock_position_in_chamber.0 += 1;
+                    if rock_position_relative.0 + rock.width < chamber.width
+                        && rock
+                            .points
+                            .iter()
+                            .map(|point| *point + rock_position_relative)
+                            .map(|Point2D(x, y)| Point2D(x + 1, y))
+                            .all(|point| !chamber.contains(&point))
+                    {
+                        rock_position_relative.0 += 1;
                     }
                 }
             }
             // come to rest if:
             // 1) arrived at the lowest point
-            if rock_position_in_chamber.1 == 0 {
-                chamber.add_rock(rock.moved_by_relative_offset(rock_position_in_chamber));
+            if rock_position_relative.1 == 0 {
+                chamber.add_points(&rock.points.map(|point| point + rock_position_relative));
                 break;
             }
             // 2) there's a rock point directly underneath
             let mut rock_stops = false;
-            for &Point2D(x, y) in &rock.rock_points {
+            for &Point2D(x, y) in &rock.points {
                 if chamber.contains(
                     &(Point2D(
-                        x + rock_position_in_chamber.0,
-                        y + rock_position_in_chamber.1 - 1,
+                        x + rock_position_relative.0,
+                        y + rock_position_relative.1 - 1,
                     )),
                 ) {
                     rock_stops = true;
@@ -173,16 +178,17 @@ pub fn p1(file: &str) -> Result<u32> {
                 }
             }
             if rock_stops {
-                chamber.add_rock(rock.moved_by_relative_offset(rock_position_in_chamber));
+                chamber.add_points(&rock.points.map(|point| point + rock_position_relative));
                 break;
             //fall
             } else {
-                rock_position_in_chamber.1 -= 1;
+                rock_position_relative.1 -= 1;
             }
         }
     }
     Ok(chamber.highest_point())
 }
+
 pub fn p2(_file: &str) -> Result<usize> {
     todo!()
 }
