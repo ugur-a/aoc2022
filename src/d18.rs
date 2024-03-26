@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::{bail, Result};
 
 use crate::points::Point3D;
@@ -16,10 +18,10 @@ fn parse_droplet(s: &str) -> Result<DropletCube> {
 }
 
 pub fn p1(file: &str) -> Result<usize> {
-    let droplet_cubes: Vec<DropletCube> = file
+    let droplet_cubes: HashSet<DropletCube> = file
         .lines()
         .map(|line| parse_droplet(line))
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<_>>()?;
 
     // multiple droplets can have the same point as a potential exposed side (PES),
     // so there will be duplicate values here
