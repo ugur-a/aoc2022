@@ -59,6 +59,12 @@ impl TryFrom<char> for JetStreamDirection {
     }
 }
 
+// TODO: store each row as an bitmask
+// Since we've got 7 cols, each row is u8, which can in turn be mapped to an ASCII char
+// TODO: store already seen states (n highest rows + curr rock + curr jetstream )
+// into a HashSet, and terminate after having found a state already seen
+// after that, see how many rows were added during the cycle, and calculate
+// the total num of rows after `num_rounds` rounds based on that
 #[derive(Default)]
 struct Chamber {
     width: u8,
