@@ -1,4 +1,19 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
+
+use crate::points::Point3D;
+
+type DropletCube = Point3D<i8>;
+
+fn parse_droplet(s: &str) -> Result<DropletCube> {
+    let [x, y, z] = s
+        .split(',')
+        .map(|coord| coord.parse::<i8>())
+        .collect::<Result<Vec<_>, _>>()?[..]
+    else {
+        bail!("num coords of a droplet != 3")
+    };
+    Ok(Point3D(x, y, z))
+}
 
 pub fn p1(file: &str) -> Result<usize> {
     todo!()
