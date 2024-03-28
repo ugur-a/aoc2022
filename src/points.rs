@@ -38,7 +38,7 @@ where
     U: Add<Output = U> + Sub<Output = U> + From<i8> + Copy,
     V: Add<Output = V> + Sub<Output = V> + From<i8> + Copy,
 {
-    pub fn get_neighbours(&self) -> [Self; 6] {
+    pub fn neighbours(&self) -> [Self; 6] {
         let &Self(x, y, z) = self;
         [
             (x + 1.into(), y, z),

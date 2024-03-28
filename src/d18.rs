@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use anyhow::{bail, Result};
 use itertools::{Itertools, MinMaxResult};
+use pathfinding::directed::dfs::dfs_reach;
 
 use crate::points::Point3D;
 
@@ -74,7 +75,7 @@ pub fn p1(file: &str) -> Result<usize> {
     // so there will be duplicate values here
     let num_exposed_sides: usize = droplet
         .cubes()
-        .flat_map(Point3D::get_neighbours)
+        .flat_map(Point3D::neighbours)
         .filter(|&potentially_exposed_side| !(droplet.contains(potentially_exposed_side)))
         .count();
 
@@ -90,7 +91,7 @@ pub fn p2(file: &str) -> Result<usize> {
     // so there will be duplicate values here
     let num_external_exposed_sides = droplet
         .cubes()
-        .flat_map(Point3D::get_neighbours)
+        .flat_map(Point3D::neighbours)
         .counts()
         .into_iter()
         .filter(|(potentially_exposed_side, _num_neighbours)| {
