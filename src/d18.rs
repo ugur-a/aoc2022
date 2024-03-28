@@ -1,11 +1,20 @@
 use std::collections::HashSet;
 
 use anyhow::{bail, Result};
-use itertools::Itertools;
+use itertools::{Itertools, MinMaxResult};
 
 use crate::points::Point3D;
 
 type DropletCube = Point3D<i8>;
+
+struct DropletBoundaries {
+    x_min: i8,
+    x_max: i8,
+    y_min: i8,
+    y_max: i8,
+    z_min: i8,
+    z_max: i8,
+}
 
 struct Droplet {
     cubes: HashSet<DropletCube>,
@@ -22,6 +31,26 @@ impl Droplet {
 
     fn contains(&self, cube: Point3D<i8>) -> bool {
         self.cubes.contains(&cube)
+    }
+
+    fn boundaries(&self) -> Result<DropletBoundaries> {
+        let MinMaxResult::MinMax(x_min, x_max) = self.cubes().map(Point3D::x).minmax() else {
+            bail!("cube unbound in x axis")
+        };
+        let MinMaxResult::MinMax(y_min, y_max) = self.cubes().map(Point3D::y).minmax() else {
+            bail!("cube unbound in y axis")
+        };
+        let MinMaxResult::MinMax(z_min, z_max) = self.cubes().map(Point3D::z).minmax() else {
+            bail!("cube unbound in z axis")
+        };
+        Ok(DropletBoundaries {
+            x_min,
+            x_max,
+            y_min,
+            y_max,
+            z_min,
+            z_max,
+        })
     }
 }
 
