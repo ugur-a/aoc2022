@@ -27,16 +27,7 @@ pub fn p1(file: &str) -> Result<usize> {
     // so there will be duplicate values here
     let num_exposed_sides: usize = droplet_cubes
         .iter()
-        .flat_map(|&Point3D(x, y, z)| {
-            [
-                Point3D(x + 1, y, z),
-                Point3D(x, y + 1, z),
-                Point3D(x, y, z + 1),
-                Point3D(x - 1, y, z),
-                Point3D(x, y - 1, z),
-                Point3D(x, y, z - 1),
-            ]
-        })
+        .flat_map(Point3D::get_neighbours)
         .filter(|&potentially_exposed_side| !(droplet_cubes.contains(&potentially_exposed_side)))
         .count();
 

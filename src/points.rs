@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Default, Debug)]
 pub struct Point2D<T, U = T>(pub T, pub U);
@@ -31,6 +31,26 @@ where
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Default, Debug)]
 pub struct Point3D<T, U = T, V = T>(pub T, pub U, pub V);
+
+impl<T, U, V> Point3D<T, U, V>
+where
+    T: Add<Output = T> + Sub<Output = T> + From<i8> + Copy,
+    U: Add<Output = U> + Sub<Output = U> + From<i8> + Copy,
+    V: Add<Output = V> + Sub<Output = V> + From<i8> + Copy,
+{
+    pub fn get_neighbours(&self) -> [Self; 6] {
+        let &Self(x, y, z) = self;
+        [
+            (x + 1.into(), y, z),
+            (x, y + 1.into(), z),
+            (x, y, z + 1.into()),
+            (x - 1.into(), y, z),
+            (x, y - 1.into(), z),
+            (x, y, z - 1.into()),
+        ]
+        .map(|(x, y, z)| Self(x, y, z))
+    }
+}
 
 impl<T: Copy, U: Copy, V: Copy> Point3D<T, U, V> {
     pub fn new(x: T, y: U, z: V) -> Self {
