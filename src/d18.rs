@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use anyhow::{bail, Result};
+use itertools::Itertools;
 
 use crate::points::Point3D;
 
@@ -32,8 +33,25 @@ pub fn p1(file: &str) -> Result<usize> {
     Ok(num_exposed_sides)
 }
 
-pub fn p2(_file: &str) -> Result<usize> {
-    todo!()
+pub fn p2(file: &str) -> Result<usize> {
+    let droplet_cubes: HashSet<DropletCube> =
+        file.lines().map(parse_droplet).collect::<Result<_>>()?;
+
+    // multiple droplets can have the same point as a potential exposed side (PES),
+    // so there will be duplicate values here
+    let num_exposed_sides: usize = droplet_cubes
+        .iter()
+        .flat_map(Point3D::get_neighbours)
+        .counts()
+        .into_iter()
+        .filter(|(potentially_exposed_side, _num_neighbours)| {
+            !(droplet_cubes.contains(potentially_exposed_side))
+        })
+        .filter(|(_exposed_side, num_neighbours)| *num_neighbours < 6)
+        .map(|(_exposed_side, num_neighbours)| num_neighbours)
+        .sum();
+
+    Ok(num_exposed_sides)
 }
 
 #[cfg(test)]
@@ -59,6 +77,7 @@ mod tests {
     #[ignore]
     fn real_p2() {
         let inp = include_str!("../inputs/d18/real.txt");
+        assert_ne!(p2(inp).unwrap(), 3316);
         assert_eq!(p2(inp).unwrap(), 0);
     }
 }
