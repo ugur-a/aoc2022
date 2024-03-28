@@ -1,6 +1,7 @@
+use std::collections::HashSet;
+
 use intersection::hash_set;
 use itertools::Itertools;
-use std::collections::HashSet;
 
 fn to_priority(char: char) -> usize {
     match char {

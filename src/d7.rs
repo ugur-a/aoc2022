@@ -12,21 +12,25 @@ fn parse_files_with_sizes(s: &str) -> Result<FilesWithSizes> {
     for input_and_output in s.split("\n$ ") {
         if let Some(("cd", dir_name)) = input_and_output.split_once(' ') {
             current_path = match dir_name {
-                ".." => current_path.parent().unwrap().to_path_buf(),
+                ".." => current_path
+                    .parent()
+                    .map_or_else(PathBuf::new, std::path::Path::to_path_buf),
                 _ => current_path.join(dir_name),
             }
         } else if let Some(("ls", dir_contents)) = input_and_output.split_once('\n') {
-            let new_files =
-                dir_contents
-                    .lines()
-                    .filter_map(|line| match line.split_once(' ').unwrap() {
-                        ("dir", _dir_name) => None,
-                        (file_size, file_name) => {
-                            let file_path = current_path.join(file_name);
-                            let file_size = file_size.parse().unwrap();
-                            Some((file_path, file_size))
-                        }
-                    });
+            let new_files = dir_contents
+                .lines()
+                .map(|line| line.split_once(' ').context("Invalid `ls` output"))
+                .collect::<Result<Vec<_>, _>>()?
+                .into_iter()
+                .filter_map(|(first, second)| match (first, second) {
+                    ("dir", _dir_name) => None,
+                    (file_size, file_name) => {
+                        let file_path = current_path.join(file_name);
+                        let file_size = file_size.parse().unwrap();
+                        Some((file_path, file_size))
+                    }
+                });
             files_with_sizes.extend(new_files);
         }
     }

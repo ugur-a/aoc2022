@@ -96,7 +96,7 @@ impl Chamber {
             .extend(&rock.points.map(|point| point + rock_position_relative));
         self.height = max(self.height, rock_position_relative.1 + rock.height);
         if self.height > Self::MAX_HEIGHT_BEFORE_TRIMMING {
-            self.trim_to(Self::HEIGHT_TO_TRIM_TO)
+            self.trim_to(Self::HEIGHT_TO_TRIM_TO);
         }
     }
 
@@ -127,6 +127,7 @@ impl Display for Chamber {
     }
 }
 
+#[allow(clippy::items_after_statements)]
 fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
     let mut chamber = Chamber::new(7);
     use RockType as RT;
@@ -137,7 +138,7 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
         .take(num_rounds);
     let mut pushes = file
         .chars()
-        .map(|s| JetStreamDirection::try_from(s))
+        .map(JetStreamDirection::try_from)
         .collect::<Result<Vec<_>>>()?
         .into_iter()
         .cycle();
@@ -146,7 +147,7 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
         let spawn_height = chamber.height() + 3;
         let mut rock_position_relative = Point2D(2, spawn_height);
         loop {
-            println!("{}\n", chamber);
+            println!("{chamber}\n");
             // jet stream
             match pushes.next().unwrap() {
                 JetStreamDirection::Left => {
@@ -190,14 +191,13 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
                     )
                 })
                 .iter()
-                .any(|point| chamber.contains(&point));
+                .any(|point| chamber.contains(point));
             if rock_stops {
                 chamber.add_rock(rock, rock_position_relative);
                 break;
-            //fall
-            } else {
-                rock_position_relative.1 -= 1;
+                //fall
             }
+            rock_position_relative.1 -= 1;
         }
     }
     Ok(chamber.height())

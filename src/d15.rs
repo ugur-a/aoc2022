@@ -107,7 +107,7 @@ impl FromStr for SensorsWithDistances {
     }
 }
 
-#[allow(clippy::cast_possible_wrap)]
+#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 pub fn p2(file: &str, search_space_side_size: i32) -> Result<u64> {
     let sensors_with_distances = SensorsWithDistances::from_str(file)?;
     let distress_beacon = sensors_with_distances
@@ -159,7 +159,7 @@ mod tests {
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/d15/real.txt").unwrap();
-        assert_eq!(p1(&inp, 2_000_000).unwrap(), 4748135);
+        assert_eq!(p1(&inp, 2_000_000).unwrap(), 4_748_135);
     }
     #[test]
     fn test_p2() {

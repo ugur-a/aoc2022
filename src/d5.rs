@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use anyhow::{Context, Error, Result};
+use anyhow::{bail, Context, Error, Result};
 use itertools::Itertools;
 
 enum CraneModel {
@@ -17,19 +17,16 @@ impl FromStr for Rearrangement {
     type Err = Error;
 
     fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
-        let (num_crates_to_move, stack_to_move_to, stack_to_take_from) = match s
-            .split_whitespace()
-            .collect_vec()
-            .as_slice()
+        let (num_crates_to_move, stack_to_move_to, stack_to_take_from) = if let ["move", num_crates_to_move, "from", stack_to_move_from, "to", stack_to_move_to, ..] =
+            s.split_whitespace().collect_vec()[..]
         {
-            ["move", num_crates_to_move, "from", stack_to_move_from, "to", stack_to_move_to, ..] => {
-                (
-                    num_crates_to_move.parse::<usize>()?,
-                    stack_to_move_to.parse::<usize>()? - 1,
-                    stack_to_move_from.parse::<usize>()? - 1,
-                )
-            }
-            _ => unreachable!(),
+            (
+                num_crates_to_move.parse::<usize>()?,
+                stack_to_move_to.parse::<usize>()? - 1,
+                stack_to_move_from.parse::<usize>()? - 1,
+            )
+        } else {
+            bail!("invalid rearrangement")
         };
 
         Ok(Self {
@@ -44,7 +41,8 @@ type Warehouse = Vec<Vec<char>>;
 
 fn parse_warehouse(s: &str) -> Result<Warehouse> {
     // remove the last row of the stack arrangement schema - the one with stack numbers
-    let (initial_stack_arrangement, last_row_of_stack_arrangement) = s.rsplit_once('\n').unwrap();
+    let (initial_stack_arrangement, last_row_of_stack_arrangement) =
+        s.rsplit_once('\n').context("No stack numbers row")?;
 
     // since we don't need the last row anyway, use it to indirectly calculate the number of stacks
     let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
@@ -124,7 +122,8 @@ pub fn p1(file: &str) -> Result<String> {
 }
 
 pub fn p2(file: &str) -> Result<String> {
-    let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
+    let (initial_stack_schema, rearrangements) =
+        file.split_once("\n\n").context("No stack numbers row")?;
 
     let mut warehouse: Warehouse = parse_warehouse(initial_stack_schema)?;
 

@@ -9,7 +9,7 @@ type DropletCube = Point3D<i8>;
 fn parse_droplet(s: &str) -> Result<DropletCube> {
     let [x, y, z] = s
         .split(',')
-        .map(|coord| coord.parse::<i8>())
+        .map(str::parse)
         .collect::<Result<Vec<_>, _>>()?[..]
     else {
         bail!("num coords of a droplet != 3")
@@ -18,10 +18,8 @@ fn parse_droplet(s: &str) -> Result<DropletCube> {
 }
 
 pub fn p1(file: &str) -> Result<usize> {
-    let droplet_cubes: HashSet<DropletCube> = file
-        .lines()
-        .map(|line| parse_droplet(line))
-        .collect::<Result<_>>()?;
+    let droplet_cubes: HashSet<DropletCube> =
+        file.lines().map(parse_droplet).collect::<Result<_>>()?;
 
     // multiple droplets can have the same point as a potential exposed side (PES),
     // so there will be duplicate values here
