@@ -87,6 +87,24 @@ pub fn p2(file: &str) -> Result<usize> {
         file.lines().map(parse_droplet).collect::<Result<_>>()?;
     let droplet = Droplet::new(droplet_cubes);
 
+    let boundaries = droplet.boundaries()?;
+    let exteriour_sides: HashSet<Point3D<i8>> = dfs_reach(
+        Point3D::<i8>(boundaries.x_min, boundaries.y_min, boundaries.z_min),
+        |point: &Point3D<i8>| {
+            point
+                .neighbours()
+                .into_iter()
+                .filter(|point| !(droplet.contains(*point)))
+                .filter(|Point3D(x, y, z)| {
+                    ((boundaries.x_min - 1)..=(boundaries.x_max + 1)).contains(x)
+                        && ((boundaries.y_min - 1)..=(boundaries.y_max + 1)).contains(y)
+                        && ((boundaries.z_min - 1)..=(boundaries.z_max + 1)).contains(z)
+                })
+                .collect_vec()
+        },
+    )
+    .collect();
+
     // multiple droplets can have the same point as a potential exposed side (PES),
     // so there will be duplicate values here
     let num_external_exposed_sides = droplet
@@ -98,10 +116,11 @@ pub fn p2(file: &str) -> Result<usize> {
             !(droplet.contains(*potentially_exposed_side))
         })
         .filter(|(_exposed_side, num_neighbours)| *num_neighbours < 6)
-        .map(|(_exposed_side, num_neighbours)| num_neighbours)
+        .filter(|(exposed_side, _num_neighbours)| exteriour_sides.contains(exposed_side))
+        .map(|(_external_exposed_sides, num_neighbours)| num_neighbours)
         .sum();
 
-    Ok(num_exposed_sides)
+    Ok(num_external_exposed_sides)
 }
 
 #[cfg(test)]
@@ -127,7 +146,6 @@ mod tests {
     #[ignore]
     fn real_p2() {
         let inp = include_str!("../inputs/d18/real.txt");
-        assert_ne!(p2(inp).unwrap(), 3316);
         assert_eq!(p2(inp).unwrap(), 0);
     }
 }
