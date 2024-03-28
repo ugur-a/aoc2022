@@ -230,25 +230,25 @@ pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    
     #[test]
     fn test_p1() {
-        let inp = read_to_string("inputs/d11/test.txt").unwrap();
-        assert_eq!(p1(&inp, 20).unwrap(), 10_605);
+        let inp = include_str!("../inputs/d11/test.txt");
+        assert_eq!(p1(inp, 20).unwrap(), 10_605);
     }
     #[test]
     fn real_p1() {
-        let inp = read_to_string("inputs/d11/real.txt").unwrap();
-        assert_eq!(p1(&inp, 20).unwrap(), 54_054);
+        let inp = include_str!("../inputs/d11/real.txt");
+        assert_eq!(p1(inp, 20).unwrap(), 54_054);
     }
     #[test]
     fn test_p2() {
-        let inp = read_to_string("inputs/d11/test.txt").unwrap();
-        assert_eq!(p2(&inp, 10000).unwrap(), 2_713_310_158);
+        let inp = include_str!("../inputs/d11/test.txt");
+        assert_eq!(p2(inp, 10000).unwrap(), 2_713_310_158);
     }
     #[test]
     fn real_p2() {
-        let inp = read_to_string("inputs/d11/real.txt").unwrap();
-        assert_eq!(p2(&inp, 10000).unwrap(), 14_314_925_001);
+        let inp = include_str!("../inputs/d11/real.txt");
+        assert_eq!(p2(inp, 10000).unwrap(), 14_314_925_001);
     }
 }

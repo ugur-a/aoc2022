@@ -141,25 +141,25 @@ pub fn p2(file: &str) -> Result<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    
     #[test]
     fn test_p1() {
-        let inp = read_to_string("inputs/d12/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 31);
+        let inp = include_str!("../inputs/d12/test.txt");
+        assert_eq!(p1(inp).unwrap(), 31);
     }
     #[test]
     fn real_p1() {
-        let inp = read_to_string("inputs/d12/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 370);
+        let inp = include_str!("../inputs/d12/real.txt");
+        assert_eq!(p1(inp).unwrap(), 370);
     }
     #[test]
     fn test_p2() {
-        let inp = read_to_string("inputs/d12/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 29);
+        let inp = include_str!("../inputs/d12/test.txt");
+        assert_eq!(p2(inp).unwrap(), 29);
     }
     #[test]
     fn real_p2() {
-        let inp = read_to_string("inputs/d12/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 363);
+        let inp = include_str!("../inputs/d12/real.txt");
+        assert_eq!(p2(inp).unwrap(), 363);
     }
 }

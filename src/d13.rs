@@ -126,7 +126,6 @@ pub fn p2(file: &str) -> Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
     use test_case::test_case;
     use Item::{Integer as I, List as L};
 
@@ -167,22 +166,22 @@ mod tests {
 
     #[test]
     fn test_p1() {
-        let inp = read_to_string("inputs/d13/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 13);
+        let inp = include_str!("../inputs/d13/test.txt");
+        assert_eq!(p1(inp).unwrap(), 13);
     }
     #[test]
     fn real_p1() {
-        let inp = read_to_string("inputs/d13/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 5503);
+        let inp = include_str!("../inputs/d13/real.txt");
+        assert_eq!(p1(inp).unwrap(), 5503);
     }
     #[test]
     fn test_p2() {
-        let inp = read_to_string("inputs/d13/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 140);
+        let inp = include_str!("../inputs/d13/test.txt");
+        assert_eq!(p2(inp).unwrap(), 140);
     }
     #[test]
     fn real_p2() {
-        let inp = read_to_string("inputs/d13/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 20952);
+        let inp = include_str!("../inputs/d13/real.txt");
+        assert_eq!(p2(inp).unwrap(), 20952);
     }
 }
