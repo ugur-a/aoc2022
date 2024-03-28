@@ -7,6 +7,24 @@ use crate::points::Point3D;
 
 type DropletCube = Point3D<i8>;
 
+struct Droplet {
+    cubes: HashSet<DropletCube>,
+}
+
+impl Droplet {
+    fn new(cubes: HashSet<DropletCube>) -> Self {
+        Self { cubes }
+    }
+
+    fn cubes(&self) -> impl Iterator<Item = &DropletCube> {
+        self.cubes.iter()
+    }
+
+    fn contains(&self, cube: Point3D<i8>) -> bool {
+        self.cubes.contains(&cube)
+    }
+}
+
 fn parse_droplet(s: &str) -> Result<DropletCube> {
     let [x, y, z] = s
         .split(',')
@@ -21,13 +39,14 @@ fn parse_droplet(s: &str) -> Result<DropletCube> {
 pub fn p1(file: &str) -> Result<usize> {
     let droplet_cubes: HashSet<DropletCube> =
         file.lines().map(parse_droplet).collect::<Result<_>>()?;
+    let droplet = Droplet::new(droplet_cubes);
 
     // multiple droplets can have the same point as a potential exposed side (PES),
     // so there will be duplicate values here
-    let num_exposed_sides: usize = droplet_cubes
-        .iter()
+    let num_exposed_sides: usize = droplet
+        .cubes()
         .flat_map(Point3D::get_neighbours)
-        .filter(|&potentially_exposed_side| !(droplet_cubes.contains(&potentially_exposed_side)))
+        .filter(|&potentially_exposed_side| !(droplet.contains(potentially_exposed_side)))
         .count();
 
     Ok(num_exposed_sides)
@@ -36,16 +55,17 @@ pub fn p1(file: &str) -> Result<usize> {
 pub fn p2(file: &str) -> Result<usize> {
     let droplet_cubes: HashSet<DropletCube> =
         file.lines().map(parse_droplet).collect::<Result<_>>()?;
+    let droplet = Droplet::new(droplet_cubes);
 
     // multiple droplets can have the same point as a potential exposed side (PES),
     // so there will be duplicate values here
-    let num_exposed_sides: usize = droplet_cubes
-        .iter()
+    let num_external_exposed_sides = droplet
+        .cubes()
         .flat_map(Point3D::get_neighbours)
         .counts()
         .into_iter()
         .filter(|(potentially_exposed_side, _num_neighbours)| {
-            !(droplet_cubes.contains(potentially_exposed_side))
+            !(droplet.contains(*potentially_exposed_side))
         })
         .filter(|(_exposed_side, num_neighbours)| *num_neighbours < 6)
         .map(|(_exposed_side, num_neighbours)| num_neighbours)
