@@ -108,6 +108,7 @@ impl FromStr for SensorsWithDistances {
 }
 
 #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
+#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 pub fn p2(file: &str, search_space_side_size: i32) -> Result<u64> {
     let sensors_with_distances = SensorsWithDistances::from_str(file)?;
     let distress_beacon = sensors_with_distances
@@ -150,7 +151,7 @@ pub fn p2(file: &str, search_space_side_size: i32) -> Result<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_p1() {
         let inp = include_str!("../inputs/d15/test.txt");
