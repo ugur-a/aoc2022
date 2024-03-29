@@ -88,28 +88,30 @@ pub fn p2(file: &str) -> Result<usize> {
     let droplet = Droplet::new(droplet_cubes);
 
     let boundaries = droplet.boundaries()?;
+    // sides accessible from outside the droplet
     let exteriour_sides: HashSet<Point3D<i8>> = dfs_reach(
         Point3D::<i8>(boundaries.x_min, boundaries.y_min, boundaries.z_min),
-        |point: &Point3D<i8>| {
-            point
+        |air_point: &Point3D<i8>| {
+            air_point
                 .neighbours()
                 .into_iter()
+                // can't go inside droplet
                 .filter(|point| !(droplet.contains(*point)))
+                // limit the searched volume to around the droplet
                 .filter(|Point3D(x, y, z)| {
                     ((boundaries.x_min - 1)..=(boundaries.x_max + 1)).contains(x)
                         && ((boundaries.y_min - 1)..=(boundaries.y_max + 1)).contains(y)
                         && ((boundaries.z_min - 1)..=(boundaries.z_max + 1)).contains(z)
                 })
-                .collect_vec()
         },
     )
     .collect();
 
-    // multiple droplets can have the same point as a potential exposed side (PES),
-    // so there will be duplicate values here
-    let num_external_exposed_sides = droplet
+    let num_exteriour_exposed_sides = droplet
         .cubes()
         .flat_map(Point3D::neighbours)
+        // multiple droplets can have the same point as a potential exposed side (PES),
+        // so count occurences of each value
         .counts()
         .into_iter()
         .filter(|(potentially_exposed_side, _num_neighbours)| {
@@ -117,10 +119,10 @@ pub fn p2(file: &str) -> Result<usize> {
         })
         .filter(|(_exposed_side, num_neighbours)| *num_neighbours < 6)
         .filter(|(exposed_side, _num_neighbours)| exteriour_sides.contains(exposed_side))
-        .map(|(_external_exposed_sides, num_neighbours)| num_neighbours)
+        .map(|(_exteriour_exposed_sides, num_neighbours)| num_neighbours)
         .sum();
 
-    Ok(num_external_exposed_sides)
+    Ok(num_exteriour_exposed_sides)
 }
 
 #[cfg(test)]
