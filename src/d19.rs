@@ -15,25 +15,25 @@ mod tests {
 
     #[test]
     fn test_p1() {
-        let inp = include_str!("../inputs/d20/test.txt");
-        assert_eq!(p1(inp).unwrap(), 0);
+        let inp = include_str!("../inputs/d19/test.txt");
+        assert_eq!(p1(inp).unwrap(), 33);
     }
     #[test]
     #[ignore]
     fn real_p1() {
-        let inp = include_str!("../inputs/d20/real.txt");
+        let inp = include_str!("../inputs/d19/real.txt");
         assert_eq!(p1(inp).unwrap(), 0);
     }
     #[test]
     #[ignore]
     fn test_p2() {
-        let inp = include_str!("../inputs/d20/test.txt");
+        let inp = include_str!("../inputs/d19/test.txt");
         assert_eq!(p2(inp).unwrap(), 0);
     }
     #[test]
     #[ignore]
     fn real_p2() {
-        let inp = include_str!("../inputs/d20/real.txt");
+        let inp = include_str!("../inputs/d19/real.txt");
         assert_eq!(p2(inp).unwrap(), 0);
     }
 }
