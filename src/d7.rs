@@ -106,7 +106,6 @@ mod tests {
         assert_eq!(p2(inp).unwrap(), 24_933_642);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = include_str!("../inputs/d7/real.txt");
         assert_eq!(p2(inp).unwrap(), 5_649_896);
