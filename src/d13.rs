@@ -24,6 +24,7 @@ impl FromStr for Item {
         let mut s_iter = s.chars().peekable();
 
         if let Some('[') = s_iter.peek() {
+            s_iter.next();
             let mut items = Vec::new();
 
             let mut buf = String::new();
