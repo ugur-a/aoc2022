@@ -5,7 +5,7 @@ use anyhow::{Error, Result};
 #[derive(Debug, Eq)]
 enum Item {
     List(Vec<Item>),
-    Integer(u32),
+    Integer(u8),
 }
 
 impl Display for Item {
@@ -28,7 +28,7 @@ impl FromStr for Item {
             let mut items = Vec::new();
 
             let mut buf = String::new();
-            let mut unclosed_brackets = 0u32;
+            let mut unclosed_brackets = 0u8;
             for next in s_iter {
                 if unclosed_brackets == 0 && (next == ',' || next == ']') {
                     if buf.is_empty() {
@@ -52,7 +52,7 @@ impl FromStr for Item {
                 .borrow_mut()
                 .take_while(|char| *char != ',')
                 .collect::<String>()
-                .parse::<u32>()?;
+                .parse::<u8>()?;
             Ok(Item::Integer(num))
         }
     }
