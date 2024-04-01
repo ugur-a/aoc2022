@@ -107,12 +107,12 @@ pub fn p1(file: &str) -> Result<usize> {
 pub fn p2(file: &str) -> Result<usize> {
     let dividers = ["[[2]]", "[[6]]"];
 
-    let mut packets = file
+    let mut packets: Vec<Item> = file
         .lines()
         .filter(|line| !line.is_empty())
         .chain(dividers)
         .map(str::parse)
-        .collect::<Result<Vec<Item>, _>>()?;
+        .collect::<Result<Vec<_>, _>>()?;
     packets.sort_unstable();
 
     let res: usize = dividers
