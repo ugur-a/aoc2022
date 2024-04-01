@@ -1,6 +1,14 @@
-use std::{borrow::BorrowMut, cmp::Ordering, fmt::Display, str::FromStr};
+use std::{cmp::Ordering, fmt::Display, str::FromStr};
 
-use anyhow::{Error, Result};
+use anyhow::Result;
+use nom::{
+    branch::alt,
+    character::complete::{char, digit1},
+    combinator::{map, map_res},
+    multi::separated_list0,
+    sequence::delimited,
+    Finish, IResult,
+};
 
 #[derive(Debug, Eq)]
 enum Item {
@@ -16,44 +24,37 @@ impl Display for Item {
         }
     }
 }
+// [[[[]]],[]]
+// [[1],[2,3,4]]
+fn parse_u8(input: &str) -> IResult<&str, u8> {
+    map_res(digit1, u8::from_str)(input)
+}
+
+fn parse_integer(input: &str) -> IResult<&str, Item> {
+    map(parse_u8, Item::Integer)(input)
+}
+
+fn parse_list(input: &str) -> IResult<&str, Item> {
+    map(
+        delimited(char('['), separated_list0(char(','), parse_item), char(']')),
+        Item::List,
+    )(input)
+}
+
+fn parse_item(input: &str) -> IResult<&str, Item> {
+    alt((parse_integer, parse_list))(input)
+}
 
 impl FromStr for Item {
-    type Err = Error;
+    type Err = nom::error::Error<String>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut s_iter = s.chars().peekable();
-
-        if let Some('[') = s_iter.peek() {
-            s_iter.next();
-            let mut items = Vec::new();
-
-            let mut buf = String::new();
-            let mut unclosed_brackets = 0u8;
-            for next in s_iter {
-                if unclosed_brackets == 0 && (next == ',' || next == ']') {
-                    if buf.is_empty() {
-                        break;
-                    }
-                    let item = buf.parse::<Item>()?;
-                    items.push(item);
-                    buf.clear();
-                } else {
-                    match next {
-                        '[' => unclosed_brackets += 1,
-                        ']' => unclosed_brackets -= 1,
-                        _ => (),
-                    }
-                    buf.push(next);
-                }
-            }
-            Ok(Item::List(items))
-        } else {
-            let num = s_iter
-                .borrow_mut()
-                .take_while(|char| *char != ',')
-                .collect::<String>()
-                .parse::<u8>()?;
-            Ok(Item::Integer(num))
+        match parse_item(s).finish() {
+            Ok((_remaining, blueprint)) => Ok(blueprint),
+            Err(nom::error::Error { input, code }) => Err(Self::Err {
+                input: input.to_string(),
+                code,
+            }),
         }
     }
 }
@@ -111,7 +112,7 @@ pub fn p2(file: &str) -> Result<usize> {
         .filter(|line| !line.is_empty())
         .chain(dividers)
         .map(str::parse)
-        .collect::<Result<Vec<Item>>>()?;
+        .collect::<Result<Vec<Item>, _>>()?;
     packets.sort_unstable();
 
     let res: usize = dividers
