@@ -3,8 +3,8 @@ use std::{cmp::Ordering, fmt::Display, str::FromStr};
 use anyhow::Result;
 use nom::{
     branch::alt,
-    character::complete::{char, digit1},
-    combinator::{map, map_res},
+    character::complete::{char, u8},
+    combinator::map,
     multi::separated_list0,
     sequence::delimited,
     Finish, IResult,
@@ -26,12 +26,8 @@ impl Display for Item {
 }
 // [[[[]]],[]]
 // [[1],[2,3,4]]
-fn parse_u8(input: &str) -> IResult<&str, u8> {
-    map_res(digit1, u8::from_str)(input)
-}
-
 fn parse_integer(input: &str) -> IResult<&str, Item> {
-    map(parse_u8, Item::Integer)(input)
+    map(u8, Item::Integer)(input)
 }
 
 fn parse_list(input: &str) -> IResult<&str, Item> {
