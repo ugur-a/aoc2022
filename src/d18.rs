@@ -1,6 +1,5 @@
 use std::{collections::HashSet, str::FromStr};
 
-use anyhow::bail;
 use itertools::{Itertools, MinMaxResult};
 use nom::{
     character::complete::{char, i8, newline},
@@ -43,24 +42,33 @@ impl Droplet {
         self.cubes.contains(&cube)
     }
 
-    fn boundaries(&self) -> anyhow::Result<DropletBoundaries> {
-        let MinMaxResult::MinMax(x_min, x_max) = self.cubes().map(Point3D::x).minmax() else {
-            bail!("cube unbound in x axis")
+    fn boundaries(&self) -> DropletBoundaries {
+        let (x_min, x_max) = match self.cubes().map(Point3D::x).minmax() {
+            MinMaxResult::MinMax(min, max) => (min, max),
+            MinMaxResult::OneElement(only) => (only, only),
+            MinMaxResult::NoElements => unreachable!(),
         };
-        let MinMaxResult::MinMax(y_min, y_max) = self.cubes().map(Point3D::y).minmax() else {
-            bail!("cube unbound in y axis")
+
+        let (y_min, y_max) = match self.cubes().map(Point3D::y).minmax() {
+            MinMaxResult::MinMax(min, max) => (min, max),
+            MinMaxResult::OneElement(only) => (only, only),
+            MinMaxResult::NoElements => unreachable!(),
         };
-        let MinMaxResult::MinMax(z_min, z_max) = self.cubes().map(Point3D::z).minmax() else {
-            bail!("cube unbound in z axis")
+
+        let (z_min, z_max) = match self.cubes().map(Point3D::z).minmax() {
+            MinMaxResult::MinMax(min, max) => (min, max),
+            MinMaxResult::OneElement(only) => (only, only),
+            MinMaxResult::NoElements => unreachable!(),
         };
-        Ok(DropletBoundaries {
+
+        DropletBoundaries {
             x_min,
             x_max,
             y_min,
             y_max,
             z_min,
             z_max,
-        })
+        }
     }
 }
 
@@ -110,7 +118,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
 pub fn p2(file: &str) -> anyhow::Result<usize> {
     let droplet = Droplet::from_str(file)?;
 
-    let boundaries = droplet.boundaries()?;
+    let boundaries = droplet.boundaries();
     // sides accessible from outside the droplet
     let exteriour_sides: HashSet<Point3D<i8>> = dfs_reach(
         Point3D::<i8>(boundaries.x_min, boundaries.y_min, boundaries.z_min),
