@@ -1,3 +1,4 @@
+use std::ops::{Add, Mul};
 use std::str::FromStr;
 
 use anyhow::{bail, Context};
@@ -89,6 +90,38 @@ struct Operation<N: Copy> {
     value: Value<N>,
 }
 
+trait ApplyOperation {
+    fn apply_operation(self, operation: Operation<Self>) -> Self
+    where
+        Self: Sized + Copy;
+}
+
+impl<N> ApplyOperation for N
+where
+    N: Add<Output = Self> + Mul<Output = Self> + Copy,
+{
+    fn apply_operation(self, operation: Operation<Self>) -> Self {
+        match operation {
+            Operation {
+                operand: Operand::Add,
+                value: Value::Number(value),
+            } => self + value,
+            Operation {
+                operand: Operand::Mul,
+                value: Value::Number(value),
+            } => self * value,
+            Operation {
+                operand: Operand::Add,
+                value: Value::Old,
+            } => self + self,
+            Operation {
+                operand: Operand::Mul,
+                value: Value::Old,
+            } => self * self,
+        }
+    }
+}
+
 impl<N> FromStr for Operation<N>
 where
     N: FromStr + Copy,
@@ -143,24 +176,7 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 .inventory
                 .drain(..)
                 // monkey applies its operation
-                .map(|item_worry| match monkey.operation {
-                    Operation {
-                        operand: Operand::Add,
-                        value: Value::Number(value),
-                    } => item_worry + value,
-                    Operation {
-                        operand: Operand::Mul,
-                        value: Value::Number(value),
-                    } => item_worry * value,
-                    Operation {
-                        operand: Operand::Add,
-                        value: Value::Old,
-                    } => item_worry * 2,
-                    Operation {
-                        operand: Operand::Mul,
-                        value: Value::Old,
-                    } => item_worry.pow(2),
-                })
+                .map(|item_worry| item_worry.apply_operation(monkey.operation))
                 // your worry level decreases
                 .map(|item_worry| item_worry / 3)
                 // monkey inspects each item
@@ -217,24 +233,7 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 .inventory
                 .drain(..)
                 // monkey applies its operation
-                .map(|item_worry| match monkey.operation {
-                    Operation {
-                        operand: Operand::Add,
-                        value: Value::Number(value),
-                    } => item_worry + value,
-                    Operation {
-                        operand: Operand::Mul,
-                        value: Value::Number(value),
-                    } => item_worry * value,
-                    Operation {
-                        operand: Operand::Add,
-                        value: Value::Old,
-                    } => item_worry * 2,
-                    Operation {
-                        operand: Operand::Mul,
-                        value: Value::Old,
-                    } => item_worry.pow(2),
-                })
+                .map(|item_worry| item_worry.apply_operation(monkey.operation))
                 .map(|item_worry| item_worry % divisibility_tests_lcm)
                 // monkey inspects each item
                 .partition(|item_worry| item_worry % monkey.divisible_by == 0);
