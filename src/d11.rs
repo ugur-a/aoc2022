@@ -16,13 +16,13 @@ struct Monkey<N: Copy> {
 }
 
 #[derive(Clone, Copy)]
-enum Operand {
+enum Operator {
     Add,
     Mul,
 }
 
 #[derive(Clone, Copy)]
-enum Value<N> {
+enum Operand<N> {
     Old,
     Number(N),
 }
@@ -86,8 +86,8 @@ where
 
 #[derive(Clone, Copy)]
 struct Operation<N: Copy> {
-    operand: Operand,
-    value: Value<N>,
+    operator: Operator,
+    operand: Operand<N>,
 }
 
 trait ApplyOperation {
@@ -103,20 +103,20 @@ where
     fn apply_operation(self, operation: Operation<Self>) -> Self {
         match operation {
             Operation {
-                operand: Operand::Add,
-                value: Value::Number(value),
+                operator: Operator::Add,
+                operand: Operand::Number(value),
             } => self + value,
             Operation {
-                operand: Operand::Mul,
-                value: Value::Number(value),
+                operator: Operator::Mul,
+                operand: Operand::Number(value),
             } => self * value,
             Operation {
-                operand: Operand::Add,
-                value: Value::Old,
+                operator: Operator::Add,
+                operand: Operand::Old,
             } => self + self,
             Operation {
-                operand: Operand::Mul,
-                value: Value::Old,
+                operator: Operator::Mul,
+                operand: Operand::Old,
             } => self * self,
         }
     }
@@ -130,24 +130,24 @@ where
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut operation = s.split_whitespace();
-        let operand = match operation.next().context("no operator")? {
-            "+" => Operand::Add,
-            "*" => Operand::Mul,
+        let operator = match operation.next().context("no operator")? {
+            "+" => Operator::Add,
+            "*" => Operator::Mul,
             _ => bail!("invalid operator"),
         };
 
-        let value = operation.next().context("no operand")?;
-        let value = {
-            if value == "old" {
-                Value::Old
-            } else if let Ok(num) = value.parse::<N>() {
-                Value::Number(num)
+        let operand = operation.next().context("no operator")?;
+        let operand = {
+            if operand == "old" {
+                Operand::Old
+            } else if let Ok(num) = operand.parse::<N>() {
+                Operand::Number(num)
             } else {
-                bail!("invalid value");
+                bail!("invalid operand");
             }
         };
 
-        Ok(Operation { operand, value })
+        Ok(Operation { operator, operand })
     }
 }
 
