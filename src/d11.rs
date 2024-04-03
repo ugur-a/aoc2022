@@ -5,7 +5,7 @@ use itertools::Itertools;
 use num::Integer;
 
 #[allow(clippy::struct_field_names)]
-struct Monkey<N> {
+struct Monkey<N: Copy> {
     inventory: Vec<N>,
     operation: Operation<N>,
     divisible_by: N,
@@ -14,9 +14,21 @@ struct Monkey<N> {
     activity: usize,
 }
 
+#[derive(Clone, Copy)]
+enum Operand {
+    Add,
+    Mul,
+}
+
+#[derive(Clone, Copy)]
+enum Value<N> {
+    Old,
+    Number(N),
+}
+
 impl<N> FromStr for Monkey<N>
 where
-    N: FromStr,
+    N: FromStr + Copy,
     <N as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
     type Err = anyhow::Error;
@@ -71,42 +83,38 @@ where
     }
 }
 
-enum Operation<N> {
-    Add(N),
-    Mul(N),
-    Square,
-    Double,
+#[derive(Clone, Copy)]
+struct Operation<N: Copy> {
+    operand: Operand,
+    value: Value<N>,
 }
 
 impl<N> FromStr for Operation<N>
 where
-    N: FromStr,
+    N: FromStr + Copy,
 {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use Operation as O;
-
         let mut operation = s.split_whitespace();
-        let operand = operation.next().context("no operator")?;
-        let value = operation.next().context("no operand")?;
+        let operand = match operation.next().context("no operator")? {
+            "+" => Operand::Add,
+            "*" => Operand::Mul,
+            _ => bail!("invalid operator"),
+        };
 
-        if let Ok(num) = value.parse() {
-            match operand {
-                "+" => Ok(O::Add(num)),
-                "*" => Ok(O::Mul(num)),
-                _ => bail!("invalid operator"),
+        let value = operation.next().context("no operand")?;
+        let value = {
+            if value == "old" {
+                Value::Old
+            } else if let Ok(num) = value.parse::<N>() {
+                Value::Number(num)
+            } else {
+                bail!("invalid value");
             }
-        } else {
-            match value {
-                "old" => match operand {
-                    "+" => Ok(O::Double),
-                    "*" => Ok(O::Square),
-                    _ => bail!("invalid operator"),
-                },
-                _ => bail!("invalid operand"),
-            }
-        }
+        };
+
+        Ok(Operation { operand, value })
     }
 }
 
@@ -136,10 +144,22 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 .drain(..)
                 // monkey applies its operation
                 .map(|item_worry| match monkey.operation {
-                    Operation::Add(num) => item_worry + num,
-                    Operation::Mul(num) => item_worry * num,
-                    Operation::Square => item_worry.pow(2),
-                    Operation::Double => item_worry * 2,
+                    Operation {
+                        operand: Operand::Add,
+                        value: Value::Number(value),
+                    } => item_worry + value,
+                    Operation {
+                        operand: Operand::Mul,
+                        value: Value::Number(value),
+                    } => item_worry * value,
+                    Operation {
+                        operand: Operand::Add,
+                        value: Value::Old,
+                    } => item_worry * 2,
+                    Operation {
+                        operand: Operand::Mul,
+                        value: Value::Old,
+                    } => item_worry.pow(2),
                 })
                 // your worry level decreases
                 .map(|item_worry| item_worry / 3)
@@ -198,10 +218,22 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 .drain(..)
                 // monkey applies its operation
                 .map(|item_worry| match monkey.operation {
-                    Operation::Add(num) => item_worry + num,
-                    Operation::Mul(num) => item_worry * num,
-                    Operation::Square => item_worry.pow(2),
-                    Operation::Double => item_worry * 2,
+                    Operation {
+                        operand: Operand::Add,
+                        value: Value::Number(value),
+                    } => item_worry + value,
+                    Operation {
+                        operand: Operand::Mul,
+                        value: Value::Number(value),
+                    } => item_worry * value,
+                    Operation {
+                        operand: Operand::Add,
+                        value: Value::Old,
+                    } => item_worry * 2,
+                    Operation {
+                        operand: Operand::Mul,
+                        value: Value::Old,
+                    } => item_worry.pow(2),
                 })
                 .map(|item_worry| item_worry % divisibility_tests_lcm)
                 // monkey inspects each item
