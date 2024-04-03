@@ -1,7 +1,14 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, str::FromStr};
 
 use anyhow::bail;
 use itertools::{Itertools, MinMaxResult};
+use nom::{
+    character::complete::{char, i8, newline},
+    combinator::map,
+    multi::separated_list1,
+    sequence::{preceded, tuple},
+    Finish, IResult,
+};
 use pathfinding::directed::dfs::dfs_reach;
 
 use crate::points::Point3D;
@@ -22,8 +29,10 @@ struct Droplet {
 }
 
 impl Droplet {
-    fn new(cubes: HashSet<DropletCube>) -> Self {
-        Self { cubes }
+    fn from_droplet_cubes<I: IntoIterator<Item = DropletCube>>(cubes: I) -> Self {
+        Self {
+            cubes: HashSet::from_iter(cubes),
+        }
     }
 
     fn cubes(&self) -> impl Iterator<Item = &DropletCube> {
@@ -55,21 +64,37 @@ impl Droplet {
     }
 }
 
-fn parse_droplet(s: &str) -> Result<DropletCube> {
-    let [x, y, z] = s
-        .split(',')
-        .map(str::parse)
-        .collect::<Result<Vec<_>, _>>()?[..]
-    else {
-        bail!("num coords of a droplet != 3")
-    };
-    Ok(Point3D(x, y, z))
+// 4,3,2
+fn parse_droplet_cube(input: &str) -> IResult<&str, DropletCube> {
+    map(
+        tuple((i8, preceded(char(','), i8), preceded(char(','), i8))),
+        |(x, y, z)| Point3D(x, y, z),
+    )(input)
+}
+
+fn parse_droplet(input: &str) -> IResult<&str, Droplet> {
+    map(
+        separated_list1(newline, parse_droplet_cube),
+        Droplet::from_droplet_cubes,
+    )(input)
+}
+
+impl FromStr for Droplet {
+    type Err = nom::error::Error<String>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_droplet(s).finish() {
+            Ok((_remaining, droplet)) => Ok(droplet),
+            Err(nom::error::Error { input, code }) => Err(Self::Err {
+                input: input.to_string(),
+                code,
+            }),
+        }
+    }
 }
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
-    let droplet_cubes: HashSet<DropletCube> =
-        file.lines().map(parse_droplet).collect::<Result<_>>()?;
-    let droplet = Droplet::new(droplet_cubes);
+    let droplet = Droplet::from_str(file)?;
 
     // multiple droplets can have the same point as a potential exposed side (PES),
     // so there will be duplicate values here
@@ -83,9 +108,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
 }
 
 pub fn p2(file: &str) -> anyhow::Result<usize> {
-    let droplet_cubes: HashSet<DropletCube> =
-        file.lines().map(parse_droplet).collect::<Result<_>>()?;
-    let droplet = Droplet::new(droplet_cubes);
+    let droplet = Droplet::from_str(file)?;
 
     let boundaries = droplet.boundaries()?;
     // sides accessible from outside the droplet
