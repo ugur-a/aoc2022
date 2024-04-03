@@ -5,7 +5,7 @@ use std::{
 
 use crate::points::Point2D;
 
-use anyhow::{Context, Error, Result};
+use anyhow::Context;
 use derive_deref::Deref;
 use itertools::Itertools;
 use rayon::{
@@ -31,7 +31,7 @@ type BeaconPosition = Point2D<i32>;
 struct SensorsWithBeacons(HashMap<SensorPosition, BeaconPosition>);
 
 impl FromStr for SensorsWithBeacons {
-    type Err = Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
         let coords_regex = Regex::new(
@@ -51,7 +51,7 @@ impl FromStr for SensorsWithBeacons {
 }
 
 #[allow(clippy::cast_sign_loss, clippy::cast_possible_wrap)]
-pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
+pub fn p1(file: &str, analyzed_row_num: i32) -> anyhow::Result<usize> {
     let sensors_with_beacons = SensorsWithBeacons::from_str(file)?;
 
     let mut impossible_locations_of_distress_beacon: HashSet<i32> = sensors_with_beacons
@@ -91,7 +91,7 @@ pub fn p1(file: &str, analyzed_row_num: i32) -> Result<usize> {
 struct SensorsWithDistances(HashMap<SensorPosition, u32>);
 
 impl FromStr for SensorsWithDistances {
-    type Err = Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
         let sensors_with_distances = s
@@ -109,7 +109,7 @@ impl FromStr for SensorsWithDistances {
 
 #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
-pub fn p2(file: &str, search_space_side_size: i32) -> Result<u64> {
+pub fn p2(file: &str, search_space_side_size: i32) -> anyhow::Result<u64> {
     let sensors_with_distances = SensorsWithDistances::from_str(file)?;
     let distress_beacon = sensors_with_distances
         .par_iter()

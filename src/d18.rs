@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use anyhow::{bail, Result};
+use anyhow::bail;
 use itertools::{Itertools, MinMaxResult};
 use pathfinding::directed::dfs::dfs_reach;
 
@@ -34,7 +34,7 @@ impl Droplet {
         self.cubes.contains(&cube)
     }
 
-    fn boundaries(&self) -> Result<DropletBoundaries> {
+    fn boundaries(&self) -> anyhow::Result<DropletBoundaries> {
         let MinMaxResult::MinMax(x_min, x_max) = self.cubes().map(Point3D::x).minmax() else {
             bail!("cube unbound in x axis")
         };
@@ -66,7 +66,7 @@ fn parse_droplet(s: &str) -> Result<DropletCube> {
     Ok(Point3D(x, y, z))
 }
 
-pub fn p1(file: &str) -> Result<usize> {
+pub fn p1(file: &str) -> anyhow::Result<usize> {
     let droplet_cubes: HashSet<DropletCube> =
         file.lines().map(parse_droplet).collect::<Result<_>>()?;
     let droplet = Droplet::new(droplet_cubes);
@@ -82,7 +82,7 @@ pub fn p1(file: &str) -> Result<usize> {
     Ok(num_exposed_sides)
 }
 
-pub fn p2(file: &str) -> Result<usize> {
+pub fn p2(file: &str) -> anyhow::Result<usize> {
     let droplet_cubes: HashSet<DropletCube> =
         file.lines().map(parse_droplet).collect::<Result<_>>()?;
     let droplet = Droplet::new(droplet_cubes);

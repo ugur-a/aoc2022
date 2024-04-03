@@ -1,6 +1,5 @@
 use std::{collections::HashMap, iter::repeat};
 
-use anyhow::Result;
 use petgraph::graphmap::UnGraphMap;
 use regex::Regex;
 
@@ -32,7 +31,7 @@ struct Network<'a> {
     tunnel_graph: UnGraphMap<&'a str, u32>,
 }
 
-fn parse_network(s: &str) -> Result<Network> {
+fn parse_network(s: &str) -> anyhow::Result<Network> {
     let re = Regex::new(
         r"Valve ([A-Z]{2}) has flow rate=(\d+); tunnels lead to valves ((?:[A-Z]{2}, )*[A-Z]{2})",
     )?;
@@ -70,10 +69,10 @@ fn parse_network(s: &str) -> Result<Network> {
     })
 }
 
-pub fn p1(file: &str) -> Result<u32> {
+pub fn p1(file: &str) -> anyhow::Result<u32> {
     todo!()
 }
-pub fn p2(_file: &str) -> Result<u32> {
+pub fn p2(_file: &str) -> anyhow::Result<u32> {
     todo!()
 }
 

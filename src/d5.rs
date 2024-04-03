@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use anyhow::{bail, Context, Error, Result};
+use anyhow::{bail, Context};
 use itertools::Itertools;
 
 enum CraneModel {
@@ -14,7 +14,7 @@ struct Rearrangement {
 }
 
 impl FromStr for Rearrangement {
-    type Err = Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
         let (num_crates_to_move, stack_to_move_to, stack_to_take_from) = if let ["move", num_crates_to_move, "from", stack_to_move_from, "to", stack_to_move_to, ..] =
@@ -39,7 +39,7 @@ impl FromStr for Rearrangement {
 
 type Warehouse = Vec<Vec<char>>;
 
-fn parse_warehouse(s: &str) -> Result<Warehouse> {
+fn parse_warehouse(s: &str) -> anyhow::Result<Warehouse> {
     // remove the last row of the stack arrangement schema - the one with stack numbers
     let (initial_stack_arrangement, last_row_of_stack_arrangement) =
         s.rsplit_once('\n').context("No stack numbers row")?;
@@ -97,7 +97,7 @@ fn apply_rearrangement(
     Some(())
 }
 
-fn crates_at_the_top(warehouse: &Warehouse) -> Result<String> {
+fn crates_at_the_top(warehouse: &Warehouse) -> anyhow::Result<String> {
     warehouse
         .iter()
         .map(|stack| stack.last())
@@ -105,7 +105,7 @@ fn crates_at_the_top(warehouse: &Warehouse) -> Result<String> {
         .context("One or more stack ended up empty")
 }
 
-pub fn p1(file: &str) -> Result<String> {
+pub fn p1(file: &str) -> anyhow::Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
     let mut warehouse = parse_warehouse(initial_stack_schema)?;
@@ -121,7 +121,7 @@ pub fn p1(file: &str) -> Result<String> {
     crates_at_the_top(&warehouse)
 }
 
-pub fn p2(file: &str) -> Result<String> {
+pub fn p2(file: &str) -> anyhow::Result<String> {
     let (initial_stack_schema, rearrangements) =
         file.split_once("\n\n").context("No stack numbers row")?;
 

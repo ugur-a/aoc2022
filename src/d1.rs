@@ -1,7 +1,7 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
 use itertools::Itertools;
 
-pub fn p1(file: &str) -> Result<u32> {
+pub fn p1(file: &str) -> anyhow::Result<u32> {
     // split elves inventories
     file.split("\n\n")
         // calculate each elf's total calories

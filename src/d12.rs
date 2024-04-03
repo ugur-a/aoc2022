@@ -1,7 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use crate::points::Point2D;
-use anyhow::{Context, Error, Result};
+use anyhow::Context;
 use pathfinding::directed::astar;
 
 struct HeightMap<T> {
@@ -39,7 +39,7 @@ impl HeightMap<usize> {
 }
 
 impl FromStr for HeightMap<usize> {
-    type Err = Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (s_row, s_col, _s_char) = s
@@ -94,7 +94,7 @@ impl FromStr for HeightMap<usize> {
     }
 }
 
-pub fn p1(file: &str) -> Result<u32> {
+pub fn p1(file: &str) -> anyhow::Result<u32> {
     let height_map = HeightMap::from_str(file)?;
     let shortest_path = astar::astar(
         &height_map.start,
@@ -113,7 +113,7 @@ pub fn p1(file: &str) -> Result<u32> {
     Ok(shortest_path)
 }
 
-pub fn p2(file: &str) -> Result<u32> {
+pub fn p2(file: &str) -> anyhow::Result<u32> {
     let height_map = HeightMap::from_str(file)?;
     height_map
         .heights
@@ -141,7 +141,7 @@ pub fn p2(file: &str) -> Result<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_p1() {
         let inp = include_str!("../inputs/d12/test.txt");

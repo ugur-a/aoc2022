@@ -1,6 +1,6 @@
 use std::{cmp::max, collections::HashSet, fmt::Display};
 
-use anyhow::{anyhow, Error, Result};
+use anyhow::anyhow;
 use itertools::Itertools;
 
 use crate::points::Point2D;
@@ -48,9 +48,9 @@ enum JetStreamDirection {
 }
 
 impl TryFrom<char> for JetStreamDirection {
-    type Error = Error;
+    type Error = anyhow::Error;
 
-    fn try_from(value: char) -> Result<Self> {
+    fn try_from(value: char) -> anyhow::Result<Self> {
         match value {
             '<' => Ok(Self::Left),
             '>' => Ok(Self::Right),
@@ -128,7 +128,7 @@ impl Display for Chamber {
 }
 
 #[allow(clippy::items_after_statements)]
-fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
+fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<u64> {
     let mut chamber = Chamber::new(7);
     use RockType as RT;
     let rocks = vec![RT::Minus, RT::Plus, RT::RightL, RT::I, RT::Square]
@@ -139,7 +139,7 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
     let mut pushes = file
         .chars()
         .map(JetStreamDirection::try_from)
-        .collect::<Result<Vec<_>>>()?
+        .collect::<Result<Vec<_>, _>>()?
         .into_iter()
         .cycle();
 
@@ -203,22 +203,22 @@ fn tetris(file: &str, num_rounds: usize) -> Result<u64> {
     Ok(chamber.height())
 }
 
-pub fn p_mid(file: &str) -> Result<u64> {
+pub fn p_mid(file: &str) -> anyhow::Result<u64> {
     tetris(file, 1_000_000)
 }
 
-pub fn p1(file: &str) -> Result<u64> {
+pub fn p1(file: &str) -> anyhow::Result<u64> {
     tetris(file, 2022)
 }
 
-pub fn p2(file: &str) -> Result<u64> {
+pub fn p2(file: &str) -> anyhow::Result<u64> {
     tetris(file, 1_000_000_000_000)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_p1() {
         let inp = include_str!("../inputs/d17/test.txt");

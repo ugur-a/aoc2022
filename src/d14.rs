@@ -8,7 +8,6 @@ use std::{
 
 use crate::points::Point2D;
 
-use anyhow::{Error, Result};
 use itertools::Itertools;
 
 struct Border {
@@ -28,7 +27,7 @@ struct Cave {
 }
 
 impl FromStr for Cave {
-    type Err = Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
         let (left, right) = s
@@ -104,7 +103,7 @@ impl Display for Cave {
     }
 }
 
-pub fn p1(file: &str) -> Result<u32> {
+pub fn p1(file: &str) -> anyhow::Result<u32> {
     let mut cave = file.parse::<Cave>()?;
 
     let init_sand = Point2D(500, 0);
@@ -134,7 +133,7 @@ pub fn p1(file: &str) -> Result<u32> {
 
     Ok(sands)
 }
-pub fn p2(file: &str) -> Result<u32> {
+pub fn p2(file: &str) -> anyhow::Result<u32> {
     let mut cave = file.parse::<Cave>()?;
 
     let init_sand = Point2D(500, 0);
@@ -172,7 +171,7 @@ pub fn p2(file: &str) -> Result<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_p1() {
         let inp = include_str!("../inputs/d14/test.txt");

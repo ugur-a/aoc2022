@@ -1,6 +1,5 @@
 use std::{cmp::Ordering, fmt::Display, str::FromStr};
 
-use anyhow::Result;
 use nom::{
     branch::alt,
     character::complete::{char, u8},
@@ -85,7 +84,7 @@ impl Ord for Item {
     }
 }
 
-pub fn p1(file: &str) -> Result<usize> {
+pub fn p1(file: &str) -> anyhow::Result<usize> {
     let res = file
         .split("\n\n")
         .map(|pair| pair.split_once('\n').unwrap().into())
@@ -96,7 +95,7 @@ pub fn p1(file: &str) -> Result<usize> {
 
     Ok(res)
 }
-pub fn p2(file: &str) -> Result<usize> {
+pub fn p2(file: &str) -> anyhow::Result<usize> {
     let dividers = ["[[2]]", "[[6]]"];
 
     let mut packets: Vec<Item> = file

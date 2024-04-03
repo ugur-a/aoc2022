@@ -1,11 +1,11 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use anyhow::{Context, Result};
+use anyhow::Context;
 use itertools::Itertools;
 
 type FilesWithSizes = HashMap<PathBuf, u32>;
 
-fn parse_files_with_sizes(s: &str) -> Result<FilesWithSizes> {
+fn parse_files_with_sizes(s: &str) -> anyhow::Result<FilesWithSizes> {
     let mut current_path = PathBuf::new();
     let mut files_with_sizes: FilesWithSizes = HashMap::new();
 
@@ -52,7 +52,7 @@ fn get_dir_sizes(files_with_sizes: &FilesWithSizes) -> DirsWithSizes {
         .sum()
 }
 
-pub fn p1(file: &str) -> Result<u32> {
+pub fn p1(file: &str) -> anyhow::Result<u32> {
     let upper_bound = 100_000u32;
 
     let navigations = &file[2..];
@@ -66,7 +66,7 @@ pub fn p1(file: &str) -> Result<u32> {
         .sum())
 }
 
-pub fn p2(file: &str) -> Result<u32> {
+pub fn p2(file: &str) -> anyhow::Result<u32> {
     let navigations = &file[2..];
     let files_with_sizes = parse_files_with_sizes(navigations)?;
 

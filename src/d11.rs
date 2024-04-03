@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use anyhow::{bail, Context, Error, Result};
+use anyhow::{bail, Context};
 use itertools::Itertools;
 use num::Integer;
 
@@ -19,7 +19,7 @@ where
     N: FromStr,
     <N as FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
-    type Err = Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut note_lines = s.lines().skip(1);
@@ -110,7 +110,7 @@ where
     }
 }
 
-pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
+pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
     let mut monkeys = file
         .split("\n\n")
         .map(Monkey::<u32>::from_str)
@@ -166,7 +166,7 @@ pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
         .product())
 }
 
-pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
+pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
     let mut monkeys = file
         .split("\n\n")
         .map(Monkey::<u64>::from_str)
@@ -230,7 +230,7 @@ pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_p1() {
         let inp = include_str!("../inputs/d11/test.txt");
