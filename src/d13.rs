@@ -91,13 +91,8 @@ impl Ord for Item {
 pub fn p1(file: &str) -> Result<usize> {
     let res = file
         .split("\n\n")
-        .map(|pair| pair.split_once('\n').unwrap())
-        .map(|(left, right)| {
-            (
-                left.parse::<Item>().unwrap(),
-                right.parse::<Item>().unwrap(),
-            )
-        })
+        .map(|pair| pair.split_once('\n').unwrap().into())
+        .map(|pair: [&str; 2]| pair.map(|part| Item::from_str(part).unwrap()))
         .enumerate()
         .filter_map(|(idx, (left, right))| if left < right { Some(idx + 1) } else { None })
         .sum();

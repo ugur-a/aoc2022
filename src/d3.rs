@@ -15,14 +15,12 @@ pub fn p1(file: &str) -> usize {
     file.lines()
         // split into compartments
         .map(|rucksack| rucksack.split_at(rucksack.len() / 2))
+        .map(|(compartment1, compartment2)| (compartment1, compartment2).into())
         // find the common item
-        .map(|(compartment1, compartment2)| {
-            (
-                compartment1.chars().collect::<HashSet<char>>(),
-                compartment2.chars().collect::<HashSet<char>>(),
-            )
+        .map(|compartments: [&str; 2]| {
+            compartments.map(|compartment| compartment.chars().collect::<HashSet<char>>())
         })
-        .map(|(compartment1, compartment2)| {
+        .map(|[compartment1, compartment2]| {
             *compartment1
                 .intersection(&compartment2)
                 .exactly_one()
