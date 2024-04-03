@@ -29,7 +29,7 @@ where
             .strip_prefix("  Starting items: ")
             .context("invalid input")?
             .split(", ")
-            .map(str::parse::<N>)
+            .map(N::from_str)
             .collect::<Result<Vec<_>, _>>()?;
 
         let operation = note_lines
@@ -113,7 +113,7 @@ where
 pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
     let mut monkeys = file
         .split("\n\n")
-        .map(str::parse::<Monkey<u32>>)
+        .map(Monkey::<u32>::from_str)
         .collect::<Result<Vec<_>, _>>()?;
 
     let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
@@ -169,7 +169,7 @@ pub fn p1(file: &str, num_rounds: u32) -> Result<usize> {
 pub fn p2(file: &str, num_rounds: u32) -> Result<usize> {
     let mut monkeys = file
         .split("\n\n")
-        .map(str::parse::<Monkey<u64>>)
+        .map(Monkey::<u64>::from_str)
         .collect::<Result<Vec<_>, _>>()?;
 
     let divisibility_tests_lcm = monkeys

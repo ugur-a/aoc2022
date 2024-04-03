@@ -111,7 +111,7 @@ pub fn p2(file: &str) -> Result<usize> {
         .lines()
         .filter(|line| !line.is_empty())
         .chain(dividers)
-        .map(str::parse)
+        .map(Item::from_str)
         .collect::<Result<Vec<_>, _>>()?;
     packets.sort_unstable();
 
