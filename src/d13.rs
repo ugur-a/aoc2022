@@ -85,12 +85,14 @@ impl Ord for Item {
 }
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
-    let res = file
+    let pairs = file
         .split("\n\n")
         .map(|pair| pair.split_once('\n').unwrap().into())
-        .map(|pair: [&str; 2]| pair.map(|part| Item::from_str(part).unwrap()))
-        .enumerate()
-        .filter_map(|(idx, (left, right))| if left < right { Some(idx + 1) } else { None })
+        .map(|pair: [&str; 2]| pair.map(|part| Item::from_str(part).unwrap()));
+
+    let res = (1..)
+        .zip(pairs)
+        .filter_map(|(idx, [left, right])| if left < right { Some(idx) } else { None })
         .sum();
 
     Ok(res)
