@@ -24,8 +24,7 @@ impl Display for Item {
         }
     }
 }
-// [[[[]]],[]]
-// [[1],[2,3,4]]
+
 fn parse_integer(input: &str) -> IResult<&str, Item> {
     map(u8, Item::Integer)(input)
 }
@@ -37,6 +36,8 @@ fn parse_list(input: &str) -> IResult<&str, Item> {
     )(input)
 }
 
+// [[[[]]],[]]
+// [[1],[2,3,4]]
 fn parse_item(input: &str) -> IResult<&str, Item> {
     alt((parse_integer, parse_list))(input)
 }
