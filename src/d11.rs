@@ -59,10 +59,7 @@ fn parse_operand<N: FromStr + Copy>(input: &str) -> IResult<&str, Operand<N>> {
 }
 
 #[derive(Clone, Copy)]
-struct Operation<N: Copy> {
-    operator: Operator,
-    operand: Operand<N>,
-}
+struct Operation<N: Copy>(Operator, Operand<N>);
 
 // new = old * 19
 fn parse_operation<N: FromStr + Copy>(input: &str) -> IResult<&str, Operation<N>> {
@@ -71,7 +68,7 @@ fn parse_operation<N: FromStr + Copy>(input: &str) -> IResult<&str, Operation<N>
             tag("new = old "),
             separated_pair(parse_operator, char(' '), parse_operand),
         ),
-        |(operator, operand)| Operation { operator, operand },
+        |(operator, operand)| Operation(operator, operand),
     )(input)
 }
 
@@ -141,22 +138,10 @@ where
 {
     fn apply_operation(self, operation: Operation<Self>) -> Self {
         match operation {
-            Operation {
-                operator: Operator::Add,
-                operand: Operand::Number(value),
-            } => self + value,
-            Operation {
-                operator: Operator::Mul,
-                operand: Operand::Number(value),
-            } => self * value,
-            Operation {
-                operator: Operator::Add,
-                operand: Operand::Old,
-            } => self + self,
-            Operation {
-                operator: Operator::Mul,
-                operand: Operand::Old,
-            } => self * self,
+            Operation(Operator::Add, Operand::Number(value)) => self + value,
+            Operation(Operator::Mul, Operand::Number(value)) => self * value,
+            Operation(Operator::Add, Operand::Old) => self + self,
+            Operation(Operator::Mul, Operand::Old) => self * self,
         }
     }
 }
