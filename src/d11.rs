@@ -172,11 +172,7 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
     let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
-            monkey.inventory.append(
-                inventories_to_transfer
-                    .get_mut(idx)
-                    .context("there should've been an empty vector here if nothing else")?,
-            );
+            monkey.inventory.append(&mut inventories_to_transfer[idx]);
 
             if monkey.inventory.is_empty() {
                 continue;
@@ -194,14 +190,8 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 // monkey inspects each item
                 .partition(|item_worry| item_worry % monkey.divisible_by == 0);
 
-            inventories_to_transfer
-                .get_mut(monkey.monkey_true)
-                .with_context(|| format!("no monkey number {}", monkey.monkey_true))?
-                .extend(items_monkey_true);
-            inventories_to_transfer
-                .get_mut(monkey.monkey_false)
-                .with_context(|| format!("no monkey number {}", monkey.monkey_true))?
-                .extend(items_monkey_false);
+            inventories_to_transfer[monkey.monkey_true].extend(items_monkey_true);
+            inventories_to_transfer[monkey.monkey_false].extend(items_monkey_false);
         }
     }
 
@@ -229,11 +219,7 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
     let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
-            monkey.inventory.append(
-                inventories_to_transfer
-                    .get_mut(idx)
-                    .context("there should've been an empty vector here if nothing else")?,
-            );
+            monkey.inventory.append(&mut inventories_to_transfer[idx]);
 
             if monkey.inventory.is_empty() {
                 continue;
@@ -250,14 +236,8 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 // monkey inspects each item
                 .partition(|item_worry| item_worry % monkey.divisible_by == 0);
 
-            inventories_to_transfer
-                .get_mut(monkey.monkey_true)
-                .with_context(|| format!("no monkey number {}", monkey.monkey_true))?
-                .extend(items_monkey_true);
-            inventories_to_transfer
-                .get_mut(monkey.monkey_false)
-                .with_context(|| format!("no monkey number {}", monkey.monkey_true))?
-                .extend(items_monkey_false);
+            inventories_to_transfer[monkey.monkey_true].extend(items_monkey_true);
+            inventories_to_transfer[monkey.monkey_false].extend(items_monkey_false);
         }
     }
 
