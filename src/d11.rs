@@ -6,7 +6,7 @@ use itertools::Itertools;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, digit1, newline},
+    character::complete::{char, digit1},
     combinator::{map, map_res, value},
     multi::separated_list0,
     sequence::{delimited, preceded, separated_pair, tuple},
@@ -76,6 +76,14 @@ fn parse_divisible_by<N: FromStr + Copy>(input: &str) -> IResult<&str, N> {
     preceded(tag("divisible by "), parse_n)(input)
 }
 
+fn usize(input: &str) -> IResult<&str, usize> {
+    map_res(digit1, usize::from_str)(input)
+}
+
+fn parse_throw_to(input: &str) -> IResult<&str, usize> {
+    preceded(tag("throw to monkey "), usize)(input)
+}
+
 // Monkey 0:
 //   Starting items: 79, 98
 //   Operation: new = old * 19
@@ -84,21 +92,15 @@ fn parse_divisible_by<N: FromStr + Copy>(input: &str) -> IResult<&str, N> {
 //     If false: throw to monkey 3
 fn parse_monkey<N: FromStr + Copy>(input: &str) -> IResult<&str, Monkey<N>> {
     map(
-        preceded(
-            tuple((tag("Monkey "), digit1, tag(":"), newline)),
-            tuple((
-                delimited(
-                    tag("  Starting items: "),
-                    parse_starting_items::<N>,
-                    newline,
-                ),
-                delimited(tag("  Operation: "), parse_operation::<N>, newline),
-                delimited(tag("  Test: "), parse_divisible_by::<N>, newline),
-                delimited(tag("    If true: "), parse_n, newline),
-                delimited(tag("    If false: "), parse_n, newline),
-            )),
-        ),
-        |(starting_items, operation, divisible_by, monkey_true, monkey_false)| Monkey::<N> {
+        tuple((
+            delimited(tag("Monkey "), digit1, tag(":")),
+            preceded(tag("\n  Starting items: "), parse_starting_items::<N>),
+            preceded(tag("\n  Operation: "), parse_operation::<N>),
+            preceded(tag("\n  Test: "), parse_divisible_by::<N>),
+            preceded(tag("\n    If true: "), parse_throw_to),
+            preceded(tag("\n    If false: "), parse_throw_to),
+        )),
+        |(_, starting_items, operation, divisible_by, monkey_true, monkey_false)| Monkey::<N> {
             inventory: starting_items,
             operation,
             divisible_by,
