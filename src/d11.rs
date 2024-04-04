@@ -1,8 +1,17 @@
 use std::ops::{Add, Mul};
 use std::str::FromStr;
 
-use anyhow::{bail, Context};
+use anyhow::Context;
 use itertools::Itertools;
+use nom::{
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::{char, digit1, newline},
+    combinator::{map, map_res, value},
+    multi::separated_list0,
+    sequence::{delimited, preceded, separated_pair, tuple},
+    Finish, IResult,
+};
 use num::Integer;
 
 #[allow(clippy::struct_field_names)]
@@ -15,10 +24,26 @@ struct Monkey<N: Copy> {
     activity: usize,
 }
 
+fn parse_n<N: FromStr>(input: &str) -> IResult<&str, N> {
+    map_res(digit1, N::from_str)(input)
+}
+
+// 79, 98
+fn parse_starting_items<N: FromStr>(input: &str) -> IResult<&str, Vec<N>> {
+    separated_list0(tag(", "), parse_n)(input)
+}
+
 #[derive(Clone, Copy)]
 enum Operator {
     Add,
     Mul,
+}
+
+fn parse_operator(input: &str) -> IResult<&str, Operator> {
+    alt((
+        value(Operator::Mul, char('*')),
+        value(Operator::Add, char('+')),
+    ))(input)
 }
 
 #[derive(Clone, Copy)]
@@ -27,67 +52,83 @@ enum Operand<N> {
     Number(N),
 }
 
-impl<N> FromStr for Monkey<N>
-where
-    N: FromStr + Copy,
-    <N as FromStr>::Err: std::error::Error + Send + Sync + 'static,
-{
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut note_lines = s.lines().skip(1);
-        let starting_items = note_lines
-            .next()
-            .context("no starting items")?
-            .strip_prefix("  Starting items: ")
-            .context("invalid input")?
-            .split(", ")
-            .map(N::from_str)
-            .collect::<Result<Vec<_>, _>>()?;
-
-        let operation = note_lines
-            .next()
-            .context("no operations")?
-            .strip_prefix("  Operation: new = old ")
-            .context("invalid input")?
-            .parse()?;
-
-        let divisible_by = note_lines
-            .next()
-            .context("no test")?
-            .strip_prefix("  Test: divisible by ")
-            .context("invalid input")?
-            .parse()?;
-
-        let monkey_true = note_lines
-            .next()
-            .context("no first monkey")?
-            .strip_prefix("    If true: throw to monkey ")
-            .context("invalid input")?
-            .parse()?;
-
-        let monkey_false = note_lines
-            .next()
-            .context("no second monkey")?
-            .strip_prefix("    If false: throw to monkey ")
-            .context("invalid input")?
-            .parse()?;
-
-        Ok(Self {
-            inventory: starting_items,
-            operation,
-            divisible_by,
-            monkey_true,
-            monkey_false,
-            activity: 0,
-        })
-    }
+fn parse_operand<N: FromStr + Copy>(input: &str) -> IResult<&str, Operand<N>> {
+    alt((
+        value(Operand::Old, tag("old")),
+        map(parse_n, Operand::Number),
+    ))(input)
 }
 
 #[derive(Clone, Copy)]
 struct Operation<N: Copy> {
     operator: Operator,
     operand: Operand<N>,
+}
+
+// new = old * 19
+fn parse_operation<N: FromStr + Copy>(input: &str) -> IResult<&str, Operation<N>> {
+    map(
+        preceded(
+            tag("new = old "),
+            separated_pair(parse_operator, char(' '), parse_operand),
+        ),
+        |(operator, operand)| Operation { operator, operand },
+    )(input)
+}
+
+fn parse_divisible_by<N: FromStr + Copy>(input: &str) -> IResult<&str, N> {
+    preceded(tag("divisible by "), parse_n)(input)
+}
+
+// Monkey 0:
+//   Starting items: 79, 98
+//   Operation: new = old * 19
+//   Test: divisible by 23
+//     If true: throw to monkey 2
+//     If false: throw to monkey 3
+fn parse_monkey<N: FromStr + Copy>(input: &str) -> IResult<&str, Monkey<N>> {
+    map(
+        preceded(
+            tuple((tag("Monkey "), digit1, tag(":"), newline)),
+            tuple((
+                delimited(
+                    tag("  Starting items: "),
+                    parse_starting_items::<N>,
+                    newline,
+                ),
+                delimited(tag("  Operation: "), parse_operation::<N>, newline),
+                delimited(tag("  Test: "), parse_divisible_by::<N>, newline),
+                delimited(tag("    If true: "), parse_n, newline),
+                delimited(tag("    If false: "), parse_n, newline),
+            )),
+        ),
+        |(starting_items, operation, divisible_by, monkey_true, monkey_false)| Monkey::<N> {
+            inventory: starting_items,
+            operation,
+            divisible_by,
+            monkey_true,
+            monkey_false,
+            activity: 0,
+        },
+    )(input)
+}
+
+impl<N> FromStr for Monkey<N>
+where
+    N: FromStr + Copy,
+    <N as FromStr>::Err: std::error::Error + Send + Sync + 'static,
+{
+    type Err = nom::error::Error<String>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_monkey(s).finish() {
+            Ok((_remaining, monkey)) => Ok(monkey),
+            Err(nom::error::Error { input, code }) => Err(Self::Err {
+                input: input.to_string(),
+                code,
+            }),
+        }
+    }
 }
 
 trait ApplyOperation {
@@ -119,35 +160,6 @@ where
                 operand: Operand::Old,
             } => self * self,
         }
-    }
-}
-
-impl<N> FromStr for Operation<N>
-where
-    N: FromStr + Copy,
-{
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut operation = s.split_whitespace();
-        let operator = match operation.next().context("no operator")? {
-            "+" => Operator::Add,
-            "*" => Operator::Mul,
-            _ => bail!("invalid operator"),
-        };
-
-        let operand = operation.next().context("no operator")?;
-        let operand = {
-            if operand == "old" {
-                Operand::Old
-            } else if let Ok(num) = operand.parse::<N>() {
-                Operand::Number(num)
-            } else {
-                bail!("invalid operand");
-            }
-        };
-
-        Ok(Operation { operator, operand })
     }
 }
 
