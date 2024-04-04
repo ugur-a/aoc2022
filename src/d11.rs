@@ -21,7 +21,6 @@ struct Monkey<N: Copy> {
     divisible_by: N,
     monkey_true: usize,
     monkey_false: usize,
-    activity: usize,
 }
 
 fn parse_n<N: FromStr>(input: &str) -> IResult<&str, N> {
@@ -108,7 +107,6 @@ fn parse_monkey<N: FromStr + Copy>(input: &str) -> IResult<&str, Monkey<N>> {
             divisible_by,
             monkey_true,
             monkey_false,
-            activity: 0,
         },
     )(input)
 }
@@ -169,6 +167,7 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
         .map(Monkey::<u32>::from_str)
         .collect::<Result<Vec<_>, _>>()?;
 
+    let mut activities: Vec<usize> = vec![0; monkeys.len()];
     let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
@@ -178,7 +177,7 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 continue;
             }
 
-            monkey.activity += monkey.inventory.len();
+            activities[idx] += monkey.inventory.len();
 
             let (items_monkey_true, items_monkey_false): (Vec<u32>, Vec<u32>) = monkey
                 .inventory
@@ -195,9 +194,8 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
         }
     }
 
-    Ok(monkeys
-        .iter()
-        .map(|monkey| monkey.activity)
+    Ok(activities
+        .into_iter()
         .sorted_unstable()
         .rev()
         .take(2)
@@ -216,6 +214,7 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
         .reduce(|acc, e| acc.lcm(&e))
         .context("non-zero amount of monkeys")?;
 
+    let mut activities: Vec<usize> = vec![0; monkeys.len()];
     let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
@@ -225,7 +224,7 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 continue;
             }
 
-            monkey.activity += monkey.inventory.len();
+            activities[idx] += monkey.inventory.len();
 
             let (items_monkey_true, items_monkey_false): (Vec<u64>, Vec<u64>) = monkey
                 .inventory
@@ -241,9 +240,8 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
         }
     }
 
-    Ok(monkeys
-        .iter()
-        .map(|monkey| monkey.activity)
+    Ok(activities
+        .into_iter()
         .sorted_unstable()
         .rev()
         .take(2)
