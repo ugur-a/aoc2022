@@ -13,33 +13,13 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.81"
+version = "1.0.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0952808a6c2afd1aa8947271f3a60f1a6763c7b912d210184c5149b5cf147247"
+checksum = "25bdb32cbbdce2b519a9cd7df3a678443100e265d5e25ca763b7572a5104f5f3"
 
 [[package]]
-name = "aoc2022"
+name = "aoc2022lib"
 version = "0.1.0"
-dependencies = [
- "anyhow",
- "array2d",
- "derive_deref",
- "intersection",
- "itertools",
- "nom",
- "num",
- "pathfinding",
- "petgraph",
- "rayon",
- "regex",
- "test-case",
-]
-
-[[package]]
-name = "array2d"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8b39cb2c1bf5a7c0dd097aa95ab859cf87dab5a4328900f5388942dc1889f74"
 
 [[package]]
 name = "autocfg"
@@ -77,6 +57,165 @@ name = "crossbeam-utils"
 version = "0.8.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "248e3bacc7dc6baa3b21e405ee045c3047101a49145e7e9eca583ab4c2ca5345"
+
+[[package]]
+name = "d01"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "itertools",
+]
+
+[[package]]
+name = "d02"
+version = "0.1.0"
+
+[[package]]
+name = "d03"
+version = "0.1.0"
+dependencies = [
+ "intersection",
+ "itertools",
+]
+
+[[package]]
+name = "d04"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+]
+
+[[package]]
+name = "d05"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "itertools",
+]
+
+[[package]]
+name = "d06"
+version = "0.1.0"
+dependencies = [
+ "test-case",
+]
+
+[[package]]
+name = "d07"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "itertools",
+]
+
+[[package]]
+name = "d08"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+]
+
+[[package]]
+name = "d09"
+version = "0.1.0"
+dependencies = [
+ "aoc2022lib",
+ "derive_deref",
+]
+
+[[package]]
+name = "d10"
+version = "0.1.0"
+dependencies = [
+ "aoc2022lib",
+ "nom",
+]
+
+[[package]]
+name = "d11"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "itertools",
+ "nom",
+ "num",
+]
+
+[[package]]
+name = "d12"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc2022lib",
+ "pathfinding",
+]
+
+[[package]]
+name = "d13"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc2022lib",
+ "nom",
+ "test-case",
+]
+
+[[package]]
+name = "d14"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc2022lib",
+ "itertools",
+]
+
+[[package]]
+name = "d15"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc2022lib",
+ "derive_deref",
+ "itertools",
+ "rayon",
+ "regex",
+]
+
+[[package]]
+name = "d16"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "petgraph",
+ "regex",
+]
+
+[[package]]
+name = "d17"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc2022lib",
+ "itertools",
+]
+
+[[package]]
+name = "d18"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc2022lib",
+ "itertools",
+ "nom",
+ "pathfinding",
+]
+
+[[package]]
+name = "d19"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "deprecate-until"
