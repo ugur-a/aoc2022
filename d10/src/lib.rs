@@ -3,15 +3,15 @@ fn operations(file: &str, init_value: i32) -> Vec<i32> {
     let mut register_value = init_value;
     for line in file.lines() {
         if let Some(("addx", num)) = line.split_once(' ') {
-            storage.push(x);
-            storage.push(x);
-            x += num.parse::<i32>().unwrap();
+            register_history.push(register_value);
+            register_history.push(register_value);
+            register_value += num.parse::<i32>().unwrap();
         // noop
         } else {
-            storage.push(x);
+            register_history.push(register_value);
         }
     }
-    storage
+    register_history
 }
 
 #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
@@ -22,7 +22,7 @@ pub fn p1(file: &str) -> i32 {
 
     interesting_cycles
         .into_iter()
-        .map(|cycle| cycle as i32 * storage[cycle - 1])
+        .map(|cycle| cycle as i32 * register_history[cycle - 1])
         .sum()
 }
 
@@ -49,7 +49,7 @@ pub fn p2(file: &str) -> String {
                     // only check against the horizontal position of the sprite
                     let crt_position = col_num;
 
-                    let center_of_sprite = storage[cycle];
+                    let center_of_sprite = register_history[cycle];
 
                     if center_of_sprite.abs_diff(crt_position as i32) <= 1 {
                         '#'
