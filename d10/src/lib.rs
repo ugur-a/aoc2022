@@ -66,37 +66,38 @@ pub fn p2(file: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::read_to_string;
 
     #[test]
     fn test_p1() {
-        let inp = include_str!("../inputs/test.txt");
-        assert_eq!(p1(inp), 13140);
+        let inp = read_to_string("inputs/test.txt").unwrap();
+        assert_eq!(p1(&inp), 13140);
     }
     #[test]
     fn real_p1() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p1(inp), 15360);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p1(&inp), 15360);
     }
     #[test]
     fn test_p2() {
-        let inp = include_str!("../inputs/test.txt");
+        let inp = read_to_string("inputs/test.txt").unwrap();
         let out = "##..##..##..##..##..##..##..##..##..##..
 ###...###...###...###...###...###...###.
 ####....####....####....####....####....
 #####.....#####.....#####.....#####.....
 ######......######......######......####
 #######.......#######.......#######.....";
-        assert_eq!(p2(inp), out);
+        assert_eq!(p2(&inp), out);
     }
     #[test]
     fn real_p2() {
-        let inp = include_str!("../inputs/real.txt");
+        let inp = read_to_string("inputs/real.txt").unwrap();
         let out = "###..#..#.#....#..#...##..##..####..##..
 #..#.#..#.#....#..#....#.#..#....#.#..#.
 #..#.####.#....####....#.#......#..#..#.
 ###..#..#.#....#..#....#.#.##..#...####.
 #....#..#.#....#..#.#..#.#..#.#....#..#.
 #....#..#.####.#..#..##...###.####.#..#.";
-        assert_eq!(p2(inp), out);
+        assert_eq!(p2(&inp), out);
     }
 }

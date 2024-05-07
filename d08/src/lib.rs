@@ -156,25 +156,26 @@ pub fn p2(file: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::read_to_string;
 
     #[test]
     fn test_p1() {
-        let inp = include_str!("../inputs/test.txt");
-        assert_eq!(p1(inp), 21);
+        let inp = read_to_string("inputs/test.txt").unwrap();
+        assert_eq!(p1(&inp), 21);
     }
     #[test]
     fn real_p1() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p1(inp), 1708);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p1(&inp), 1708);
     }
     #[test]
     fn test_p2() {
-        let inp = include_str!("../inputs/test.txt");
-        assert_eq!(p2(inp), 8);
+        let inp = read_to_string("inputs/test.txt").unwrap();
+        assert_eq!(p2(&inp), 8);
     }
     #[test]
     fn real_p2() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p2(inp), 504_000);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p2(&inp), 504_000);
     }
 }

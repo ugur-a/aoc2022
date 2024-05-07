@@ -112,6 +112,7 @@ mod tests {
     use super::*;
     use test_case::test_case;
     use Item::{Integer as I, List as L};
+    use std::fs::read_to_string;
 
     #[test_case(I(5), I(6))]
     #[test_case(I(5), L(vec![I(6)]); "Integer VS List")]
@@ -150,22 +151,22 @@ mod tests {
 
     #[test]
     fn test_p1() {
-        let inp = include_str!("../inputs/test.txt");
-        assert_eq!(p1(inp).unwrap(), 13);
+        let inp = read_to_string("inputs/test.txt").unwrap();
+        assert_eq!(p1(&inp).unwrap(), 13);
     }
     #[test]
     fn real_p1() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p1(inp).unwrap(), 5503);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p1(&inp).unwrap(), 5503);
     }
     #[test]
     fn test_p2() {
-        let inp = include_str!("../inputs/test.txt");
-        assert_eq!(p2(inp).unwrap(), 140);
+        let inp = read_to_string("inputs/test.txt").unwrap();
+        assert_eq!(p2(&inp).unwrap(), 140);
     }
     #[test]
     fn real_p2() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p2(inp).unwrap(), 20952);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p2(&inp).unwrap(), 20952);
     }
 }

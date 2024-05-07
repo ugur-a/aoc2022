@@ -219,32 +219,33 @@ pub fn p2(file: &str) -> anyhow::Result<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::read_to_string;
 
     #[test]
     fn test_p1() {
-        let inp = include_str!("../inputs/test.txt");
-        assert_eq!(p1(inp).unwrap(), 3068);
+        let inp = read_to_string("inputs/test.txt").unwrap();
+        assert_eq!(p1(&inp).unwrap(), 3068);
     }
     #[test]
     fn real_p1() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p1(inp).unwrap(), 3206);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p1(&inp).unwrap(), 3206);
     }
     #[test]
     fn test_p2() {
-        let inp = include_str!("../inputs/test.txt");
-        assert_eq!(p2(inp).unwrap(), 1_514_285_714_288);
+        let inp = read_to_string("inputs/test.txt").unwrap();
+        assert_eq!(p2(&inp).unwrap(), 1_514_285_714_288);
     }
     #[test]
     #[ignore]
     fn real_p2() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p2(inp).unwrap(), 0);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p2(&inp).unwrap(), 0);
     }
 
     #[test]
     fn test_p_mid() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p_mid(inp).unwrap(), 1_602_842);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p_mid(&inp).unwrap(), 1_602_842);
     }
 }

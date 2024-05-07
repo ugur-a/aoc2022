@@ -161,6 +161,7 @@ pub fn p2(file: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::read_to_string;
 
     #[test]
     fn move_2_rope() {
@@ -170,27 +171,27 @@ mod tests {
     }
     #[test]
     fn test_p1() {
-        let inp = include_str!("../inputs/test1.txt");
-        assert_eq!(p1(inp), 13);
+        let inp = read_to_string("inputs/test1.txt").unwrap();
+        assert_eq!(p1(&inp), 13);
     }
     #[test]
     fn real_p1() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p1(inp), 5960);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p1(&inp), 5960);
     }
     #[test]
     fn test1_p2() {
-        let inp = include_str!("../inputs/test1.txt");
-        assert_eq!(p2(inp), 1);
+        let inp = read_to_string("inputs/test1.txt").unwrap();
+        assert_eq!(p2(&inp), 1);
     }
     #[test]
     fn test2_p2() {
-        let inp = include_str!("../inputs/test2.txt");
-        assert_eq!(p2(inp), 36);
+        let inp = read_to_string("inputs/test2.txt").unwrap();
+        assert_eq!(p2(&inp), 36);
     }
     #[test]
     fn real_p2() {
-        let inp = include_str!("../inputs/real.txt");
-        assert_eq!(p2(inp), 2327);
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p2(&inp), 2327);
     }
 }
