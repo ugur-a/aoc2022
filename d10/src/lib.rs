@@ -1,17 +1,30 @@
-fn operations(file: &str, init_value: i32) -> Vec<i32> {
-    let mut register_history = Vec::new();
+fn operations(file: &str, init_value: i32) -> BTreeMap<usize, i32> {
+    let mut register_history = BTreeMap::new();
+    let mut cycle = 0;
     let mut register_value = init_value;
     for line in file.lines() {
         if let Some(("addx", num)) = line.split_once(' ') {
-            register_history.push(register_value);
-            register_history.push(register_value);
+            cycle += 2;
             register_value += num.parse::<i32>().unwrap();
+            register_history.insert(cycle, register_value);
         // noop
         } else {
-            register_history.push(register_value);
+            cycle += 1;
         }
     }
     register_history
+}
+
+trait BiggestPrevious<Q> {
+    type Item;
+    fn biggest_previous(&self, query: Q) -> Option<&Self::Item>;
+}
+
+impl BiggestPrevious<usize> for BTreeMap<usize, i32> {
+    type Item = i32;
+    fn biggest_previous(&self, query: usize) -> Option<&Self::Item> {
+        self.range(..=query).next_back().map(|(_u, i)| i)
+    }
 }
 
 #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
@@ -22,7 +35,7 @@ pub fn p1(file: &str) -> i32 {
 
     interesting_cycles
         .into_iter()
-        .map(|cycle| cycle as i32 * register_history[cycle - 1])
+        .map(|cycle| cycle as i32 * register_history.biggest_previous(cycle - 1).unwrap())
         .sum()
 }
 
@@ -49,7 +62,7 @@ pub fn p2(file: &str) -> String {
                     // only check against the horizontal position of the sprite
                     let crt_position = col_num;
 
-                    let center_of_sprite = register_history[cycle];
+                    let center_of_sprite = register_history.biggest_previous(cycle).unwrap();
 
                     if center_of_sprite.abs_diff(crt_position as i32) <= 1 {
                         '#'
