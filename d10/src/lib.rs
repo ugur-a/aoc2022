@@ -1,15 +1,46 @@
+use aoc2022lib::impl_from_str_from_nom_parser;
+
+use nom::{
+    branch::alt, bytes::complete::tag, character::complete::i32, combinator::map,
+    sequence::preceded, IResult,
+};
+use std::{collections::BTreeMap, str::FromStr};
+
+#[derive(Clone, Copy)]
+enum Operation {
+    Addx(i32),
+    Noop,
+}
+
+fn noop(input: &str) -> IResult<&str, Operation> {
+    map(tag("noop"), |_| Operation::Noop)(input)
+}
+
+fn addx(input: &str) -> IResult<&str, Operation> {
+    map(preceded(tag("addx "), i32), |num| Operation::Addx(num))(input)
+}
+
+fn operation(input: &str) -> IResult<&str, Operation> {
+    alt((noop, addx))(input)
+}
+
+impl_from_str_from_nom_parser!(operation, Operation);
+
 fn operations(file: &str, init_value: i32) -> BTreeMap<usize, i32> {
     let mut register_history = BTreeMap::new();
     let mut cycle = 0;
     let mut register_value = init_value;
     for line in file.lines() {
-        if let Some(("addx", num)) = line.split_once(' ') {
-            cycle += 2;
-            register_value += num.parse::<i32>().unwrap();
-            register_history.insert(cycle, register_value);
-        // noop
-        } else {
-            cycle += 1;
+        match Operation::from_str(line) {
+            Ok(Operation::Addx(num)) => {
+                cycle += 2;
+                register_value += num;
+                register_history.insert(cycle, register_value);
+            }
+            Ok(Operation::Noop) => {
+                cycle += 1;
+            }
+            _ => unimplemented!(),
         }
     }
     register_history
