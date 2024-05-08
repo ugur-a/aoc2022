@@ -40,7 +40,7 @@ impl Tree {
     }
 }
 
-fn parse_forest(file: &str) -> Vec<Vec<Tree>> {
+fn forest(file: &str) -> Vec<Vec<Tree>> {
     file.lines()
         .map(|line| {
             line.chars()
@@ -80,7 +80,7 @@ fn check_visibilities_in_a_line(line: &mut [Tree]) {
 
 pub fn p1(file: &str) -> usize {
     // create the map
-    let mut forest: Vec<Vec<Tree>> = parse_forest(file);
+    let mut forest: Vec<Vec<Tree>> = forest(file);
 
     // analyze visibility horizontally
     for row in &mut forest {
@@ -133,7 +133,7 @@ fn check_scenicities_in_a_line(line: &mut [Tree]) {
 }
 
 pub fn p2(file: &str) -> usize {
-    let mut forest: Vec<Vec<Tree>> = parse_forest(file);
+    let mut forest: Vec<Vec<Tree>> = forest(file);
 
     for row in &mut forest {
         check_scenicities_in_a_line(row);

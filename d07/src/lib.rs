@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 type FilesWithSizes = HashMap<PathBuf, u32>;
 
-fn parse_files_with_sizes(s: &str) -> anyhow::Result<FilesWithSizes> {
+fn files_with_sizes(s: &str) -> anyhow::Result<FilesWithSizes> {
     let mut current_path = PathBuf::new();
     let mut files_with_sizes: FilesWithSizes = HashMap::new();
 
@@ -56,7 +56,7 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
     let upper_bound = 100_000u32;
 
     let navigations = &file[2..];
-    let files_with_sizes = parse_files_with_sizes(navigations)?;
+    let files_with_sizes = files_with_sizes(navigations)?;
 
     let dirs_with_sizes = get_dir_sizes(&files_with_sizes);
 
@@ -68,7 +68,7 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
 
 pub fn p2(file: &str) -> anyhow::Result<u32> {
     let navigations = &file[2..];
-    let files_with_sizes = parse_files_with_sizes(navigations)?;
+    let files_with_sizes = files_with_sizes(navigations)?;
 
     let dirs_with_sizes = get_dir_sizes(&files_with_sizes);
 

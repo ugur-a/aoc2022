@@ -73,16 +73,16 @@ impl Droplet {
 }
 
 // 4,3,2
-fn parse_droplet_cube(input: &str) -> IResult<&str, DropletCube> {
+fn droplet_cube(input: &str) -> IResult<&str, DropletCube> {
     map(
         tuple((i8, preceded(char(','), i8), preceded(char(','), i8))),
         |(x, y, z)| Point3D(x, y, z),
     )(input)
 }
 
-fn parse_droplet(input: &str) -> IResult<&str, Droplet> {
+fn droplet(input: &str) -> IResult<&str, Droplet> {
     map(
-        separated_list1(newline, parse_droplet_cube),
+        separated_list1(newline, droplet_cube),
         Droplet::from_droplet_cubes,
     )(input)
 }
@@ -91,7 +91,7 @@ impl FromStr for Droplet {
     type Err = nom::error::Error<String>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_droplet(s).finish() {
+        match droplet(s).finish() {
             Ok((_remaining, droplet)) => Ok(droplet),
             Err(nom::error::Error { input, code }) => Err(Self::Err {
                 input: input.to_string(),

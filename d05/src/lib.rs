@@ -39,7 +39,7 @@ impl FromStr for Rearrangement {
 
 type Warehouse = Vec<Vec<char>>;
 
-fn parse_warehouse(s: &str) -> anyhow::Result<Warehouse> {
+fn warehouse(s: &str) -> anyhow::Result<Warehouse> {
     // remove the last row of the stack arrangement schema - the one with stack numbers
     let (initial_stack_arrangement, last_row_of_stack_arrangement) =
         s.rsplit_once('\n').context("No stack numbers row")?;
@@ -108,7 +108,7 @@ fn crates_at_the_top(warehouse: &Warehouse) -> anyhow::Result<String> {
 pub fn p1(file: &str) -> anyhow::Result<String> {
     let (initial_stack_schema, rearrangements) = file.split_once("\n\n").unwrap();
 
-    let mut warehouse = parse_warehouse(initial_stack_schema)?;
+    let mut warehouse = warehouse(initial_stack_schema)?;
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {
@@ -125,7 +125,7 @@ pub fn p2(file: &str) -> anyhow::Result<String> {
     let (initial_stack_schema, rearrangements) =
         file.split_once("\n\n").context("No stack numbers row")?;
 
-    let mut warehouse: Warehouse = parse_warehouse(initial_stack_schema)?;
+    let mut warehouse: Warehouse = warehouse(initial_stack_schema)?;
 
     // apply the rearrangements
     for rearrangement in rearrangements.lines() {

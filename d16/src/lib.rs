@@ -31,7 +31,7 @@ struct Network<'a> {
     tunnel_graph: UnGraphMap<&'a str, u32>,
 }
 
-fn parse_network(s: &str) -> anyhow::Result<Network> {
+fn network(s: &str) -> anyhow::Result<Network> {
     let re = Regex::new(
         r"Valve ([A-Z]{2}) has flow rate=(\d+); tunnels lead to valves ((?:[A-Z]{2}, )*[A-Z]{2})",
     )?;

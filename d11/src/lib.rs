@@ -23,13 +23,13 @@ struct Monkey<N: Copy> {
     monkey_false: usize,
 }
 
-fn parse_n<N: FromStr>(input: &str) -> IResult<&str, N> {
+fn n<N: FromStr>(input: &str) -> IResult<&str, N> {
     map_res(digit1, N::from_str)(input)
 }
 
 // 79, 98
-fn parse_starting_items<N: FromStr>(input: &str) -> IResult<&str, Vec<N>> {
-    separated_list0(tag(", "), parse_n)(input)
+fn starting_items<N: FromStr>(input: &str) -> IResult<&str, Vec<N>> {
+    separated_list0(tag(", "), n)(input)
 }
 
 #[derive(Clone, Copy)]
@@ -38,7 +38,7 @@ enum Operator {
     Mul,
 }
 
-fn parse_operator(input: &str) -> IResult<&str, Operator> {
+fn operator(input: &str) -> IResult<&str, Operator> {
     alt((
         value(Operator::Mul, char('*')),
         value(Operator::Add, char('+')),
@@ -51,36 +51,33 @@ enum Operand<N> {
     Number(N),
 }
 
-fn parse_operand<N: FromStr + Copy>(input: &str) -> IResult<&str, Operand<N>> {
-    alt((
-        value(Operand::Old, tag("old")),
-        map(parse_n, Operand::Number),
-    ))(input)
+fn operand<N: FromStr + Copy>(input: &str) -> IResult<&str, Operand<N>> {
+    alt((value(Operand::Old, tag("old")), map(n, Operand::Number)))(input)
 }
 
 #[derive(Clone, Copy)]
 struct Operation<N: Copy>(Operator, Operand<N>);
 
 // new = old * 19
-fn parse_operation<N: FromStr + Copy>(input: &str) -> IResult<&str, Operation<N>> {
+fn operation<N: FromStr + Copy>(input: &str) -> IResult<&str, Operation<N>> {
     map(
         preceded(
             tag("new = old "),
-            separated_pair(parse_operator, char(' '), parse_operand),
+            separated_pair(operator, char(' '), operand),
         ),
         |(operator, operand)| Operation(operator, operand),
     )(input)
 }
 
-fn parse_divisible_by<N: FromStr + Copy>(input: &str) -> IResult<&str, N> {
-    preceded(tag("divisible by "), parse_n)(input)
+fn divisible_by<N: FromStr + Copy>(input: &str) -> IResult<&str, N> {
+    preceded(tag("divisible by "), n)(input)
 }
 
 fn usize(input: &str) -> IResult<&str, usize> {
     map_res(digit1, usize::from_str)(input)
 }
 
-fn parse_throw_to(input: &str) -> IResult<&str, usize> {
+fn throw_to(input: &str) -> IResult<&str, usize> {
     preceded(tag("throw to monkey "), usize)(input)
 }
 
@@ -90,15 +87,15 @@ fn parse_throw_to(input: &str) -> IResult<&str, usize> {
 //   Test: divisible by 23
 //     If true: throw to monkey 2
 //     If false: throw to monkey 3
-fn parse_monkey<N: FromStr + Copy>(input: &str) -> IResult<&str, Monkey<N>> {
+fn monkey<N: FromStr + Copy>(input: &str) -> IResult<&str, Monkey<N>> {
     map(
         tuple((
             delimited(tag("Monkey "), digit1, tag(":")),
-            preceded(tag("\n  Starting items: "), parse_starting_items::<N>),
-            preceded(tag("\n  Operation: "), parse_operation::<N>),
-            preceded(tag("\n  Test: "), parse_divisible_by::<N>),
-            preceded(tag("\n    If true: "), parse_throw_to),
-            preceded(tag("\n    If false: "), parse_throw_to),
+            preceded(tag("\n  Starting items: "), starting_items::<N>),
+            preceded(tag("\n  Operation: "), operation::<N>),
+            preceded(tag("\n  Test: "), divisible_by::<N>),
+            preceded(tag("\n    If true: "), throw_to),
+            preceded(tag("\n    If false: "), throw_to),
         )),
         |(_, starting_items, operation, divisible_by, monkey_true, monkey_false)| Monkey::<N> {
             inventory: starting_items,
@@ -118,7 +115,7 @@ where
     type Err = nom::error::Error<String>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_monkey(s).finish() {
+        match monkey(s).finish() {
             Ok((_remaining, monkey)) => Ok(monkey),
             Err(nom::error::Error { input, code }) => Err(Self::Err {
                 input: input.to_string(),

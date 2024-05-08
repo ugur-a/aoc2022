@@ -25,21 +25,21 @@ impl Display for Item {
     }
 }
 
-fn parse_integer(input: &str) -> IResult<&str, Item> {
+fn integer(input: &str) -> IResult<&str, Item> {
     map(u8, Item::Integer)(input)
 }
 
-fn parse_list(input: &str) -> IResult<&str, Item> {
+fn list(input: &str) -> IResult<&str, Item> {
     map(
-        delimited(char('['), separated_list0(char(','), parse_item), char(']')),
+        delimited(char('['), separated_list0(char(','), item), char(']')),
         Item::List,
     )(input)
 }
 
 // [[[[]]],[]]
 // [[1],[2,3,4]]
-fn parse_item(input: &str) -> IResult<&str, Item> {
-    alt((parse_integer, parse_list))(input)
+fn item(input: &str) -> IResult<&str, Item> {
+    alt((integer, list))(input)
 }
 
 impl_from_str_from_nom_parser!(item, Item);
