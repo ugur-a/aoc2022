@@ -1,3 +1,4 @@
+use aoc2022lib::impl_from_str_from_nom_parser;
 use std::{cmp::Ordering, fmt::Display, str::FromStr};
 
 use nom::{
@@ -6,7 +7,7 @@ use nom::{
     combinator::map,
     multi::separated_list0,
     sequence::delimited,
-    Finish, IResult,
+    IResult,
 };
 
 #[derive(Debug, Eq)]
@@ -41,19 +42,7 @@ fn parse_item(input: &str) -> IResult<&str, Item> {
     alt((parse_integer, parse_list))(input)
 }
 
-impl FromStr for Item {
-    type Err = nom::error::Error<String>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_item(s).finish() {
-            Ok((_remaining, blueprint)) => Ok(blueprint),
-            Err(nom::error::Error { input, code }) => Err(Self::Err {
-                input: input.to_string(),
-                code,
-            }),
-        }
-    }
-}
+impl_from_str_from_nom_parser!(item, Item);
 
 impl PartialEq for Item {
     fn eq(&self, other: &Self) -> bool {
