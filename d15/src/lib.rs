@@ -18,7 +18,7 @@ trait ManhattanDistance {
     fn manhattan_distance(self, other: Self) -> u32;
 }
 
-impl Point2D<i32> {
+impl ManhattanDistance for Point2D<i32> {
     fn manhattan_distance(self, other: Self) -> u32 {
         self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
     }
