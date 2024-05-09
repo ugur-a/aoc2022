@@ -1,4 +1,5 @@
 use anyhow::Context;
+use std::str::FromStr;
 
 struct Number {
     value: i64,
@@ -63,8 +64,37 @@ pub fn p1(file: &str) -> anyhow::Result<i64> {
     Ok(res)
 }
 
-pub fn p2(_file: &str) -> anyhow::Result<i64> {
-    todo!()
+pub fn p2(file: &str) -> anyhow::Result<i64> {
+    let num_mixes = 10;
+    let decryption_key: i64 = 811_589_153;
+
+    let mut numbers: Vec<Number> = file
+        .lines()
+        .map(i64::from_str)
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .map(|n| decryption_key * n)
+        .enumerate()
+        .map(|(idx, n)| Number::new(n, idx))
+        .collect();
+
+    for _ in 0..num_mixes {
+        numbers.mix()?;
+    }
+
+    let idx_of_zero = numbers
+        .iter()
+        .position(|number| number.value == 0)
+        .context("No 0 in list")?;
+
+    let res = [1000, 2000, 3000]
+        .into_iter()
+        .map(|position| (idx_of_zero + position) % numbers.len())
+        .map(|position| &numbers[position])
+        .map(|number| number.value)
+        .sum();
+
+    Ok(res)
 }
 
 #[cfg(test)]
