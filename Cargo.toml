@@ -20,6 +20,7 @@ members = [
   "d17",
   "d18",
   "d19",
+  "d20",
 ]
 resolver = "2"
 
