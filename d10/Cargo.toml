@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 aoc2022lib.workspace = true
 nom.workspace = true
+
+[lints]
+workspace = true

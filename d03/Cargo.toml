@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 intersection = "1.0.0"
 itertools.workspace = true
+
+[lints]
+workspace = true

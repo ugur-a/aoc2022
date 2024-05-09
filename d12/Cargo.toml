@@ -9,3 +9,6 @@ edition = "2021"
 anyhow.workspace = true
 aoc2022lib.workspace = true
 pathfinding = "4.9.1"
+
+[lints]
+workspace = true

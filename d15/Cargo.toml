@@ -12,3 +12,6 @@ derive_deref = "1.1.1"
 itertools.workspace = true
 rayon = "1.10.0"
 regex.workspace = true
+
+[lints]
+workspace = true

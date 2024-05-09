@@ -11,3 +11,6 @@ itertools.workspace = true
 nom.workspace = true
 pathfinding = "4.9.1"
 aoc2022lib.workspace = true
+
+[lints]
+workspace = true
