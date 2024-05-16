@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     ops::{Add, Div, Mul, Sub},
     str::FromStr,
 };
@@ -106,6 +107,47 @@ fn monkey(i: &str) -> IResult<&str, Monkey> {
 }
 
 impl_from_str_from_nom_parser!(monkey, Monkey);
+
+struct Monkeys {
+    monkeys: HashMap<Name, Job>,
+}
+
+impl FromStr for Monkeys {
+    type Err = nom::error::Error<String>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut monkeys: Vec<Monkey> = Vec::with_capacity(s.lines().count());
+
+        for line in s.lines() {
+            let monkey = Monkey::from_str(line)?;
+            monkeys.push(monkey);
+        }
+
+        let monkeys = monkeys.into_iter().map(|m| (m.name, m.job)).collect();
+
+        Ok(Self { monkeys })
+    }
+}
+
+impl Monkeys {
+    fn number(&self, name: &str) -> Option<Number> {
+        let job = self.monkeys.get(name)?;
+
+        match job {
+            &Job::Number(num) => Some(num),
+            Job::Calculate {
+                monkey_1st,
+                operation,
+                monkey_2nd,
+            } => {
+                let num_1st = self.number(monkey_1st)?;
+                let num_2nd = self.number(monkey_2nd)?;
+                let num = num_1st.apply_operation(*operation, num_2nd);
+                Some(num)
+            }
+        }
+    }
+}
 
 pub fn p1(file: &str) -> anyhow::Result<Number> {
     todo!()
