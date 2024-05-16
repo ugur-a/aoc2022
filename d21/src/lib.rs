@@ -4,7 +4,7 @@ use std::{
     str::FromStr,
 };
 
-use anyhow::bail;
+use anyhow::{bail, Context};
 use aoc2022lib::impl_from_str_from_nom_parser;
 use nom::{
     branch::alt,
@@ -150,7 +150,9 @@ impl Monkeys {
 }
 
 pub fn p1(file: &str) -> anyhow::Result<Number> {
-    todo!()
+    let monkeys = Monkeys::from_str(file)?;
+    let number = monkeys.number("root").context("No root in list")?;
+    Ok(number)
 }
 pub fn p2(_file: &str) -> anyhow::Result<u32> {
     todo!()
@@ -167,10 +169,9 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 152);
     }
     #[test]
-    #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 0);
+        assert_eq!(p1(&inp).unwrap(), 31_017_034_894_002);
     }
     #[test]
     #[ignore]
