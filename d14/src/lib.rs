@@ -7,9 +7,17 @@ use std::{
 };
 
 use anyhow::bail;
-use aoc2022lib::points::Point2D;
-
+use aoc2022lib::{impl_from_str_from_nom_parser, points::Point2D};
+use derive_deref::Deref;
 use itertools::Itertools;
+use nom::{
+    bytes::complete::tag,
+    character::complete::{char, u32},
+    combinator::map,
+    multi::separated_list1,
+    sequence::separated_pair,
+    IResult,
+};
 
 struct Border {
     left: u32,
@@ -28,20 +36,30 @@ struct Cave {
     resting: HashMap<Point2D<u32>, UnitType>,
 }
 
+// 498,4
+fn point(i: &str) -> IResult<&str, Point2D<u32>> {
+    map(separated_pair(u32, char(','), u32), |(x, y)| Point2D(x, y))(i)
+}
+
+#[derive(Deref)]
+struct Path(Vec<Point2D<u32>>);
+
+// 498,4 -> 498,6 -> 496,6
+fn path(i: &str) -> IResult<&str, Path> {
+    map(separated_list1(tag(" -> "), point), Path)(i)
+}
+
+impl_from_str_from_nom_parser!(path, Path);
+
 impl FromStr for Cave {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let paths = s
             .lines()
-            .map(|line| {
-                line.split(" -> ")
-                    .map(|point| point.split_once(',').unwrap())
-                    .map(|(x, y)| (x.parse::<u32>().unwrap(), y.parse::<u32>().unwrap()))
-                    .map(|(x, y)| Point2D(x, y))
-                    .collect_vec()
-            })
-            .collect_vec();
+            .map(Path::from_str)
+            .collect::<Result<Vec<_>, _>>()?;
+
         let (left, right) = paths
             .iter()
             .flat_map(|path| path.iter())
