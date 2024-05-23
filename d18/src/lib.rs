@@ -43,24 +43,9 @@ impl Droplet {
     }
 
     fn boundaries(&self) -> DropletBoundaries {
-        let (x_min, x_max) = match self.cubes().map(Point3D::x).minmax() {
-            MinMaxResult::MinMax(min, max) => (min, max),
-            MinMaxResult::OneElement(only) => (only, only),
-            MinMaxResult::NoElements => unreachable!(),
-        };
-
-        let (y_min, y_max) = match self.cubes().map(Point3D::y).minmax() {
-            MinMaxResult::MinMax(min, max) => (min, max),
-            MinMaxResult::OneElement(only) => (only, only),
-            MinMaxResult::NoElements => unreachable!(),
-        };
-
-        let (z_min, z_max) = match self.cubes().map(Point3D::z).minmax() {
-            MinMaxResult::MinMax(min, max) => (min, max),
-            MinMaxResult::OneElement(only) => (only, only),
-            MinMaxResult::NoElements => unreachable!(),
-        };
-
+        let (x_min, x_max) = self.cubes().map(Point3D::x).minmax().into_option().unwrap();
+        let (y_min, y_max) = self.cubes().map(Point3D::y).minmax().into_option().unwrap();
+        let (z_min, z_max) = self.cubes().map(Point3D::z).minmax().into_option().unwrap();
         DropletBoundaries {
             x_min,
             x_max,
