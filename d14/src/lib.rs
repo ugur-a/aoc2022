@@ -60,21 +60,22 @@ impl FromStr for Cave {
             .map(Path::from_str)
             .collect::<Result<Vec<_>, _>>()?;
 
-        let (left, right) = paths
-            .iter()
-            .flat_map(|path| path.iter())
-            .map(Point2D::x)
-            .minmax()
-            .into_option()
-            .unwrap();
-
-        let down = paths
-            .iter()
-            .flat_map(|path| path.iter())
-            .map(Point2D::y)
-            .max()
-            .unwrap();
-        let borders = Border { left, right, down };
+        let borders = {
+            let (left, right) = paths
+                .iter()
+                .flat_map(|path| path.iter())
+                .map(Point2D::x)
+                .minmax()
+                .into_option()
+                .unwrap();
+            let down = paths
+                .iter()
+                .flat_map(|path| path.iter())
+                .map(Point2D::y)
+                .max()
+                .unwrap();
+            Border { left, right, down }
+        };
 
         let mut resting: HashMap<Point2D<u32>, UnitType> = HashMap::new();
         for path in paths {
