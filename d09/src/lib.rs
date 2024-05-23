@@ -4,6 +4,8 @@ use derive_deref::{Deref, DerefMut};
 
 use aoc2022lib::points::Point2D;
 
+type Point = Point2D<i32>;
+
 #[derive(Copy, Clone)]
 enum Direction2D {
     Up,
@@ -37,7 +39,7 @@ trait Move2D {
     fn r#move(&mut self, direction: Direction2D);
 }
 
-impl Move2D for Point2D<i32> {
+impl Move2D for Point {
     fn r#move(&mut self, direction: Direction2D) {
         use Direction2D as D;
         match direction {
@@ -86,7 +88,7 @@ pub fn p1(file: &str) -> usize {
         .len()
 }
 
-type Rope = Vec<Point2D<i32>>;
+type Rope = Vec<Point>;
 trait RopeTrait {
     fn with_length(len: usize) -> Self;
 }

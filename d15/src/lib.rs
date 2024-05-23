@@ -14,18 +14,20 @@ use rayon::{
 };
 use regex::Regex;
 
+type Point = Point2D<i32>;
+
 trait ManhattanDistance {
     fn manhattan_distance(self, other: Self) -> u32;
 }
 
-impl ManhattanDistance for Point2D<i32> {
+impl ManhattanDistance for Point {
     fn manhattan_distance(self, other: Self) -> u32 {
         self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
     }
 }
 
-type SensorPosition = Point2D<i32>;
-type BeaconPosition = Point2D<i32>;
+type SensorPosition = Point;
+type BeaconPosition = Point;
 
 #[derive(Deref)]
 struct SensorsWithBeacons(HashMap<SensorPosition, BeaconPosition>);
@@ -78,6 +80,8 @@ pub fn p1(file: &str, analyzed_row_num: i32) -> anyhow::Result<usize> {
         .collect();
 
     // "is `x=2,y=10` a "position where a beacon cannot be present"?"
+    // use drain_filter when it's stable
+    // https://github.com/rust-lang/rust/issues/43244
     for beacon in sensors_with_beacons.values() {
         if beacon.1 == analyzed_row_num {
             impossible_locations_of_distress_beacon.remove(&beacon.0);

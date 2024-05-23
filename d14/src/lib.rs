@@ -19,6 +19,8 @@ use nom::{
     IResult,
 };
 
+type Point = Point2D<u32>;
+
 struct Border {
     left: u32,
     right: u32,
@@ -33,16 +35,16 @@ enum UnitType {
 
 struct Cave {
     borders: Border,
-    resting: HashMap<Point2D<u32>, UnitType>,
+    resting: HashMap<Point, UnitType>,
 }
 
 // 498,4
-fn point(i: &str) -> IResult<&str, Point2D<u32>> {
+fn point(i: &str) -> IResult<&str, Point> {
     map(separated_pair(u32, char(','), u32), |(x, y)| Point2D(x, y))(i)
 }
 
 #[derive(Deref)]
-struct Path(Vec<Point2D<u32>>);
+struct Path(Vec<Point>);
 
 // 498,4 -> 498,6 -> 496,6
 fn path(i: &str) -> IResult<&str, Path> {
@@ -77,7 +79,7 @@ impl FromStr for Cave {
             Border { left, right, down }
         };
 
-        let mut resting: HashMap<Point2D<u32>, UnitType> = HashMap::new();
+        let mut resting: HashMap<Point, UnitType> = HashMap::new();
         for path in paths {
             // FIXME use array_windows once that's stabilized
             // https://github.com/rust-lang/rust/issues/75027
@@ -93,8 +95,8 @@ impl FromStr for Cave {
 }
 
 fn all_points_between_two_points(
-    p1 @ Point2D(x1, y1): Point2D<u32>,
-    p2 @ Point2D(x2, y2): Point2D<u32>,
+    p1 @ Point2D(x1, y1): Point,
+    p2 @ Point2D(x2, y2): Point,
 ) -> anyhow::Result<Box<dyn Iterator<Item = Point2D<u32, u32>>>> {
     if y1 == y2 {
         let res = (min(x1, x2)..=max(x1, x2))
