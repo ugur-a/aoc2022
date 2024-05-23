@@ -32,40 +32,37 @@ impl FromStr for Cave {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (left, right) = s
+        let paths = s
             .lines()
-            .flat_map(|line| {
+            .map(|line| {
                 line.split(" -> ")
-                    .map(|point| point.split_once(',').unwrap().0)
+                    .map(|point| point.split_once(',').unwrap())
+                    .map(|(x, y)| (x.parse::<u32>().unwrap(), y.parse::<u32>().unwrap()))
+                    .map(|(x, y)| Point2D(x, y))
+                    .collect_vec()
             })
+            .collect_vec();
+        let (left, right) = paths
+            .iter()
+            .flat_map(|path| path.iter())
+            .map(Point2D::x)
             .minmax()
             .into_option()
             .unwrap();
-        let left = left.parse::<u32>()?;
-        let right = right.parse::<u32>()?;
 
-        let down = s
-            .lines()
-            .flat_map(|line| {
-                line.split(" -> ")
-                    .map(|point| point.split_once(',').unwrap().1.parse::<u32>().unwrap())
-            })
+        let down = paths
+            .iter()
+            .flat_map(|path| path.iter())
+            .map(Point2D::y)
             .max()
             .unwrap();
         let borders = Border { left, right, down };
 
         let mut resting: HashMap<Point2D<u32>, UnitType> = HashMap::new();
-        for line in s.lines() {
-            let line = line
-                .split(" -> ")
-                .map(|point| point.split_once(',').unwrap())
-                .map(|(x, y)| (x.parse::<u32>().unwrap(), y.parse::<u32>().unwrap()))
-                .map(|(x, y)| Point2D(x, y))
-                .collect::<Vec<_>>();
-
+        for path in paths {
             // FIXME use array_windows once that's stabilized
             // https://github.com/rust-lang/rust/issues/75027
-            for pair in line.windows(2) {
+            for pair in path.windows(2) {
                 let &[p1, p2] = pair else { unreachable!() };
                 let points = all_points_between_two_points(p1, p2)?;
                 resting.extend(points.zip(repeat(UnitType::Stone)));
