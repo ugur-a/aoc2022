@@ -16,6 +16,7 @@ struct Border {
     down: u32,
 }
 
+#[derive(Clone, Copy)]
 enum UnitType {
     Sand,
     Stone,
@@ -77,7 +78,7 @@ impl FromStr for Cave {
                         .collect()
                 };
 
-                resting.extend(points.iter().map(|&point| (point, UnitType::Stone)));
+                resting.extend(points.zip(repeat(UnitType::Stone)));
             }
         }
 
