@@ -171,7 +171,7 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 // your worry level decreases
                 .map(|item_worry| item_worry / 3)
                 // monkey inspects each item
-                .partition(|item_worry| item_worry % monkey.divisible_by == 0);
+                .partition(|item_worry| item_worry.is_multiple_of(&monkey.divisible_by));
 
             inventories_to_transfer[monkey.monkey_true].extend(items_monkey_true);
             inventories_to_transfer[monkey.monkey_false].extend(items_monkey_false);
@@ -217,7 +217,7 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
                 .map(|item_worry| item_worry.apply_operation(monkey.operation))
                 .map(|item_worry| item_worry % divisibility_tests_lcm)
                 // monkey inspects each item
-                .partition(|item_worry| item_worry % monkey.divisible_by == 0);
+                .partition(|item_worry| item_worry.is_multiple_of(&monkey.divisible_by));
 
             inventories_to_transfer[monkey.monkey_true].extend(items_monkey_true);
             inventories_to_transfer[monkey.monkey_false].extend(items_monkey_false);

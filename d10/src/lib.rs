@@ -17,7 +17,7 @@ fn noop(input: &str) -> IResult<&str, Operation> {
 }
 
 fn addx(input: &str) -> IResult<&str, Operation> {
-    map(preceded(tag("addx "), i32), |num| Operation::Addx(num))(input)
+    map(preceded(tag("addx "), i32), Operation::Addx)(input)
 }
 
 fn operation(input: &str) -> IResult<&str, Operation> {

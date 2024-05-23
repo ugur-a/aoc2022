@@ -29,7 +29,7 @@ struct Cave {
 impl FromStr for Cave {
     type Err = anyhow::Error;
 
-    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (left, right) = s
             .lines()
             .flat_map(|line| {

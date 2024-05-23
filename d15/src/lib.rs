@@ -33,7 +33,7 @@ struct SensorsWithBeacons(HashMap<SensorPosition, BeaconPosition>);
 impl FromStr for SensorsWithBeacons {
     type Err = anyhow::Error;
 
-    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let coords_regex = Regex::new(
             r"Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)",
         )?;
@@ -93,7 +93,7 @@ struct SensorsWithDistances(HashMap<SensorPosition, u32>);
 impl FromStr for SensorsWithDistances {
     type Err = anyhow::Error;
 
-    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let sensors_with_distances = s
             .parse::<SensorsWithBeacons>()?
             .par_iter()

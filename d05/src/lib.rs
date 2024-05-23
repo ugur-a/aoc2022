@@ -16,7 +16,7 @@ struct Rearrangement {
 impl FromStr for Rearrangement {
     type Err = anyhow::Error;
 
-    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (num_crates_to_move, stack_to_move_to, stack_to_take_from) = if let ["move", num_crates_to_move, "from", stack_to_move_from, "to", stack_to_move_to, ..] =
             s.split_whitespace().collect_vec()[..]
         {
