@@ -6,6 +6,7 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::bail;
 use aoc2022lib::points::Point2D;
 
 use itertools::Itertools;
@@ -62,27 +63,35 @@ impl FromStr for Cave {
                 .map(|(x, y)| Point2D(x, y))
                 .collect::<Vec<_>>();
 
+            // FIXME use array_windows once that's stabilized
+            // https://github.com/rust-lang/rust/issues/75027
             for pair in line.windows(2) {
-                let &[Point2D(x1, y1), Point2D(x2, y2)] = pair else {
-                    unreachable!()
-                };
-                let points: Vec<Point2D<u32>> = if y1 == y2 {
-                    (min(x1, x2)..=max(x1, x2))
-                        .zip(repeat(y1))
-                        .map(|(x, y)| Point2D(x, y))
-                        .collect()
-                } else {
-                    repeat(x1)
-                        .zip(min(y1, y2)..=max(y1, y2))
-                        .map(|(x, y)| Point2D(x, y))
-                        .collect()
-                };
-
+                let &[p1, p2] = pair else { unreachable!() };
+                let points = all_points_between_two_points(p1, p2)?;
                 resting.extend(points.zip(repeat(UnitType::Stone)));
             }
         }
 
         Ok(Self { borders, resting })
+    }
+}
+
+fn all_points_between_two_points(
+    p1 @ Point2D(x1, y1): Point2D<u32>,
+    p2 @ Point2D(x2, y2): Point2D<u32>,
+) -> anyhow::Result<Box<dyn Iterator<Item = Point2D<u32, u32>>>> {
+    if y1 == y2 {
+        let res = (min(x1, x2)..=max(x1, x2))
+            .zip(repeat(y1))
+            .map(|(x, y)| Point2D(x, y));
+        Ok(Box::new(res))
+    } else if x1 == x2 {
+        let res = repeat(x1)
+            .zip(min(y1, y2)..=max(y1, y2))
+            .map(|(x, y)| Point2D(x, y));
+        Ok(Box::new(res))
+    } else {
+        bail!("points are not on a line: {p1:#?}, {p2:#?}");
     }
 }
 
