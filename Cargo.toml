@@ -27,7 +27,7 @@ resolver = "2"
 
 [workspace.dependencies]
 aoc2022lib = { path = "aoc2022lib" }
-itertools = "0.12.1"
+itertools = "0.13.0"
 test-case = "3.3.1"
 anyhow = "1.0.81"
 regex = "1.10.4"
