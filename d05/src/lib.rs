@@ -1,7 +1,14 @@
 use std::str::FromStr;
 
-use anyhow::{bail, Context};
+use anyhow::Context;
+use aoc2022lib::{impl_from_str_from_nom_parser, parse::n};
 use itertools::Itertools;
+use nom::{
+    bytes::complete::tag,
+    combinator::map,
+    sequence::{preceded, tuple},
+    IResult,
+};
 
 enum CraneModel {
     CrateMover9000,
@@ -13,29 +20,31 @@ struct Rearrangement {
     stack_to_take_from: usize,
 }
 
-impl FromStr for Rearrangement {
-    type Err = anyhow::Error;
+fn stack_idx(i: &str) -> IResult<&str, usize> {
+    map(n, |stack_idx: usize| stack_idx - 1)(i)
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (num_crates_to_move, stack_to_move_to, stack_to_take_from) = if let ["move", num_crates_to_move, "from", stack_to_move_from, "to", stack_to_move_to, ..] =
-            s.split_whitespace().collect_vec()[..]
-        {
-            (
-                num_crates_to_move.parse::<usize>()?,
-                stack_to_move_to.parse::<usize>()? - 1,
-                stack_to_move_from.parse::<usize>()? - 1,
-            )
-        } else {
-            bail!("invalid rearrangement")
-        };
+fn num_crates(i: &str) -> IResult<&str, usize> {
+    n(i)
+}
 
-        Ok(Self {
+// move 15 from 6 to 4
+fn rearrangement(i: &str) -> IResult<&str, Rearrangement> {
+    map(
+        tuple((
+            preceded(tag("move "), num_crates),
+            preceded(tag(" from "), stack_idx),
+            preceded(tag(" to "), stack_idx),
+        )),
+        |(num_crates_to_move, stack_to_take_from, stack_to_move_to)| Rearrangement {
             num_crates_to_move,
             stack_to_move_to,
             stack_to_take_from,
-        })
-    }
+        },
+    )(i)
 }
+
+impl_from_str_from_nom_parser!(rearrangement, Rearrangement);
 
 type Warehouse = Vec<Vec<char>>;
 
