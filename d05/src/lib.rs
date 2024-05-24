@@ -84,13 +84,11 @@ fn apply_rearrangement(
     warehouse: &mut Warehouse,
     rearrangement: &Rearrangement,
     crane_model: &CraneModel,
-) -> Option<()> {
-    let current_length_of_stack_to_move_from =
-        warehouse.get(rearrangement.stack_to_take_from)?.len();
+) {
+    let current_length_of_stack_to_move_from = warehouse[rearrangement.stack_to_take_from].len();
 
     let crates_to_move = {
-        let crates = warehouse
-            .get_mut(rearrangement.stack_to_take_from)?
+        let crates = warehouse[rearrangement.stack_to_take_from]
             .drain((current_length_of_stack_to_move_from - rearrangement.num_crates_to_move)..);
 
         match crane_model {
@@ -99,11 +97,7 @@ fn apply_rearrangement(
         }
     };
 
-    warehouse
-        .get_mut(rearrangement.stack_to_move_to)?
-        .extend(crates_to_move);
-
-    Some(())
+    warehouse[rearrangement.stack_to_move_to].extend(crates_to_move);
 }
 
 fn crates_at_the_top(warehouse: &Warehouse) -> anyhow::Result<String> {
