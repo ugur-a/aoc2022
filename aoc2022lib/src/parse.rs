@@ -1,3 +1,9 @@
+use nom;
+
+pub fn n<N: std::str::FromStr>(input: &str) -> nom::IResult<&str, N> {
+    nom::combinator::map_res(nom::character::complete::digit1, N::from_str)(input)
+}
+
 #[macro_export]
 macro_rules! impl_from_str_from_nom_parser {
     ($fn:ident, $obj:ident) => {

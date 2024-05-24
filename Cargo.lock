@@ -20,6 +20,9 @@ checksum = "25bdb32cbbdce2b519a9cd7df3a678443100e265d5e25ca763b7572a5104f5f3"
 [[package]]
 name = "aoc2022lib"
 version = "0.1.0"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "autocfg"
@@ -136,6 +139,7 @@ name = "d11"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "aoc2022lib",
  "itertools",
  "nom",
  "num",

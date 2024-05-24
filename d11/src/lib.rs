@@ -2,6 +2,7 @@ use std::ops::{Add, Mul};
 use std::str::FromStr;
 
 use anyhow::Context;
+use aoc2022lib::parse::n;
 use itertools::Itertools;
 use nom::{
     branch::alt,
@@ -21,10 +22,6 @@ struct Monkey<N: Copy> {
     divisible_by: N,
     monkey_true: usize,
     monkey_false: usize,
-}
-
-fn n<N: FromStr>(input: &str) -> IResult<&str, N> {
-    map_res(digit1, N::from_str)(input)
 }
 
 // 79, 98
