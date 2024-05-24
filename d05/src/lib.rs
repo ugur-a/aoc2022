@@ -146,3 +146,21 @@ pub fn p2(file: &str) -> anyhow::Result<String> {
     // format the final arrangement
     crates_at_the_top(&warehouse)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::read_to_string;
+
+    #[test]
+    fn real_p1() {
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p1(&inp).unwrap(), "ZWHVFWQWW");
+    }
+
+    #[test]
+    fn real_p2() {
+        let inp = read_to_string("inputs/real.txt").unwrap();
+        assert_eq!(p2(&inp).unwrap(), "HZFZCCWWV");
+    }
+}
