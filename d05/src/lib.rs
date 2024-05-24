@@ -89,7 +89,8 @@ fn warehouse(s: &str) -> anyhow::Result<Warehouse> {
     let num_stacks = (last_row_of_stack_arrangement.len() + 1) / 4;
 
     // initialize the warehouse (collection of stacks)
-    let mut stacks: Vec<Vec<char>> = vec![Vec::new(); num_stacks];
+    let mut stacks: Vec<Vec<char>> =
+        vec![Vec::with_capacity(initial_stack_arrangement.lines().count()); num_stacks];
 
     // parse the initial stack arrangement - fill up the warehouse
     // comment: go over lines bottom-up, since that's how the crates are stacked
