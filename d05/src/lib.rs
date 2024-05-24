@@ -2,11 +2,15 @@ use std::str::FromStr;
 
 use anyhow::Context;
 use aoc2022lib::{impl_from_str_from_nom_parser, parse::n};
+use derive_deref::Deref;
 use itertools::Itertools;
 use nom::{
+    branch::alt,
     bytes::complete::tag,
+    character::complete::{anychar, char},
     combinator::map,
-    sequence::{preceded, tuple},
+    multi::separated_list0,
+    sequence::{delimited, preceded, tuple},
     IResult,
 };
 
@@ -46,6 +50,34 @@ fn rearrangement(i: &str) -> IResult<&str, Rearrangement> {
 
 impl_from_str_from_nom_parser!(rearrangement, Rearrangement);
 
+struct Crate {
+    name: char,
+}
+
+// [F]
+fn some_crate(i: &str) -> IResult<&str, Option<Crate>> {
+    map(delimited(char('['), anychar, char(']')), |name| {
+        Some(Crate { name })
+    })(i)
+}
+
+fn no_crate(i: &str) -> IResult<&str, Option<Crate>> {
+    map(tag("   "), |_| None)(i)
+}
+
+fn optional_crate(i: &str) -> IResult<&str, Option<Crate>> {
+    alt((some_crate, no_crate))(i)
+}
+
+#[derive(Deref)]
+struct CrateLine(Vec<Option<Crate>>);
+
+fn crate_line(i: &str) -> IResult<&str, CrateLine> {
+    map(separated_list0(char(' '), optional_crate), CrateLine)(i)
+}
+
+impl_from_str_from_nom_parser!(crate_line, CrateLine);
+
 type Warehouse = Vec<Vec<char>>;
 
 fn warehouse(s: &str) -> anyhow::Result<Warehouse> {
@@ -62,15 +94,14 @@ fn warehouse(s: &str) -> anyhow::Result<Warehouse> {
     // parse the initial stack arrangement - fill up the warehouse
     // comment: go over lines bottom-up, since that's how the crates are stacked
     for line in initial_stack_arrangement.lines().rev() {
-        line.chars()
-            .chunks(4)
-            .into_iter()
+        CrateLine::from_str(line)?
+            .iter()
             // provide the stack number for each maybe-crate
             .enumerate()
             // if there's a crate, add it to the corresponding stack, skip if only air
-            .for_each(|(idx, chunk)| {
-                if let ['[', crate_name, ']', ..] = chunk.collect_vec().as_slice() {
-                    stacks[idx].push(*crate_name);
+            .for_each(|(idx, optional_crate)| {
+                if let Some(some_crate) = optional_crate {
+                    stacks[idx].push(some_crate.name);
                 }
             });
     }
