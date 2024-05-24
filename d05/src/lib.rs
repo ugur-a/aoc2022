@@ -68,13 +68,10 @@ fn warehouse(s: &str) -> anyhow::Result<Warehouse> {
             // provide the stack number for each maybe-crate
             .enumerate()
             // if there's a crate, add it to the corresponding stack, skip if only air
-            .filter_map(|(idx, chunk)| match chunk.collect_vec().as_slice() {
-                ['[', crate_name, ']', ..] => Some((idx, *crate_name)),
-                [' ', ' ', ' ', ..] => None,
-                _ => unreachable!(),
-            })
-            .for_each(|(idx, crate_name)| {
-                stacks.get_mut(idx).unwrap().push(crate_name);
+            .for_each(|(idx, chunk)| {
+                if let ['[', crate_name, ']', ..] = chunk.collect_vec().as_slice() {
+                    stacks[idx].push(*crate_name);
+                }
             });
     }
     Ok(stacks)
