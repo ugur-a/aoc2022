@@ -5,7 +5,6 @@ use std::{
 };
 
 use anyhow::{bail, Context};
-use aoc2022lib::impl_from_str_from_nom_parser;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
@@ -17,10 +16,10 @@ use nom::{
 
 type Number = u64;
 
-type Name = String;
+type Name<'a> = &'a str;
 
 fn name(i: &str) -> IResult<&str, Name> {
-    map(take(4usize), str::to_string)(i)
+    take(4usize)(i)
 }
 
 #[derive(Clone, Copy)]
@@ -67,12 +66,12 @@ where
     }
 }
 
-enum Job {
+enum Job<'a> {
     Number(Number),
     Calculate {
-        monkey_1st: Name,
+        monkey_1st: Name<'a>,
         operation: Operation,
-        monkey_2nd: Name,
+        monkey_2nd: Name<'a>,
     },
 }
 
@@ -94,9 +93,9 @@ fn job(i: &str) -> IResult<&str, Job> {
     ))(i)
 }
 
-struct Monkey {
-    name: Name,
-    job: Job,
+struct Monkey<'a> {
+    name: Name<'a>,
+    job: Job<'a>,
 }
 
 fn monkey(i: &str) -> IResult<&str, Monkey> {
@@ -106,20 +105,39 @@ fn monkey(i: &str) -> IResult<&str, Monkey> {
     })(i)
 }
 
-impl_from_str_from_nom_parser!(monkey, Monkey);
+impl<'input, 'output> TryFrom<&'input str> for Monkey<'output>
+where
+    'input: 'output,
+{
+    type Error = nom::error::Error<String>;
 
-struct Monkeys {
-    monkeys: HashMap<Name, Job>,
+    fn try_from(value: &'input str) -> Result<Self, Self::Error> {
+        use nom::Finish;
+        match monkey(value).finish() {
+            Ok((_remaining, object)) => Ok(object),
+            Err(nom::error::Error { input, code }) => Err(Self::Error {
+                input: input.to_string(),
+                code,
+            }),
+        }
+    }
 }
 
-impl FromStr for Monkeys {
-    type Err = nom::error::Error<String>;
+struct Monkeys<'a> {
+    monkeys: HashMap<Name<'a>, Job<'a>>,
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl<'input, 'output> TryFrom<&'input str> for Monkeys<'output>
+where
+    'input: 'output,
+{
+    type Error = nom::error::Error<String>;
+
+    fn try_from(s: &'input str) -> Result<Self, Self::Error> {
         let mut monkeys: Vec<Monkey> = Vec::with_capacity(s.lines().count());
 
         for line in s.lines() {
-            let monkey = Monkey::from_str(line)?;
+            let monkey = Monkey::try_from(line)?;
             monkeys.push(monkey);
         }
 
@@ -129,12 +147,12 @@ impl FromStr for Monkeys {
     }
 }
 
-impl Monkeys {
+impl<'a> Monkeys<'a> {
     fn number(&self, name: &str) -> Option<Number> {
         let job = self.monkeys.get(name)?;
 
-        match job {
-            &Job::Number(num) => Some(num),
+        match *job {
+            Job::Number(num) => Some(num),
             Job::Calculate {
                 monkey_1st,
                 operation,
@@ -142,7 +160,7 @@ impl Monkeys {
             } => {
                 let num_1st = self.number(monkey_1st)?;
                 let num_2nd = self.number(monkey_2nd)?;
-                let num = num_1st.apply_operation(*operation, num_2nd);
+                let num = num_1st.apply_operation(operation, num_2nd);
                 Some(num)
             }
         }
@@ -150,7 +168,7 @@ impl Monkeys {
 }
 
 pub fn p1(file: &str) -> anyhow::Result<Number> {
-    let monkeys = Monkeys::from_str(file)?;
+    let monkeys = Monkeys::try_from(file)?;
     let number = monkeys.number("root").context("No root in list")?;
     Ok(number)
 }
