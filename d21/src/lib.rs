@@ -134,14 +134,12 @@ where
     type Error = nom::error::Error<String>;
 
     fn try_from(s: &'input str) -> Result<Self, Self::Error> {
-        let mut monkeys: Vec<Monkey> = Vec::with_capacity(s.lines().count());
+        let mut monkeys: HashMap<Name, Job> = HashMap::with_capacity(s.lines().count());
 
         for line in s.lines() {
             let monkey = Monkey::try_from(line)?;
-            monkeys.push(monkey);
+            monkeys.insert(monkey.name, monkey.job);
         }
-
-        let monkeys = monkeys.into_iter().map(|m| (m.name, m.job)).collect();
 
         Ok(Self { monkeys })
     }
