@@ -1,16 +1,16 @@
 use std::{collections::HashSet, str::FromStr};
 
-use itertools::{Itertools, MinMaxResult};
+use itertools::Itertools;
 use nom::{
     character::complete::{char, i8, newline},
     combinator::map,
     multi::separated_list1,
     sequence::{preceded, tuple},
-    Finish, IResult,
+    IResult,
 };
 use pathfinding::directed::dfs::dfs_reach;
 
-use aoc2022lib::points::Point3D;
+use aoc2022lib::{impl_from_str_from_nom_parser, points::Point3D};
 
 type DropletCube = Point3D<i8>;
 
@@ -72,19 +72,7 @@ fn droplet(input: &str) -> IResult<&str, Droplet> {
     )(input)
 }
 
-impl FromStr for Droplet {
-    type Err = nom::error::Error<String>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match droplet(s).finish() {
-            Ok((_remaining, droplet)) => Ok(droplet),
-            Err(nom::error::Error { input, code }) => Err(Self::Err {
-                input: input.to_string(),
-                code,
-            }),
-        }
-    }
-}
+impl_from_str_from_nom_parser!(droplet, Droplet);
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
     let droplet = Droplet::from_str(file)?;
@@ -130,12 +118,10 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
         // so count occurences of each value
         .counts()
         .into_iter()
-        .filter(|(potentially_exposed_side, _num_neighbours)| {
-            !(droplet.contains(*potentially_exposed_side))
-        })
-        .filter(|(_exposed_side, num_neighbours)| *num_neighbours < 6)
-        .filter(|(exposed_side, _num_neighbours)| exteriour_sides.contains(exposed_side))
-        .map(|(_exteriour_exposed_sides, num_neighbours)| num_neighbours)
+        .filter(|(potentially_exposed_side, _)| !(droplet.contains(*potentially_exposed_side)))
+        .filter(|(_, num_neighbours)| *num_neighbours < 6)
+        .filter(|(exposed_side, _)| exteriour_sides.contains(exposed_side))
+        .map(|(_, num_neighbours)| num_neighbours)
         .sum();
 
     Ok(num_exteriour_exposed_sides)
@@ -162,7 +148,6 @@ mod tests {
         assert_eq!(p2(&inp).unwrap(), 58);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/real.txt").unwrap();
         assert_eq!(p2(&inp).unwrap(), 2090);
