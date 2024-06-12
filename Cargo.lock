@@ -230,6 +230,7 @@ name = "d21"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "aoc2022lib",
  "nom",
 ]
 

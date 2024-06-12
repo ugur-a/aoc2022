@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::{bail, Context};
+use aoc2022lib::impl_from_str_for_obj_with_lieftimes_from_nom_parser;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
@@ -105,23 +106,7 @@ fn monkey(i: &str) -> IResult<&str, Monkey> {
     })(i)
 }
 
-impl<'input, 'output> TryFrom<&'input str> for Monkey<'output>
-where
-    'input: 'output,
-{
-    type Error = nom::error::Error<String>;
-
-    fn try_from(value: &'input str) -> Result<Self, Self::Error> {
-        use nom::Finish;
-        match monkey(value).finish() {
-            Ok((_remaining, object)) => Ok(object),
-            Err(nom::error::Error { input, code }) => Err(Self::Error {
-                input: input.to_string(),
-                code,
-            }),
-        }
-    }
-}
+impl_from_str_for_obj_with_lieftimes_from_nom_parser!(monkey, Monkey);
 
 struct Monkeys<'a> {
     monkeys: HashMap<Name<'a>, Job<'a>>,
