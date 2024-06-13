@@ -202,13 +202,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "d19"
-version = "0.1.0"
-dependencies = [
- "anyhow",
-]
-
-[[package]]
 name = "d20"
 version = "0.1.0"
 dependencies = [
