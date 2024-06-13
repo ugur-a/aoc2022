@@ -39,14 +39,14 @@ impl FromStr for SensorsWithBeacons {
         let coords_regex = Regex::new(
             r"Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)",
         )?;
-        let sensors_with_beacons = s
+        let sensors_with_beacons: HashMap<_, _> = s
             .par_lines()
             .map(|line| coords_regex.captures(line).unwrap().extract().1)
             .map(|coords_pair| coords_pair.map(|coord| i32::from_str(coord).unwrap()))
             .map(|[sensor_x, sensor_y, beacon_x, beacon_y]| {
                 (Point2D(sensor_x, sensor_y), Point2D(beacon_x, beacon_y))
             })
-            .collect::<HashMap<_, _>>();
+            .collect();
 
         Ok(Self(sensors_with_beacons))
     }
