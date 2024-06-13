@@ -3,16 +3,19 @@ use std::{
     str::FromStr,
 };
 
-use aoc2022lib::points::Point2D;
+use aoc2022lib::{impl_from_str_from_nom_parser, points::Point2D};
 
 use anyhow::Context;
 use derive_deref::Deref;
 use itertools::Itertools;
-use rayon::{
-    iter::{IntoParallelRefIterator, ParallelIterator},
-    str::ParallelString,
+use nom::{
+    bytes::complete::tag,
+    character::complete::i32,
+    combinator::map,
+    sequence::{preceded, separated_pair},
+    IResult,
 };
-use regex::Regex;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 type Point = Point2D<i32>;
 
@@ -26,8 +29,36 @@ impl ManhattanDistance for Point {
     }
 }
 
+// x=2, y=18
+fn point(i: &str) -> IResult<&str, Point> {
+    map(
+        separated_pair(
+            preceded(tag("x="), i32),
+            tag(", "),
+            preceded(tag("y="), i32),
+        ),
+        |(x, y)| Point2D(x, y),
+    )(i)
+}
+
 type SensorPosition = Point;
 type BeaconPosition = Point;
+
+struct SensorWithBeacon(SensorPosition, BeaconPosition);
+
+// Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+fn sensor_with_beacon(i: &str) -> IResult<&str, SensorWithBeacon> {
+    map(
+        separated_pair(
+            preceded(tag("Sensor at "), point),
+            tag(": "),
+            preceded(tag("closest beacon is at "), point),
+        ),
+        |(s, b)| SensorWithBeacon(s, b),
+    )(i)
+}
+
+impl_from_str_from_nom_parser!(sensor_with_beacon, SensorWithBeacon);
 
 #[derive(Deref)]
 struct SensorsWithBeacons(HashMap<SensorPosition, BeaconPosition>);
@@ -36,17 +67,12 @@ impl FromStr for SensorsWithBeacons {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let coords_regex = Regex::new(
-            r"Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)",
-        )?;
-        let sensors_with_beacons: HashMap<_, _> = s
-            .par_lines()
-            .map(|line| coords_regex.captures(line).unwrap().extract().1)
-            .map(|coords_pair| coords_pair.map(|coord| i32::from_str(coord).unwrap()))
-            .map(|[sensor_x, sensor_y, beacon_x, beacon_y]| {
-                (Point2D(sensor_x, sensor_y), Point2D(beacon_x, beacon_y))
-            })
-            .collect();
+        let mut sensors_with_beacons = HashMap::with_capacity(s.lines().count());
+
+        for line in s.lines() {
+            let SensorWithBeacon(sensor_pos, beacon_pos) = SensorWithBeacon::from_str(line)?;
+            sensors_with_beacons.insert(sensor_pos, beacon_pos);
+        }
 
         Ok(Self(sensors_with_beacons))
     }

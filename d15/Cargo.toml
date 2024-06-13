@@ -10,8 +10,8 @@ anyhow.workspace = true
 aoc2022lib.workspace = true
 derive_deref = "1.1.1"
 itertools.workspace = true
+nom.workspace = true
 rayon = "1.10.0"
-regex.workspace = true
 
 [lints]
 workspace = true
