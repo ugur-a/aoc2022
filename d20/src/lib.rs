@@ -38,14 +38,16 @@ impl Mix for Vec<Number> {
 }
 
 pub fn p1(file: &str) -> anyhow::Result<i64> {
-    let mut numbers: Vec<Number> = file
-        .lines()
-        .map(str::parse)
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .enumerate()
-        .map(|(idx, n)| Number::new(n, idx))
-        .collect();
+    let mut numbers: Vec<Number> = {
+        let mut numbers = Vec::with_capacity(file.lines().count());
+
+        for (idx, line) in file.lines().enumerate() {
+            let num = line.parse()?;
+            let num = Number::new(num, idx);
+            numbers.push(num);
+        }
+        numbers
+    };
 
     numbers.mix()?;
 
