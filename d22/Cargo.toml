@@ -7,6 +7,11 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
+aoc2022lib.workspace = true
+bare_metal_modulo = "1.2.4"
+derive_deref.workspace = true
+nom.workspace = true
+test-case.workspace = true
 
 [lints]
 workspace = true

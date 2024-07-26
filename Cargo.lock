@@ -22,6 +22,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1fdabc7756949593fe60f30ec81974b613357de856987752631dea1e3394c80"
 
 [[package]]
+name = "bare_metal_modulo"
+version = "1.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2bf50e98cd2718008760e1e4020ffa6d75eb1f1e9d4482262e27bb235f2be9f"
+dependencies = [
+ "num",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -223,6 +232,11 @@ name = "d22"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "aoc2022lib",
+ "bare_metal_modulo",
+ "derive_deref",
+ "nom",
+ "test-case",
 ]
 
 [[package]]
