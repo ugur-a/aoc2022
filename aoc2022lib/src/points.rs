@@ -1,7 +1,16 @@
-use std::ops::{Add, Sub};
+use std::{
+    fmt::Debug,
+    ops::{Add, Sub},
+};
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy, Default, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Default)]
 pub struct Point2D<T, U = T>(pub T, pub U);
+
+impl<T: Debug, U: Debug> Debug for Point2D<T, U> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("P").field(&self.0).field(&self.1).finish()
+    }
+}
 
 impl<T: Copy, U: Copy> Point2D<T, U> {
     pub fn new(x: T, y: U) -> Self {
