@@ -2,14 +2,14 @@ use aoc2022lib::points::Point2D;
 use itertools::Itertools;
 use std::{collections::HashMap, ops::RangeInclusive};
 
-type Pos = Point2D<usize>;
+type Pos = Point2D<isize>;
 
-fn parse_map(s: &str, buf_width: usize) -> Vec<Pos> {
+fn parse_map(s: &str) -> Vec<Pos> {
     let mut elf_positions = Vec::new();
     for (y, line) in s.lines().enumerate() {
         for (x, char) in line.char_indices() {
             if char == '#' {
-                let pos = Point2D(x + buf_width, y + buf_width);
+                let pos = Point2D(x as isize, y as isize);
                 elf_positions.push(pos);
             }
         }
@@ -48,7 +48,7 @@ struct Border2D<T, U = T> {
     down: U,
 }
 
-fn min_enclosing_rectangle(positions: &[Pos]) -> Border2D<usize> {
+fn min_enclosing_rectangle(positions: &[Pos]) -> Border2D<isize> {
     let (left, right) = positions
         .iter()
         .map(aoc2022lib::points::Point2D::x)
@@ -165,11 +165,8 @@ fn second_half(
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
     const N_ROUNDS: usize = 10;
-    // the further an elf can end up from the starting square
-    // - in case it starts at the border and goes away from the center each time
-    const BUF_WIDTH: usize = N_ROUNDS;
 
-    let mut elf_positions = parse_map(file, BUF_WIDTH);
+    let mut elf_positions = parse_map(file);
 
     let mut elf_dibs = HashMap::with_capacity(elf_positions.len());
     let mut dibs_counts = HashMap::with_capacity(elf_positions.len());
@@ -186,13 +183,17 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
     }
 
     // minimal spanning rectangle
-    let Border2D {
-        left,
-        right,
-        top,
-        down,
-    } = min_enclosing_rectangle(&elf_positions);
-    let n_ground = (right - left + 1) * (down - top + 1) - elf_positions.len();
+    let n_ground = {
+        let Border2D {
+            left,
+            right,
+            top,
+            down,
+        } = min_enclosing_rectangle(&elf_positions);
+        let width: usize = (right - left + 1).try_into().unwrap();
+        let height: usize = (down - top + 1).try_into().unwrap();
+        width * height - elf_positions.len()
+    };
     Ok(n_ground)
 }
 
