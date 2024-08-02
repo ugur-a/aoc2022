@@ -4,24 +4,13 @@ use std::collections::HashMap;
 
 type Pos = Point2D<usize>;
 
-struct Elf {
-    pos: Pos,
-}
-
-impl Elf {
-    fn new(pos: Pos) -> Self {
-        Self { pos }
-    }
-}
-
-fn parse_map(s: &str, buf_width: usize) -> Vec<Elf> {
+fn parse_map(s: &str, buf_width: usize) -> Vec<Pos> {
     let mut elf_positions = Vec::new();
     for (y, line) in s.lines().enumerate() {
         for (x, char) in line.char_indices() {
             if char == '#' {
                 let pos = Point2D(x + buf_width, y + buf_width);
-                let elf = Elf::new(pos);
-                elf_positions.push(elf);
+                elf_positions.push(pos);
             }
         }
     }
@@ -29,19 +18,19 @@ fn parse_map(s: &str, buf_width: usize) -> Vec<Elf> {
 }
 
 #[allow(dead_code)]
-fn show_map(round: usize, elves: &[Elf]) {
+fn show_map(round: usize, positions: &[Pos]) {
     println!("== End of Round {round} ==");
     let Border2D {
         left,
         right,
         top,
         down,
-    } = min_enclosing_rectangle(elves);
+    } = min_enclosing_rectangle(positions);
 
     for y in top..=down {
         for x in left..=right {
             let pos = Point2D(x, y);
-            if elves.iter().any(|elf| elf.pos == pos) {
+            if positions.iter().any(|p| p == &pos) {
                 print!("#");
             } else {
                 print!(".");
@@ -59,18 +48,16 @@ struct Border2D<T, U = T> {
     down: U,
 }
 
-fn min_enclosing_rectangle(elves: &[Elf]) -> Border2D<usize> {
-    let (left, right) = elves
+fn min_enclosing_rectangle(positions: &[Pos]) -> Border2D<usize> {
+    let (left, right) = positions
         .iter()
-        .map(|elf| elf.pos)
-        .map(|pos| pos.x())
+        .map(aoc2022lib::points::Point2D::x)
         .minmax()
         .into_option()
         .unwrap();
-    let (top, down) = elves
+    let (top, down) = positions
         .iter()
-        .map(|elf| elf.pos)
-        .map(|pos| pos.y())
+        .map(aoc2022lib::points::Point2D::y)
         .minmax()
         .into_option()
         .unwrap();
@@ -120,20 +107,20 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
     // - in case it starts at the border and goes away from the center each time
     const BUF_WIDTH: usize = N_ROUNDS;
 
-    let mut elves = parse_map(file, BUF_WIDTH);
+    let mut elf_positions = parse_map(file, BUF_WIDTH);
 
-    let mut elf_dibs = HashMap::with_capacity(elves.len());
-    let mut dibs_counts = HashMap::with_capacity(elves.len());
+    let mut elf_dibs = HashMap::with_capacity(elf_positions.len());
+    let mut dibs_counts = HashMap::with_capacity(elf_positions.len());
     let mut directions_order = [0..=2, 4..=6, 2..=4, 6..=8];
     for _ in 0..N_ROUNDS {
         // first half
-        for elf in &elves {
-            let adj_positions = DIRECTIONS.map(|dir| adj_pos(elf.pos, &dir));
+        for pos in &elf_positions {
+            let adj_positions = DIRECTIONS.map(|dir| adj_pos(*pos, &dir));
 
             // don't do anything if no elves around
             if adj_positions
                 .iter()
-                .all(|pos| !elves.iter().map(|e| e.pos).contains(pos))
+                .all(|pos| !elf_positions.iter().contains(pos))
             {
                 continue;
             }
@@ -145,21 +132,21 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
             {
                 if pos_triplet
                     .iter()
-                    .any(|pos| elves.iter().map(|elf| elf.pos).contains(pos))
+                    .any(|pos| elf_positions.iter().contains(pos))
                 {
                     continue;
                 }
 
-                elf_dibs.insert(elf.pos, pos_triplet[1]);
+                elf_dibs.insert(*pos, pos_triplet[1]);
                 *dibs_counts.entry(pos_triplet[1]).or_insert(0) += 1;
                 break;
             }
         }
 
         // second half
-        for elf in &mut elves {
+        for pos in &mut elf_positions {
             // don't do anything if haven't placed dibs in the first half
-            let Some(dibs) = elf_dibs.remove(&elf.pos) else {
+            let Some(dibs) = elf_dibs.remove(pos) else {
                 continue;
             };
 
@@ -168,7 +155,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
                 continue;
             }
 
-            elf.pos = dibs;
+            *pos = dibs;
         }
 
         elf_dibs.clear();
@@ -184,8 +171,8 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
         right,
         top,
         down,
-    } = min_enclosing_rectangle(&elves);
-    let n_ground = (right - left + 1) * (down - top + 1) - elves.len();
+    } = min_enclosing_rectangle(&elf_positions);
+    let n_ground = (right - left + 1) * (down - top + 1) - elf_positions.len();
     Ok(n_ground)
 }
 
