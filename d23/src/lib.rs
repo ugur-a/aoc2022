@@ -197,8 +197,29 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
     Ok(n_ground)
 }
 
-pub fn p2(_file: &str) -> anyhow::Result<u32> {
-    todo!()
+pub fn p2(file: &str) -> usize {
+    let mut elf_positions = parse_map(file);
+
+    let mut elf_dibs = HashMap::with_capacity(elf_positions.len());
+    let mut dibs_counts = HashMap::with_capacity(elf_positions.len());
+    let mut directions_order = [0..=2, 4..=6, 2..=4, 6..=8];
+    for round in 1.. {
+        first_half(
+            &elf_positions,
+            &mut elf_dibs,
+            &mut dibs_counts,
+            &mut directions_order,
+        );
+
+        let n_moves = second_half(&mut elf_positions, &mut elf_dibs, &mut dibs_counts);
+
+        if n_moves == 0 {
+            return round;
+        }
+    }
+    // Rust isn't smart enough to realise that the loop _will_ run at least once and return a result
+    0
+
 }
 
 #[cfg(test)]
@@ -217,15 +238,13 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 3987);
     }
     #[test]
-    #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp), 20);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp), 938);
     }
 }
