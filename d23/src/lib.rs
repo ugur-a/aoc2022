@@ -1,16 +1,19 @@
 use aoc2022lib::points::Point2D;
 use itertools::Itertools;
-use std::{collections::HashMap, ops::RangeInclusive};
+use std::{
+    collections::{HashMap, HashSet},
+    ops::RangeInclusive,
+};
 
 type Pos = Point2D<isize>;
 
-fn parse_map(s: &str) -> Vec<Pos> {
-    let mut elf_positions = Vec::new();
+fn parse_map(s: &str) -> HashSet<Pos> {
+    let mut elf_positions = HashSet::with_capacity(s.chars().filter(|c| c == &'#').count());
     for (y, line) in s.lines().enumerate() {
         for (x, char) in line.char_indices() {
             if char == '#' {
                 let pos = Point2D(x as isize, y as isize);
-                elf_positions.push(pos);
+                elf_positions.insert(pos);
             }
         }
     }
@@ -25,7 +28,7 @@ fn show_map(round: usize, positions: &[Pos]) {
         right,
         top,
         down,
-    } = min_enclosing_rectangle(positions);
+    } = min_enclosing_rectangle(&positions.iter());
 
     for y in top..=down {
         for x in left..=right {
@@ -48,16 +51,14 @@ struct Border2D<T, U = T> {
     down: U,
 }
 
-fn min_enclosing_rectangle(positions: &[Pos]) -> Border2D<isize> {
-    let (left, right) = positions
-        .iter()
-        .map(aoc2022lib::points::Point2D::x)
+fn min_enclosing_rectangle<'a, I: Iterator<Item=&'a Pos> + Clone>(positions: &'a I) -> Border2D<isize> {
+    let (left, right) = positions.clone()
+        .map(Point2D::x)
         .minmax()
         .into_option()
         .unwrap();
-    let (top, down) = positions
-        .iter()
-        .map(aoc2022lib::points::Point2D::y)
+    let (top, down) = positions.clone()
+        .map(Point2D::y)
         .minmax()
         .into_option()
         .unwrap();
@@ -102,7 +103,7 @@ fn adj_pos(Point2D(x, y): Pos, dir: &Direction) -> Pos {
 }
 
 fn first_half(
-    elf_positions: &[Pos],
+    elf_positions: &HashSet<Pos>,
     elf_dibs: &mut HashMap<Pos, Pos>,
     dibs_counts: &mut HashMap<Pos, usize>,
     directions_order: &mut [RangeInclusive<usize>; 4],
@@ -113,7 +114,7 @@ fn first_half(
         // don't do anything if no elves around
         if adj_positions
             .iter()
-            .all(|pos| !elf_positions.iter().contains(pos))
+            .all(|pos| !elf_positions.contains(pos))
         {
             continue;
         }
@@ -125,7 +126,7 @@ fn first_half(
         {
             if pos_triplet
                 .iter()
-                .any(|pos| elf_positions.iter().contains(pos))
+                .any(|pos| elf_positions.contains(pos))
             {
                 continue;
             }
@@ -141,26 +142,36 @@ fn first_half(
 }
 
 fn second_half(
-    elf_positions: &mut [Pos],
+    elf_positions: &mut HashSet<Pos>,
     elf_dibs: &mut HashMap<Pos, Pos>,
     dibs_counts: &mut HashMap<Pos, usize>,
-) {
-    for pos in elf_positions {
+) ->usize{
+    let mut n_moves = 0;
+    let mut new_positions = HashSet::with_capacity(elf_positions.capacity());
+    for pos in elf_positions.drain() {
+        let new_pos = 
         // don't do anything if haven't placed dibs in the first half
-        let Some(dibs) = elf_dibs.remove(pos) else {
-            continue;
+        if let Some(dibs) = elf_dibs.remove(&pos) {
+            // don't actually move if others have dibs on the same space
+            if dibs_counts[&dibs] == 1 {
+                n_moves += 1;
+                dibs
+            }
+            else {
+                pos
+            }
+        }
+        else {
+            pos
         };
 
-        // don't actually move if others have dibs on the same space
-        if dibs_counts[&dibs] > 1 {
-            continue;
-        }
-
-        *pos = dibs;
+        new_positions.insert(new_pos);
     }
 
+    *elf_positions = new_positions;
     elf_dibs.clear();
     dibs_counts.clear();
+    n_moves
 }
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
@@ -189,7 +200,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
             right,
             top,
             down,
-        } = min_enclosing_rectangle(&elf_positions);
+        } = min_enclosing_rectangle(&elf_positions.iter());
         let width: usize = (right - left + 1).try_into().unwrap();
         let height: usize = (down - top + 1).try_into().unwrap();
         width * height - elf_positions.len()
