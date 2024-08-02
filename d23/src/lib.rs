@@ -1,6 +1,6 @@
 use aoc2022lib::points::Point2D;
 use itertools::Itertools;
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::RangeInclusive};
 
 type Pos = Point2D<usize>;
 
@@ -101,6 +101,68 @@ fn adj_pos(Point2D(x, y): Pos, dir: &Direction) -> Pos {
     Point2D(new_col, new_row)
 }
 
+fn first_half(
+    elf_positions: &[Pos],
+    elf_dibs: &mut HashMap<Pos, Pos>,
+    dibs_counts: &mut HashMap<Pos, usize>,
+    directions_order: &mut [RangeInclusive<usize>; 4],
+) {
+    for pos in elf_positions {
+        let adj_positions = DIRECTIONS.map(|dir| adj_pos(*pos, &dir));
+
+        // don't do anything if no elves around
+        if adj_positions
+            .iter()
+            .all(|pos| !elf_positions.iter().contains(pos))
+        {
+            continue;
+        }
+
+        // look at each side, and move there if free
+        for pos_triplet in directions_order
+            .clone()
+            .map(|direction| &adj_positions[direction])
+        {
+            if pos_triplet
+                .iter()
+                .any(|pos| elf_positions.iter().contains(pos))
+            {
+                continue;
+            }
+
+            elf_dibs.insert(*pos, pos_triplet[1]);
+            *dibs_counts.entry(pos_triplet[1]).or_insert(0) += 1;
+            break;
+        }
+    }
+
+    // rotate the order of the considered directions for the next round
+    directions_order.rotate_left(1);
+}
+
+fn second_half(
+    elf_positions: &mut [Pos],
+    elf_dibs: &mut HashMap<Pos, Pos>,
+    dibs_counts: &mut HashMap<Pos, usize>,
+) {
+    for pos in elf_positions {
+        // don't do anything if haven't placed dibs in the first half
+        let Some(dibs) = elf_dibs.remove(pos) else {
+            continue;
+        };
+
+        // don't actually move if others have dibs on the same space
+        if dibs_counts[&dibs] > 1 {
+            continue;
+        }
+
+        *pos = dibs;
+    }
+
+    elf_dibs.clear();
+    dibs_counts.clear();
+}
+
 pub fn p1(file: &str) -> anyhow::Result<usize> {
     const N_ROUNDS: usize = 10;
     // the further an elf can end up from the starting square
@@ -113,56 +175,14 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
     let mut dibs_counts = HashMap::with_capacity(elf_positions.len());
     let mut directions_order = [0..=2, 4..=6, 2..=4, 6..=8];
     for _ in 0..N_ROUNDS {
-        // first half
-        for pos in &elf_positions {
-            let adj_positions = DIRECTIONS.map(|dir| adj_pos(*pos, &dir));
+        first_half(
+            &elf_positions,
+            &mut elf_dibs,
+            &mut dibs_counts,
+            &mut directions_order,
+        );
 
-            // don't do anything if no elves around
-            if adj_positions
-                .iter()
-                .all(|pos| !elf_positions.iter().contains(pos))
-            {
-                continue;
-            }
-
-            // look at each side, and move there if free
-            for pos_triplet in &directions_order
-                .clone()
-                .map(|direction| &adj_positions[direction])
-            {
-                if pos_triplet
-                    .iter()
-                    .any(|pos| elf_positions.iter().contains(pos))
-                {
-                    continue;
-                }
-
-                elf_dibs.insert(*pos, pos_triplet[1]);
-                *dibs_counts.entry(pos_triplet[1]).or_insert(0) += 1;
-                break;
-            }
-        }
-
-        // second half
-        for pos in &mut elf_positions {
-            // don't do anything if haven't placed dibs in the first half
-            let Some(dibs) = elf_dibs.remove(pos) else {
-                continue;
-            };
-
-            // don't actually move if others have dibs on the same space
-            if dibs_counts[&dibs] > 1 {
-                continue;
-            }
-
-            *pos = dibs;
-        }
-
-        elf_dibs.clear();
-        dibs_counts.clear();
-
-        // rotate the order of the considered directions for the next round
-        directions_order.rotate_left(1);
+        second_half(&mut elf_positions, &mut elf_dibs, &mut dibs_counts);
     }
 
     // minimal spanning rectangle
