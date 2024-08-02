@@ -33,6 +33,9 @@ anyhow = "1.0.81"
 derive_deref = "1.1.1"
 nom = "7.1.3"
 
+[profile.release]
+debug = true
+
 [workspace.lints.clippy]
 pedantic = "warn"
 missing_panics_doc = "allow"
