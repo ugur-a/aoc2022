@@ -33,7 +33,7 @@ impl HeightMap<usize> {
 
         potential_neighbours
             .into_iter()
-            .filter(|point| *self.heights.get(point).unwrap() <= this_height + 1)
+            .filter(|point| self.heights[point] <= this_height + 1)
             .collect::<Vec<_>>()
     }
 }
@@ -50,7 +50,7 @@ impl FromStr for HeightMap<usize> {
                     .map(move |(col_num, char)| (row_num, col_num, char))
             })
             .find(|(_row_num, _col_num, char)| *char == 'S')
-            .context("no starting point found")?;
+            .with_context(|| "no starting point found")?;
         let start = Point2D(s_col, s_row);
 
         let (g_row, g_col, _g_char) = s
@@ -61,10 +61,10 @@ impl FromStr for HeightMap<usize> {
                     .map(move |(col_num, char)| (row_num, col_num, char))
             })
             .find(|(_row_num, _col_num, char)| *char == 'E')
-            .context("no end point found")?;
+            .with_context(|| "no end point found")?;
         let goal = Point2D(g_col, g_row);
 
-        let num_cols = s.lines().next().context("at least one row")?.len();
+        let num_cols = s.lines().next().with_context(|| "map has no rows")?.len();
 
         let num_rows = s.lines().count();
 
@@ -103,7 +103,6 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
                 .climbable_neighbours(*point)
                 .into_iter()
                 .map(|point| (point, 1))
-                .collect::<Vec<_>>()
         },
         |point| 26 - height_map.heights.get(point).unwrap(),
         |point| *point == height_map.goal,
@@ -127,9 +126,8 @@ pub fn p2(file: &str) -> anyhow::Result<u32> {
                         .climbable_neighbours(*point)
                         .into_iter()
                         .map(|point| (point, 1))
-                        .collect::<Vec<_>>()
                 },
-                |point| 26 - height_map.heights.get(point).unwrap(),
+                |point| 26 - height_map.heights[point],
                 |point| *point == height_map.goal,
             )
         })
