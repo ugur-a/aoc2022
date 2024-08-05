@@ -61,6 +61,25 @@ where
     }
 }
 
+pub trait ManhattanDistance {
+    type Output;
+    fn manhattan_distance(self, other: Self) -> Self::Output;
+}
+
+impl ManhattanDistance for Point2D<i32> {
+    type Output = u32;
+    fn manhattan_distance(self, other: Self) -> Self::Output {
+        self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
+    }
+}
+
+impl ManhattanDistance for Point2D<usize> {
+    type Output = usize;
+    fn manhattan_distance(self, other: Self) -> Self::Output {
+        self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
+    }
+}
+
 impl<T: Copy, U: Copy, V: Copy> Point3D<T, U, V> {
     pub fn new(x: T, y: U, z: V) -> Self {
         Self(x, y, z)

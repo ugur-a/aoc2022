@@ -3,7 +3,10 @@ use std::{
     str::FromStr,
 };
 
-use aoc2022lib::{impl_from_str_from_nom_parser, points::Point2D};
+use aoc2022lib::{
+    impl_from_str_from_nom_parser,
+    points::{ManhattanDistance, Point2D},
+};
 
 use anyhow::Context;
 use derive_deref::Deref;
@@ -18,16 +21,6 @@ use nom::{
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 type Point = Point2D<i32>;
-
-trait ManhattanDistance {
-    fn manhattan_distance(self, other: Self) -> u32;
-}
-
-impl ManhattanDistance for Point {
-    fn manhattan_distance(self, other: Self) -> u32 {
-        self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
-    }
-}
 
 // x=2, y=18
 fn point(i: &str) -> IResult<&str, Point> {
