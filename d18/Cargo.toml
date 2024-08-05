@@ -9,7 +9,7 @@ edition = "2021"
 anyhow.workspace = true
 itertools.workspace = true
 nom.workspace = true
-pathfinding = "4.9.1"
+pathfinding.workspace = true
 aoc2022lib.workspace = true
 
 [lints]
