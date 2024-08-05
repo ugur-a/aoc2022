@@ -253,6 +253,8 @@ name = "d24"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "aoc2022lib",
+ "pathfinding",
 ]
 
 [[package]]
