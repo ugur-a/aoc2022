@@ -112,6 +112,7 @@ fn first_half(
         let adj_positions = DIRECTIONS.map(|dir| adj_pos(*pos, &dir));
 
         // don't do anything if no elves around
+        // TODO: reuse the result of these reads when looking at each direction separately later
         if adj_positions
             .iter()
             .all(|pos| !elf_positions.contains(pos))
