@@ -2,10 +2,13 @@ use std::str::FromStr;
 
 use anyhow::{bail, Context};
 use aoc2022lib::points::{ManhattanDistance, Point2D};
+use bare_metal_modulo::{MNum, ModNum};
 use pathfinding::directed::astar;
 
 type Pos = Point2D<usize>;
+type PosMod = Point2D<ModNum<usize>>;
 
+#[derive(Debug)]
 enum Direction {
     Left,
     Right,
@@ -27,23 +30,18 @@ impl TryFrom<char> for Direction {
 }
 
 struct Blizzard {
-    pos: Pos,
+    pos_init: PosMod,
     direction: Direction,
 }
 
-type Collider = Box<dyn Fn(Pos, usize) -> bool>;
-
 impl Blizzard {
-    #[allow(clippy::needless_pass_by_value)]
-    fn into_collider(self, dimension: usize) -> Collider {
-        let Point2D(x, y) = self.pos;
+    fn pos(&self, time: usize) -> Pos {
+        let Point2D(x, y) = self.pos_init;
         match self.direction {
-            Direction::Right => {
-                Box::new(move |pos, time| pos == Point2D((x + time) % dimension, y))
-            }
-            Direction::Left => Box::new(move |pos, time| pos == Point2D((x - time) % dimension, y)),
-            Direction::Up => Box::new(move |pos, time| pos == Point2D(x, (y - time) % dimension)),
-            Direction::Down => Box::new(move |pos, time| pos == Point2D(x, (y - time) % dimension)),
+            Direction::Right => Point2D((x + time).a(), y.a()),
+            Direction::Left => Point2D((x - time).a(), y.a()),
+            Direction::Up => Point2D(x.a(), (y - time).a()),
+            Direction::Down => Point2D(x.a(), (y + time).a()),
         }
     }
 }
@@ -51,7 +49,7 @@ impl Blizzard {
 struct Valley {
     width: usize,
     height: usize,
-    colliders: Vec<Collider>,
+    blizzards: Vec<Blizzard>,
 }
 
 impl FromStr for Valley {
@@ -66,7 +64,7 @@ impl FromStr for Valley {
             - 2;
         let height = s.lines().count() - 2;
 
-        let mut colliders = Vec::with_capacity(
+        let mut blizzards = Vec::with_capacity(
             s.chars()
                 .filter(|c| matches!(*c, '>' | '<' | '^' | 'v'))
                 .count(),
@@ -74,36 +72,30 @@ impl FromStr for Valley {
 
         for (y, line) in s.lines().skip(1).enumerate() {
             for (x, char) in line.chars().skip(1).enumerate() {
-                match char {
+                let b = match char {
                     '.' | '#' => continue,
-                    c => {
-                        let blizzard = Blizzard {
-                            pos: Point2D(x, y),
-                            direction: Direction::try_from(c)?,
-                        };
-
-                        let collider = match c {
-                            '>' | '<' => blizzard.into_collider(width),
-                            '^' | 'v' => blizzard.into_collider(height),
-                            _ => unreachable!("checked while creating `blizzard`"),
-                        };
-                        colliders.push(collider);
-                    }
-                }
+                    c => Blizzard {
+                        pos_init: Point2D(ModNum::new(x, width), ModNum::new(y, height)),
+                        direction: Direction::try_from(c)?,
+                    },
+                };
+                blizzards.push(b);
             }
         }
 
         Ok(Self {
             width,
             height,
-            colliders,
+            blizzards,
         })
     }
 }
 
 impl Valley {
     fn collides(&self, pos: Pos, time: usize) -> bool {
-        self.colliders.iter().any(|collider| collider(pos, time))
+        self.blizzards
+            .iter()
+            .any(|blizzard| pos == blizzard.pos(time))
     }
 
     fn next_positions(&self, pos: Pos, time: usize) -> impl Iterator<Item = (Pos, usize)> + '_ {

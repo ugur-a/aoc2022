@@ -254,6 +254,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "aoc2022lib",
+ "bare_metal_modulo",
  "pathfinding",
 ]
 
