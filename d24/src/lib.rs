@@ -192,8 +192,48 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
     Ok(time)
 }
 
-pub fn p2(_file: &str) -> anyhow::Result<u32> {
-    todo!()
+pub fn p2(file: &str) -> anyhow::Result<usize> {
+    let valley = Valley::from_str(file)?;
+
+    let mut time = 0;
+
+    // there
+    let mut start = ValleyPos::Entrance;
+    let mut destination = ValleyPos::Exit;
+    let (_, time1) = astar::astar(
+        &(start, time),
+        |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
+        |&(pos, _)| valley.manhattan_distance(pos, destination),
+        |&(pos, _)| pos == destination,
+    )
+    .context("no path found")?;
+    time += time1;
+
+    // back
+    std::mem::swap(&mut start, &mut destination);
+
+    let (_, time2) = astar::astar(
+        &(start, time),
+        |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
+        |&(pos, _)| valley.manhattan_distance(pos, destination),
+        |&(pos, _)| pos == destination,
+    )
+    .context("no path found")?;
+    time += time2;
+
+    // there again
+    std::mem::swap(&mut start, &mut destination);
+
+    let (_, time3) = astar::astar(
+        &(start, time),
+        |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
+        |&(pos, _)| valley.manhattan_distance(pos, destination),
+        |&(pos, _)| pos == destination,
+    )
+    .context("no path found")?;
+    time += time3;
+
+    Ok(time)
 }
 
 #[cfg(test)]
@@ -212,15 +252,13 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 295);
     }
     #[test]
-    #[ignore]
     fn test_p2() {
         let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp).unwrap(), 54);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp).unwrap(), 851);
     }
 }
