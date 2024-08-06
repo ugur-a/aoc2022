@@ -66,7 +66,7 @@ impl FromStr for Valley {
 
         let mut blizzards = Vec::with_capacity(
             s.chars()
-                .filter(|c| matches!(*c, '>' | '<' | '^' | 'v'))
+                .filter(|c| ['>', '<', '^', 'v'].contains(c))
                 .count(),
         );
 
