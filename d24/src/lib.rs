@@ -150,10 +150,9 @@ mod tests {
         assert_eq!(p1(&inp).unwrap(), 18);
     }
     #[test]
-    #[ignore]
     fn real_p1() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 0);
+        assert_eq!(p1(&inp).unwrap(), 295);
     }
     #[test]
     #[ignore]
