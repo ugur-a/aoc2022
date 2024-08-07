@@ -6,6 +6,13 @@ use bare_metal_modulo::{MNum, ModNum};
 use pathfinding::directed::astar;
 
 type Pos = Point2D<usize>;
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+enum ValleyPos {
+    Entrance,
+    Inside(Pos),
+    Exit,
+}
+
 type PosMod = Point2D<ModNum<usize>>;
 
 #[derive(Debug)]
@@ -37,12 +44,13 @@ struct Blizzard {
 impl Blizzard {
     fn pos(&self, time: usize) -> Pos {
         let Point2D(x, y) = self.pos_init;
-        match self.direction {
-            Direction::Right => Point2D((x + time).a(), y.a()),
-            Direction::Left => Point2D((x - time).a(), y.a()),
-            Direction::Up => Point2D(x.a(), (y - time).a()),
-            Direction::Down => Point2D(x.a(), (y + time).a()),
-        }
+        let (x, y) = match self.direction {
+            Direction::Right => ((x + time).a(), y.a()),
+            Direction::Left => ((x - time).a(), y.a()),
+            Direction::Up => (x.a(), (y - time).a()),
+            Direction::Down => (x.a(), (y + time).a()),
+        };
+        Point2D(x, y)
     }
 }
 
@@ -92,53 +100,96 @@ impl FromStr for Valley {
 }
 
 impl Valley {
-    fn start() -> Pos {
-        Point2D(0, 0)
+    fn start() -> ValleyPos {
+        ValleyPos::Inside(Point2D(0, 0))
     }
-    fn end(&self) -> Pos {
-        Point2D(self.width - 1, self.height - 1)
+    fn end(&self) -> ValleyPos {
+        ValleyPos::Inside(Point2D(self.width - 1, self.height - 1))
     }
-    fn collides(&self, pos: Pos, time: usize) -> bool {
-        self.blizzards
-            .iter()
-            .any(|blizzard| pos == blizzard.pos(time))
+    fn collides(&self, pos: ValleyPos, time: usize) -> bool {
+        match pos {
+            ValleyPos::Entrance | ValleyPos::Exit => false,
+            ValleyPos::Inside(pos) => self
+                .blizzards
+                .iter()
+                .any(|blizzard| pos == blizzard.pos(time)),
+        }
     }
 
-    fn next_positions(&self, pos: Pos, time: usize) -> impl Iterator<Item = (Pos, usize)> + '_ {
-        let Point2D(x, y) = pos;
-        let mut positions = vec![(x, y)];
-        if x > 0 {
-            positions.push((x - 1, y));
-        }
-        if x < self.width - 1 {
-            positions.push((x + 1, y));
-        }
-        if y > 0 {
-            positions.push((x, y - 1));
-        }
-        if y < self.height - 1 {
-            positions.push((x, y + 1));
-        }
+    fn next_positions(
+        &self,
+        pos: ValleyPos,
+        time: usize,
+    ) -> impl Iterator<Item = (ValleyPos, usize)> + '_ {
+        let positions = match pos {
+            ValleyPos::Entrance => {
+                vec![ValleyPos::Entrance, Valley::start()]
+            }
+            vp @ ValleyPos::Inside(Point2D(x, y)) => {
+                let mut positions = vec![ValleyPos::Inside(Point2D(x, y))];
+                if vp == Valley::start() {
+                    positions.push(ValleyPos::Entrance);
+                }
+                if vp == self.end() {
+                    positions.push(ValleyPos::Exit);
+                }
+
+                if x > 0 {
+                    positions.push(ValleyPos::Inside(Point2D(x - 1, y)));
+                }
+                if x < self.width - 1 {
+                    positions.push(ValleyPos::Inside(Point2D(x + 1, y)));
+                }
+                if y > 0 {
+                    positions.push(ValleyPos::Inside(Point2D(x, y - 1)));
+                }
+                if y < self.height - 1 {
+                    positions.push(ValleyPos::Inside(Point2D(x, y + 1)));
+                }
+                positions
+            }
+            ValleyPos::Exit => {
+                vec![ValleyPos::Exit, self.end()]
+            }
+        };
 
         positions
             .into_iter()
-            .map(move |(x, y)| (Point2D(x, y), time + 1))
+            .map(move |pos| (pos, time + 1))
             .filter(|&(pos, time)| !self.collides(pos, time))
+    }
+
+    fn manhattan_distance(&self, p1: ValleyPos, p2: ValleyPos) -> usize {
+        match (p1, p2) {
+            // trivial
+            (ValleyPos::Inside(s), ValleyPos::Inside(o)) => s.manhattan_distance(o),
+            (ValleyPos::Exit, ValleyPos::Exit) | (ValleyPos::Entrance, ValleyPos::Entrance) => 0,
+            // d(Entrance, X) = d(Entrance, Start) + d(Start, X) = 1 + d(Start, X)
+            (ValleyPos::Entrance, o) => 1 + self.manhattan_distance(Valley::start(), o),
+            // d(X, Exit) = d(X, End) + d(End, Exit) = d(X, End) + 1
+            (s, ValleyPos::Exit) => self.manhattan_distance(s, self.end()) + 1,
+            // maintain cmp order Entrance->Inside->Exit
+            (s, o @ ValleyPos::Entrance) | (s @ ValleyPos::Exit, o) => {
+                self.manhattan_distance(o, s)
+            }
+        }
     }
 }
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
     let valley = Valley::from_str(file)?;
-    let start = (Valley::start(), 1);
-    let destination = valley.end();
-    let (_, len) = astar::astar(
-        &start,
+    let mut time = 0;
+    let start = ValleyPos::Entrance;
+    let destination = ValleyPos::Exit;
+    let (_, time1) = astar::astar(
+        &(start, time),
         |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
-        |&(pos, _)| pos.manhattan_distance(destination),
+        |&(pos, _)| valley.manhattan_distance(pos, destination),
         |&(pos, _)| pos == destination,
     )
     .context("no path found")?;
-    Ok(len + 2)
+    time = time1;
+    Ok(time)
 }
 
 pub fn p2(_file: &str) -> anyhow::Result<u32> {
