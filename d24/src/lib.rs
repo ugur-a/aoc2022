@@ -92,6 +92,12 @@ impl FromStr for Valley {
 }
 
 impl Valley {
+    fn start() -> Pos {
+        Point2D(0, 0)
+    }
+    fn end(&self) -> Pos {
+        Point2D(self.width - 1, self.height - 1)
+    }
     fn collides(&self, pos: Pos, time: usize) -> bool {
         self.blizzards
             .iter()
@@ -123,8 +129,8 @@ impl Valley {
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
     let valley = Valley::from_str(file)?;
-    let start = (Point2D(0, 0), 1);
-    let destination = Point2D(valley.width - 1, valley.height - 1);
+    let start = (Valley::start(), 1);
+    let destination = valley.end();
     let (_, len) = astar::astar(
         &start,
         |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
