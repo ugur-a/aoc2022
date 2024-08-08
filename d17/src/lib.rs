@@ -139,7 +139,7 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
 
     let mut pushes = {
         let mut pushes = Vec::with_capacity(file.len());
-        for c in file.chars() {
+        for c in file.trim_end().chars() {
             let j = Jet::try_from(c)?;
             pushes.push(j);
         }
