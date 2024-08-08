@@ -9,7 +9,7 @@ edition = "2021"
 anyhow.workspace = true
 aoc2022lib.workspace = true
 nom.workspace = true
-test-case = "3.3.1"
+test-case.workspace = true
 
 [lints]
 workspace = true
