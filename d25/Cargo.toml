@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
+test-case.workspace = true
 
 [lints]
 workspace = true

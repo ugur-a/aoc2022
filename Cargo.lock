@@ -263,6 +263,7 @@ name = "d25"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "test-case",
 ]
 
 [[package]]
