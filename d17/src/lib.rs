@@ -1,61 +1,63 @@
-use std::{cmp::max, collections::HashSet, fmt::Display};
-
-use anyhow::anyhow;
-use itertools::Itertools;
-
+use anyhow::bail;
 use aoc2022lib::points::Point2D;
+use std::{collections::HashSet, fmt::Display};
+
+type Pos = Point2D<u8, usize>;
 
 #[derive(Clone, Copy)]
 struct Rock {
-    points: [Point2D<u8, u64>; 5],
+    points: [Pos; 5],
     width: u8,
-    height: u64,
-}
-
-#[derive(Clone, Copy)]
-enum RockType {
-    Minus,
-    Plus,
-    RightL,
-    I,
-    Square,
+    height: u8,
 }
 
 macro_rules! rock {
     [$( ( $p1:expr, $p2:expr ) ),+] => {[$( Point2D($p1, $p2) ),+]};
 }
 
-impl Rock {
-    fn new(r#type: RockType) -> Self {
-        let (points, width, height) = match r#type {
-            RockType::Minus => (rock![(0, 0), (1, 0), (2, 0), (3, 0), (0, 0)], 4, 1),
-            RockType::Plus => (rock![(1, 0), (0, 1), (2, 1), (1, 2), (1, 1)], 3, 3),
-            RockType::RightL => (rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)], 3, 3),
-            RockType::I => (rock![(0, 0), (0, 1), (0, 2), (0, 3), (0, 0)], 1, 4),
-            RockType::Square => (rock![(0, 0), (0, 1), (1, 0), (1, 1), (0, 0)], 2, 2),
-        };
-        Self {
-            points,
-            width,
-            height,
-        }
-    }
-}
+const ROCKS: [Rock; 5] = {
+    const MINUS: Rock = Rock {
+        points: rock![(0, 0), (1, 0), (2, 0), (3, 0), (0, 0)],
+        width: 4,
+        height: 1,
+    };
+    const PLUS: Rock = Rock {
+        points: rock![(1, 0), (0, 1), (2, 1), (1, 2), (1, 1)],
+        width: 3,
+        height: 3,
+    };
+    const RIGHT_L: Rock = Rock {
+        points: rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)],
+        width: 3,
+        height: 3,
+    };
+    const I: Rock = Rock {
+        points: rock![(0, 0), (0, 1), (0, 2), (0, 3), (0, 0)],
+        width: 1,
+        height: 4,
+    };
+    const SQUARE: Rock = Rock {
+        points: rock![(0, 0), (0, 1), (1, 0), (1, 1), (0, 0)],
+        width: 2,
+        height: 2,
+    };
+    [MINUS, PLUS, RIGHT_L, I, SQUARE]
+};
 
 #[derive(Clone, Copy)]
-enum JetStreamDirection {
+enum Jet {
     Left,
     Right,
 }
 
-impl TryFrom<char> for JetStreamDirection {
+impl TryFrom<char> for Jet {
     type Error = anyhow::Error;
 
     fn try_from(value: char) -> anyhow::Result<Self> {
         match value {
             '<' => Ok(Self::Left),
             '>' => Ok(Self::Right),
-            chr => Err(anyhow!("Invalid char: '{}'", chr)),
+            chr => bail!("Invalid char: '{}'", chr),
         }
     }
 }
@@ -69,8 +71,8 @@ impl TryFrom<char> for JetStreamDirection {
 #[derive(Default)]
 struct Chamber {
     width: u8,
-    height: u64,
-    occupied_points: HashSet<Point2D<u8, u64>>,
+    height: usize,
+    occupied_points: HashSet<Pos>,
 }
 
 impl Chamber {
@@ -81,94 +83,94 @@ impl Chamber {
         }
     }
 
-    fn contains(&self, q: &Point2D<u8, u64>) -> bool {
+    fn contains(&self, q: &Pos) -> bool {
         self.occupied_points.contains(q)
     }
 
-    fn trim_to(&mut self, height_to_trim_to: u64) {
+    fn trim_to(&mut self, height_to_trim_to: usize) {
         self.occupied_points
             .retain(|point| point.1 > self.height - height_to_trim_to);
     }
 
-    const MAX_HEIGHT_BEFORE_TRIMMING: u64 = 1024 * 1024 * 1024;
-    const HEIGHT_TO_TRIM_TO: u64 = 512;
-    fn add_rock(&mut self, rock: Rock, rock_position_relative: Point2D<u8, u64>) {
+    const MAX_HEIGHT_BEFORE_TRIMMING: usize = 1024 * 1024 * 1024;
+    const HEIGHT_TO_TRIM_TO: usize = 512;
+    #[allow(clippy::cast_lossless)]
+    fn add_rock(&mut self, rock: Rock, rock_position_relative: Pos) {
         self.occupied_points
             .extend(&rock.points.map(|point| point + rock_position_relative));
-        self.height = max(self.height, rock_position_relative.1 + rock.height);
+        self.height = std::cmp::max(self.height, rock_position_relative.1 + rock.height as usize);
         if self.height > Self::MAX_HEIGHT_BEFORE_TRIMMING {
             self.trim_to(Self::HEIGHT_TO_TRIM_TO);
         }
     }
 
-    fn height(&self) -> u64 {
+    fn height(&self) -> usize {
         self.height
     }
 }
 
 impl Display for Chamber {
+    #[allow(clippy::cast_possible_truncation)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let res = ((self.height().saturating_sub(20))..=self.height())
-            .rev()
-            .map(|y| {
-                (0..=self.width)
-                    .map(move |x| (Point2D(x, y)))
-                    .map(|point| {
-                        if self.occupied_points.contains(&point) {
-                            '#'
-                        } else {
-                            '.'
-                        }
-                    })
-                    .join("")
-            })
-            .join("\n");
+        let height = std::cmp::min(20, self.height);
+
+        let mut res = String::with_capacity(height * self.width as usize);
+        for y in (0..=height).rev() {
+            for x in 0..=self.width {
+                let point = Point2D(x, y);
+                let repr = if self.occupied_points.contains(&point) {
+                    '#'
+                } else {
+                    '.'
+                };
+                res.push(repr);
+            }
+            res.push('\n');
+        }
 
         write!(f, "{res}")
     }
 }
 
-#[allow(clippy::items_after_statements)]
-fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<u64> {
+fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
     let mut chamber = Chamber::new(7);
-    use RockType as RT;
-    let rocks = vec![RT::Minus, RT::Plus, RT::RightL, RT::I, RT::Square]
-        .into_iter()
-        .map(Rock::new)
-        .cycle()
-        .take(num_rounds);
-    let mut pushes = file
-        .chars()
-        .map(JetStreamDirection::try_from)
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .cycle();
+
+    let rocks = ROCKS.into_iter().cycle().take(num_rounds);
+
+    let mut pushes = {
+        let mut pushes = Vec::with_capacity(file.len());
+        for c in file.chars() {
+            let j = Jet::try_from(c)?;
+            pushes.push(j);
+        }
+        pushes.into_iter().cycle()
+    };
 
     for rock in rocks {
         let spawn_height = chamber.height() + 3;
         let mut rock_position_relative = Point2D(2, spawn_height);
         loop {
-            println!("{chamber}\n");
+            // eprintln!("{chamber}\n");
             // jet stream
             match pushes.next().unwrap() {
-                JetStreamDirection::Left => {
+                Jet::Left => {
                     if rock_position_relative.0 > 0
                         && rock
                             .points
                             .iter()
-                            .map(|point| *point + rock_position_relative)
+                            .map(|&point| point + rock_position_relative)
                             .map(|Point2D(x, y)| Point2D(x - 1, y))
                             .all(|point| !chamber.contains(&point))
                     {
                         rock_position_relative.0 -= 1;
                     }
                 }
-                JetStreamDirection::Right => {
+                Jet::Right => {
                     if rock_position_relative.0 + rock.width < chamber.width
                         && rock
                             .points
                             .iter()
-                            .map(|point| *point + rock_position_relative)
+                            .map(|&point| point + rock_position_relative)
                             .map(|Point2D(x, y)| Point2D(x + 1, y))
                             .all(|point| !chamber.contains(&point))
                     {
@@ -185,14 +187,10 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<u64> {
             // 2) there's a rock point directly underneath
             let rock_stops = rock
                 .points
-                .map(|Point2D(x, y)| {
-                    Point2D(
-                        x + rock_position_relative.0,
-                        y + rock_position_relative.1 - 1,
-                    )
-                })
                 .iter()
-                .any(|point| chamber.contains(point));
+                .map(|&point| point + rock_position_relative)
+                .map(|Point2D(x, y)| Point2D(x, y - 1))
+                .any(|point| chamber.contains(&point));
             if rock_stops {
                 chamber.add_rock(rock, rock_position_relative);
                 break;
@@ -204,15 +202,15 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<u64> {
     Ok(chamber.height())
 }
 
-pub fn p_mid(file: &str) -> anyhow::Result<u64> {
+pub fn p_mid(file: &str) -> anyhow::Result<usize> {
     tetris(file, 1_000_000)
 }
 
-pub fn p1(file: &str) -> anyhow::Result<u64> {
+pub fn p1(file: &str) -> anyhow::Result<usize> {
     tetris(file, 2022)
 }
 
-pub fn p2(file: &str) -> anyhow::Result<u64> {
+pub fn p2(file: &str) -> anyhow::Result<usize> {
     tetris(file, 1_000_000_000_000)
 }
 
