@@ -81,7 +81,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
 
     let res = (1..)
         .zip(pairs)
-        .filter_map(|(idx, [left, right])| if left < right { Some(idx) } else { None })
+        .filter_map(|(idx, [left, right])| (left < right).then_some(idx))
         .sum();
 
     Ok(res)
