@@ -61,8 +61,8 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
     let dirs_with_sizes = get_dir_sizes(&files_with_sizes);
 
     Ok(dirs_with_sizes
-        .values()
-        .filter(|dir_size| **dir_size <= upper_bound)
+        .into_values()
+        .filter(|&dir_size| dir_size <= upper_bound)
         .sum())
 }
 
@@ -78,12 +78,12 @@ pub fn p2(file: &str) -> anyhow::Result<u32> {
     let total_to_free_up = 30_000_000u32;
     let left_to_free_up = total_to_free_up - total_available_space;
 
-    Ok(*dirs_with_sizes
-        .values()
-        .filter(|dir_size| **dir_size >= left_to_free_up)
+    dirs_with_sizes
+        .into_values()
+        .filter(|&dir_size| dir_size >= left_to_free_up)
         .sorted_unstable()
         .next()
-        .context("At least one directory")?)
+        .context("At least one directory")
 }
 
 #[cfg(test)]

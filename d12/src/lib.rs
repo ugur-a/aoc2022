@@ -34,7 +34,7 @@ impl HeightMap<usize> {
         potential_neighbours
             .into_iter()
             .filter(|point| self.heights[point] <= this_height + 1)
-            .collect::<Vec<_>>()
+            .collect()
     }
 }
 
@@ -96,19 +96,18 @@ impl FromStr for HeightMap<usize> {
 
 pub fn p1(file: &str) -> anyhow::Result<u32> {
     let height_map = HeightMap::from_str(file)?;
-    let shortest_path = astar::astar(
+    let (_, shortest_path) = astar::astar(
         &height_map.start,
-        |point| {
+        |&point| {
             height_map
-                .climbable_neighbours(*point)
+                .climbable_neighbours(point)
                 .into_iter()
                 .map(|point| (point, 1))
         },
         |point| 26 - height_map.heights.get(point).unwrap(),
-        |point| *point == height_map.goal,
+        |&point| point == height_map.goal,
     )
-    .expect("there must be at least one shortest path")
-    .1;
+    .context("there must be at least one shortest path")?;
     Ok(shortest_path)
 }
 
@@ -121,14 +120,14 @@ pub fn p2(file: &str) -> anyhow::Result<u32> {
         .filter_map(|(lowest_point, _height)| {
             astar::astar(
                 lowest_point,
-                |point| {
+                |&point| {
                     height_map
-                        .climbable_neighbours(*point)
+                        .climbable_neighbours(point)
                         .into_iter()
                         .map(|point| (point, 1))
                 },
                 |point| 26 - height_map.heights[point],
-                |point| *point == height_map.goal,
+                |&point| point == height_map.goal,
             )
         })
         .map(|(_path, path_length)| path_length)

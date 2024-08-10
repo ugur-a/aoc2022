@@ -100,7 +100,7 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
                 .neighbours()
                 .into_iter()
                 // can't go inside droplet
-                .filter(|point| !(droplet.contains(*point)))
+                .filter(|&point| !(droplet.contains(point)))
                 // limit the searched volume to around the droplet
                 .filter(|Point3D(x, y, z)| {
                     ((boundaries.x_min - 1)..=(boundaries.x_max + 1)).contains(x)
@@ -118,8 +118,8 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
         // so count occurences of each value
         .counts()
         .into_iter()
-        .filter(|(potentially_exposed_side, _)| !(droplet.contains(*potentially_exposed_side)))
-        .filter(|(_, num_neighbours)| *num_neighbours < 6)
+        .filter(|&(potentially_exposed_side, _)| !(droplet.contains(potentially_exposed_side)))
+        .filter(|&(_, num_neighbours)| num_neighbours < 6)
         .filter(|(exposed_side, _)| exteriour_sides.contains(exposed_side))
         .map(|(_, num_neighbours)| num_neighbours)
         .sum();
