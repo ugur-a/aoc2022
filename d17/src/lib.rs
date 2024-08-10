@@ -1,48 +1,57 @@
 use anyhow::bail;
-use aoc2022lib::points::Point2D;
-use std::{collections::HashSet, fmt::Display};
-
-type Pos = Point2D<u8, usize>;
+use std::{collections::HashMap, fmt::Display};
 
 #[derive(Clone, Copy)]
 struct Rock {
-    points: [Pos; 5],
-    width: u8,
+    inner: [u8; 4],
     height: u8,
 }
 
-macro_rules! rock {
-    [$( ( $p1:expr, $p2:expr ) ),+] => {[$( Point2D($p1, $p2) ),+]};
-}
-
 const ROCKS: [Rock; 5] = {
+    // this already takes into account rocks being spawned with an offset of 2 from the left wall
+    // bottom row first
     const MINUS: Rock = Rock {
-        points: rock![(0, 0), (1, 0), (2, 0), (3, 0), (0, 0)],
-        width: 4,
+        inner: [0b0001_1110, 0, 0, 0],
         height: 1,
     };
     const PLUS: Rock = Rock {
-        points: rock![(1, 0), (0, 1), (2, 1), (1, 2), (1, 1)],
-        width: 3,
+        inner: [0b0000_1000, 0b0001_1100, 0b0000_1000, 0],
         height: 3,
     };
     const RIGHT_L: Rock = Rock {
-        points: rock![(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)],
-        width: 3,
+        inner: [0b0001_1100, 0b0000_0100, 0b0000_0100, 0],
         height: 3,
     };
     const I: Rock = Rock {
-        points: rock![(0, 0), (0, 1), (0, 2), (0, 3), (0, 0)],
-        width: 1,
+        inner: [0b0001_0000, 0b0001_0000, 0b0001_0000, 0b0001_0000],
         height: 4,
     };
     const SQUARE: Rock = Rock {
-        points: rock![(0, 0), (0, 1), (1, 0), (1, 1), (0, 0)],
-        width: 2,
+        inner: [0b0001_1000, 0b0001_1000, 0, 0],
         height: 2,
     };
     [MINUS, PLUS, RIGHT_L, I, SQUARE]
 };
+
+struct RockAtAltitude {
+    rock: Rock,
+    altitude: usize,
+}
+
+impl Display for RockAtAltitude {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let &Self { rock, altitude } = self;
+        for row in (rock.inner)
+            .iter()
+            .copied()
+            .rev()
+            .chain(std::iter::repeat(0u8).take(altitude))
+        {
+            writeln!(f, "{row:07b}")?;
+        }
+        Ok(())
+    }
+}
 
 #[derive(Clone, Copy)]
 enum Jet {
@@ -62,78 +71,151 @@ impl TryFrom<char> for Jet {
     }
 }
 
-// TODO: store each row as an bitmask
-// Since we've got 7 cols, each row is u8, which can in turn be mapped to an ASCII char
 // TODO: store already seen states (n highest rows + curr rock + curr jetstream )
 // into a HashSet, and terminate after having found a state already seen
 // after that, see how many rows were added during the cycle, and calculate
 // the total num of rows after `num_rounds` rounds based on that
+/// possible reasons for why rock couldn't be pushed
+/// when using `try_push_left`/`try_push_right`/`try_fall`
+#[derive(Debug, PartialEq, Eq)]
+enum PushRockErr {
+    /// the rock would be out of chamber bounds
+    OutOfBounds,
+    /// the rock would overlap with an already existing rock
+    Conflict,
+}
+
 #[derive(Default)]
 struct Chamber {
-    width: u8,
-    height: usize,
-    occupied_points: HashSet<Pos>,
+    occupied_points: Vec<u8>,
 }
 
 impl Chamber {
-    fn new(width: u8) -> Self {
-        Self {
-            width,
-            ..Default::default()
+    fn new() -> Self {
+        Self::default()
+    }
+
+    #[inline]
+    fn height(&self) -> usize {
+        self.occupied_points.len()
+    }
+
+    fn new_raa(&self, rock: Rock) -> RockAtAltitude {
+        RockAtAltitude {
+            rock,
+            altitude: self.height() + 3,
         }
     }
 
-    fn contains(&self, q: &Pos) -> bool {
-        self.occupied_points.contains(q)
+    fn contains(&self, &RockAtAltitude { rock, altitude }: &RockAtAltitude) -> bool {
+        if self.height() < altitude {
+            return false;
+        }
+        let occupied_rows = &self.occupied_points[altitude..];
+        let rock_rows = &rock.inner;
+        occupied_rows.iter().zip(rock_rows).any(|(o, r)| o & r != 0)
     }
 
-    fn trim_to(&mut self, height_to_trim_to: usize) {
-        self.occupied_points
-            .retain(|point| point.1 > self.height - height_to_trim_to);
+    fn try_push_left(
+        &self,
+        raa @ &mut RockAtAltitude { rock, altitude }: &mut RockAtAltitude,
+    ) -> Result<(), PushRockErr> {
+        if rock.inner.iter().any(|row| (row & (1 << (7 - 1))) != 0) {
+            return Err(PushRockErr::OutOfBounds); // already at left-most column
+        }
+
+        let pushed = RockAtAltitude {
+            rock: Rock {
+                inner: rock.inner.map(|row| row << 1),
+                ..rock
+            },
+            altitude,
+        };
+        if self.contains(&pushed) {
+            return Err(PushRockErr::Conflict);
+        }
+        *raa = pushed;
+        Ok(())
+    }
+
+    fn try_push_right(
+        &self,
+        raa @ &mut RockAtAltitude { rock, altitude }: &mut RockAtAltitude,
+    ) -> Result<(), PushRockErr> {
+        if rock.inner.iter().any(|row| (row & 1) != 0) {
+            return Err(PushRockErr::OutOfBounds); // already at right-most column
+        }
+
+        let pushed = RockAtAltitude {
+            rock: Rock {
+                inner: rock.inner.map(|row| row >> 1),
+                ..rock
+            },
+            altitude,
+        };
+        if self.contains(&pushed) {
+            return Err(PushRockErr::Conflict);
+        }
+        *raa = pushed;
+        Ok(())
+    }
+
+    fn try_fall(
+        &self,
+        raa @ &mut RockAtAltitude { rock, altitude }: &mut RockAtAltitude,
+    ) -> Result<(), PushRockErr> {
+        if altitude == 0 {
+            return Err(PushRockErr::OutOfBounds); // already on the bottom
+        }
+
+        let fallen = RockAtAltitude {
+            rock,
+            altitude: altitude - 1,
+        };
+        if self.contains(&fallen) {
+            return Err(PushRockErr::Conflict);
+        }
+        *raa = fallen;
+        Ok(())
+    }
+
+    fn trim(&mut self) {
+        let _ = self
+            .occupied_points
+            .split_off(self.height() - Self::HEIGHT_TO_TRIM_TO);
     }
 
     const MAX_HEIGHT_BEFORE_TRIMMING: usize = 1024 * 1024 * 1024;
     const HEIGHT_TO_TRIM_TO: usize = 512;
-    #[allow(clippy::cast_lossless)]
-    fn add_rock(&mut self, rock: Rock, rock_position_relative: Pos) {
-        self.occupied_points
-            .extend(&rock.points.map(|point| point + rock_position_relative));
-        self.height = std::cmp::max(self.height, rock_position_relative.1 + rock.height as usize);
-        if self.height > Self::MAX_HEIGHT_BEFORE_TRIMMING {
-            self.trim_to(Self::HEIGHT_TO_TRIM_TO);
+    fn add(&mut self, RockAtAltitude { rock, altitude }: RockAtAltitude) {
+        let rh = rock.height as usize;
+        for h in 0..rh {
+            if let Some(row) = self.occupied_points.get_mut(altitude + h) {
+                *row |= rock.inner[h];
+            } else {
+                self.occupied_points.extend(&rock.inner[h..rh]);
+                break;
+            }
         }
-    }
 
-    fn height(&self) -> usize {
-        self.height
+        if self.height() > Self::MAX_HEIGHT_BEFORE_TRIMMING {
+            self.trim();
+        }
     }
 }
 
 impl Display for Chamber {
-    #[allow(clippy::cast_possible_truncation)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let height = std::cmp::min(20, self.height);
-
-        let mut res = String::with_capacity(height * self.width as usize);
-        for y in (0..=height).rev() {
-            for x in 0..=self.width {
-                let point = Point2D(x, y);
-                let repr = if self.occupied_points.contains(&point) {
-                    '#'
-                } else {
-                    '.'
-                };
-                res.push(repr);
-            }
-            res.push('\n');
+        for y in (0..self.height()).rev().take(20) {
+            writeln!(f, "{:07b}", self.occupied_points[y])?;
         }
 
-        write!(f, "{res}")
+        Ok(())
     }
 }
 
 fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
-    let mut chamber = Chamber::new(7);
+    let mut chamber = Chamber::new();
 
     let rocks = ROCKS.into_iter().cycle().take(num_rounds);
 
@@ -147,56 +229,24 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
     };
 
     for rock in rocks {
-        let spawn_height = chamber.height() + 3;
-        let mut rock_position_relative = Point2D(2, spawn_height);
+        let mut raa = chamber.new_raa(rock);
+
         loop {
             // eprintln!("{chamber}\n");
             // jet stream
-            match pushes.next().unwrap() {
-                Jet::Left => {
-                    if rock_position_relative.0 > 0
-                        && rock
-                            .points
-                            .iter()
-                            .map(|&point| point + rock_position_relative)
-                            .map(|Point2D(x, y)| Point2D(x - 1, y))
-                            .all(|point| !chamber.contains(&point))
-                    {
-                        rock_position_relative.0 -= 1;
-                    }
-                }
-                Jet::Right => {
-                    if rock_position_relative.0 + rock.width < chamber.width
-                        && rock
-                            .points
-                            .iter()
-                            .map(|&point| point + rock_position_relative)
-                            .map(|Point2D(x, y)| Point2D(x + 1, y))
-                            .all(|point| !chamber.contains(&point))
-                    {
-                        rock_position_relative.0 += 1;
-                    }
-                }
+            // don't care if couldn't be pushed sideways
+            let _ = match pushes.next().unwrap() {
+                Jet::Left => chamber.try_push_left(&mut raa),
+                Jet::Right => chamber.try_push_right(&mut raa),
+            };
+
+            if chamber.try_fall(&mut raa).is_ok() {
+                continue;
             }
-            // come to rest if:
-            // 1) arrived at the lowest point
-            if rock_position_relative.1 == 0 {
-                chamber.add_rock(rock, rock_position_relative);
-                break;
-            }
-            // 2) there's a rock point directly underneath
-            let rock_stops = rock
-                .points
-                .iter()
-                .map(|&point| point + rock_position_relative)
-                .map(|Point2D(x, y)| Point2D(x, y - 1))
-                .any(|point| chamber.contains(&point));
-            if rock_stops {
-                chamber.add_rock(rock, rock_position_relative);
-                break;
-                //fall
-            }
-            rock_position_relative.1 -= 1;
+
+            // otherwise, come to rest
+            chamber.add(raa);
+            break;
         }
     }
     Ok(chamber.height())
