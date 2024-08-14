@@ -235,7 +235,7 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
             // eprintln!("{chamber}\n");
             // jet stream
             // don't care if couldn't be pushed sideways
-            let _ = match pushes.next().unwrap() {
+            let _ = match pushes.next().expect("`pushes` is a cycle, so won't end") {
                 Jet::Left => chamber.try_push_left(&mut raa),
                 Jet::Right => chamber.try_push_right(&mut raa),
             };
