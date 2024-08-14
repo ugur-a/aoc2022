@@ -117,20 +117,18 @@ impl FromStr for SensorsWithDistances {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let sensors_with_distances = s
-            .parse::<SensorsWithBeacons>()?
+        let sensors_with_distances: HashMap<Point2D<i32>, u32> = SensorsWithBeacons::from_str(s)?
             .par_iter()
             .map(|(sensor_coords, beacon_coords)| {
                 let distance = sensor_coords.manhattan_distance(*beacon_coords);
                 (*sensor_coords, distance)
             })
-            .collect::<HashMap<_, _>>();
+            .collect();
 
         Ok(Self(sensors_with_distances))
     }
 }
 
-#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 pub fn p2(file: &str, search_space_side_size: i32) -> anyhow::Result<u64> {
     let sensors_with_distances = SensorsWithDistances::from_str(file)?;
@@ -155,8 +153,8 @@ pub fn p2(file: &str, search_space_side_size: i32) -> anyhow::Result<u64> {
                 .chain(left_lower)
                 .collect_vec()
         })
-        .filter(|(x, y)| {
-            0 <= *x && *x <= search_space_side_size && 0 <= *y && *y <= search_space_side_size
+        .filter(|&(x, y)| {
+            0 <= x && x <= search_space_side_size && 0 <= y && y <= search_space_side_size
         })
         .map(Point2D::from)
         .find_any(|point| {
