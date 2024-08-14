@@ -101,12 +101,10 @@ fn all_points_between_two_points(
     if y1 == y2 {
         let res = (min(x1, x2)..=max(x1, x2))
             .zip(repeat(y1))
-            .map(|(x, y)| Point2D(x, y));
+            .map(Point2D::from);
         Ok(Box::new(res))
     } else if x1 == x2 {
-        let res = repeat(x1)
-            .zip(min(y1, y2)..=max(y1, y2))
-            .map(|(x, y)| Point2D(x, y));
+        let res = repeat(x1).zip(min(y1, y2)..=max(y1, y2)).map(Point2D::from);
         Ok(Box::new(res))
     } else {
         bail!("points are not on a line: {p1:#?}, {p2:#?}");

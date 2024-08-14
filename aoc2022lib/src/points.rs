@@ -6,6 +6,12 @@ use std::{
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Default)]
 pub struct Point2D<T, U = T>(pub T, pub U);
 
+impl<T, U> From<(T, U)> for Point2D<T, U> {
+    fn from((t, u): (T, U)) -> Self {
+        Self(t, u)
+    }
+}
+
 impl<T: Debug, U: Debug> Debug for Point2D<T, U> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("P").field(&self.0).field(&self.1).finish()
@@ -41,6 +47,12 @@ where
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Default, Debug)]
 pub struct Point3D<T, U = T, V = T>(pub T, pub U, pub V);
 
+impl<T, U, V> From<(T, U, V)> for Point3D<T, U, V> {
+    fn from((t, u, v): (T, U, V)) -> Self {
+        Self(t, u, v)
+    }
+}
+
 impl<T, U, V> Point3D<T, U, V>
 where
     T: Add<Output = T> + Sub<Output = T> + From<i8> + Copy,
@@ -57,7 +69,7 @@ where
             (x, y - 1.into(), z),
             (x, y, z - 1.into()),
         ]
-        .map(|(x, y, z)| Self(x, y, z))
+        .map(Self::from)
     }
 }
 

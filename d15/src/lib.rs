@@ -158,7 +158,7 @@ pub fn p2(file: &str, search_space_side_size: i32) -> anyhow::Result<u64> {
         .filter(|(x, y)| {
             0 <= *x && *x <= search_space_side_size && 0 <= *y && *y <= search_space_side_size
         })
-        .map(|(x, y)| Point2D(x, y))
+        .map(Point2D::from)
         .find_any(|point| {
             sensors_with_distances
                 .par_iter()
