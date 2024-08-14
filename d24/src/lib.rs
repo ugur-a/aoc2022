@@ -72,11 +72,8 @@ impl FromStr for Valley {
             - 2;
         let height = s.lines().count() - 2;
 
-        let mut blizzards = Vec::with_capacity(
-            s.chars()
-                .filter(|c| ['>', '<', '^', 'v'].contains(c))
-                .count(),
-        );
+        let n_blizzards = s.chars().filter(|c| "><^v".contains(*c)).count();
+        let mut blizzards = Vec::with_capacity(n_blizzards);
 
         for (y, line) in s.lines().skip(1).enumerate() {
             for (x, char) in line.chars().skip(1).enumerate() {
