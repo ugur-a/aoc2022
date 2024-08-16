@@ -71,12 +71,6 @@ impl TryFrom<char> for Jet {
     }
 }
 
-// TODO: store already seen states (n highest rows + curr rock + curr jetstream )
-// into a HashSet, and terminate after having found a state already seen
-// after that, see how many rows were added during the cycle, and calculate
-// the total num of rows after `num_rounds` rounds based on that
-/// possible reasons for why rock couldn't be pushed
-/// when using `try_push_left`/`try_push_right`/`try_fall`
 #[derive(Debug, PartialEq, Eq)]
 enum PushRockErr {
     /// the rock would be out of chamber bounds
@@ -179,14 +173,6 @@ impl Chamber {
         Ok(())
     }
 
-    fn trim(&mut self) {
-        let _ = self
-            .occupied_points
-            .split_off(self.height() - Self::HEIGHT_TO_TRIM_TO);
-    }
-
-    const MAX_HEIGHT_BEFORE_TRIMMING: usize = 1024 * 1024 * 1024;
-    const HEIGHT_TO_TRIM_TO: usize = 512;
     fn add(&mut self, RockAtAltitude { rock, altitude }: RockAtAltitude) {
         let rh = rock.height as usize;
         for h in 0..rh {
@@ -197,10 +183,17 @@ impl Chamber {
                 break;
             }
         }
+    }
 
-        if self.height() > Self::MAX_HEIGHT_BEFORE_TRIMMING {
-            self.trim();
-        }
+    /// how many previous rows of the chamber are saved
+    const HIST_SIZE: usize = 300;
+    fn snapshot(&self) -> Box<[u8]> {
+        self.occupied_points
+            .iter()
+            .rev()
+            .take(Self::HIST_SIZE)
+            .copied()
+            .collect()
     }
 }
 
@@ -217,7 +210,7 @@ impl Display for Chamber {
 fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
     let mut chamber = Chamber::new();
 
-    let rocks = ROCKS.into_iter().cycle().take(num_rounds);
+    let mut rocks = ROCKS.into_iter().enumerate().cycle();
 
     let mut pushes = {
         let mut pushes = Vec::with_capacity(file.len());
@@ -225,17 +218,22 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
             let j = Jet::try_from(c)?;
             pushes.push(j);
         }
-        pushes.into_iter().cycle()
+        pushes.into_iter().enumerate().cycle()
     };
 
-    for rock in rocks {
+    let mut heights_after_rounds = Vec::new();
+    let mut seen_states = HashMap::new();
+
+    for round_i in 0..num_rounds {
+        let (rock_i, rock) = rocks.next().expect("`rocks` is a cycle, so won't end");
         let mut raa = chamber.new_raa(rock);
 
         loop {
             // eprintln!("{chamber}\n");
             // jet stream
             // don't care if couldn't be pushed sideways
-            let _ = match pushes.next().expect("`pushes` is a cycle, so won't end") {
+            let (jet_i, jet) = pushes.next().expect("`pushes` is a cycle, so won't end");
+            let _ = match jet {
                 Jet::Left => chamber.try_push_left(&mut raa),
                 Jet::Right => chamber.try_push_right(&mut raa),
             };
@@ -246,9 +244,60 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
 
             // otherwise, come to rest
             chamber.add(raa);
-            break;
+            heights_after_rounds.push(chamber.height());
+
+            // check whether a similar (modulo hist_size) state was achieved before
+            let k = (rock_i, jet_i, chamber.snapshot());
+            match seen_states.get(&k) {
+                None => {
+                    seen_states.insert(k, round_i);
+                    break;
+                }
+                Some(&prev_round_i) => {
+                    // no need to run the actual simulation any further
+
+                    // calculate the height after num_rounds by extrapolating:
+                    //
+                    // rounds are in one of 3 parts:
+                    // - before the first cycle: every state seen so far has been unique
+                    // - during cycles: starting from a state, after `n` rounds the same state is achieved (modulo hist_size)
+                    //   this is repeated as long as `n` fits in remaining rounds
+                    // - after last cycle: the remaining `m` rounds that happen after the last full cycle is made
+                    //   this repeats the `m` first rounds of a cycle
+                    //
+                    // with this, the total height after `num_rounds` can be calculated by adding up:
+                    // - height gathered before the first cycle
+                    // - height/cycle * #cycles
+                    // - height gathered after the last cycle
+                    //   since this part repeats a regular cycle up to `m` rounds,
+                    //   the gathered height can be looked up in `heights_after_rounds`
+                    let rounds_at_start_1st_cycle = prev_round_i;
+                    let rounds_at_start_2nd_cycle = round_i;
+                    let d_rounds_per_cycle = rounds_at_start_2nd_cycle - rounds_at_start_1st_cycle;
+
+                    let n_cycles = (num_rounds - rounds_at_start_1st_cycle) / d_rounds_per_cycle;
+
+                    let d_rounds_after_cycles =
+                        (num_rounds - rounds_at_start_1st_cycle) % d_rounds_per_cycle;
+
+                    let h_at_start_1st_cycle = heights_after_rounds[rounds_at_start_1st_cycle];
+                    let h_at_start_2nd_cycle = heights_after_rounds[rounds_at_start_2nd_cycle];
+                    let d_h_per_cycle = h_at_start_2nd_cycle - h_at_start_1st_cycle;
+
+                    let d_h_after_cycles = heights_after_rounds
+                        [rounds_at_start_1st_cycle + d_rounds_after_cycles - 1]
+                        - h_at_start_1st_cycle;
+
+                    let h_after_cycles =
+                        h_at_start_1st_cycle + d_h_per_cycle * n_cycles + d_h_after_cycles;
+
+                    return Ok(h_after_cycles);
+                }
+            }
         }
     }
+    // if hasn't encountered any cycles during the entire simulation (can't happen in d17)
+    // just return the final height
     Ok(chamber.height())
 }
 
