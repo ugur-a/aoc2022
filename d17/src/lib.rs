@@ -228,7 +228,7 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
         let (rock_i, rock) = rocks.next().expect("`rocks` is a cycle, so won't end");
         let mut raa = chamber.new_raa(rock);
 
-        loop {
+        'falling: loop {
             // eprintln!("{chamber}\n");
             // jet stream
             // don't care if couldn't be pushed sideways
@@ -239,7 +239,7 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
             };
 
             if chamber.try_fall(&mut raa).is_ok() {
-                continue;
+                continue 'falling;
             }
 
             // otherwise, come to rest
