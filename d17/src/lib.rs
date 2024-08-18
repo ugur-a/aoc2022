@@ -229,7 +229,6 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
         let mut raa = chamber.new_raa(rock);
 
         'falling: loop {
-            // eprintln!("{chamber}\n");
             // jet stream
             // don't care if couldn't be pushed sideways
             let (jet_i, jet) = pushes.next().expect("`pushes` is a cycle, so won't end");
@@ -301,10 +300,6 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
     Ok(chamber.height())
 }
 
-pub fn p_mid(file: &str) -> anyhow::Result<usize> {
-    tetris(file, 1_000_000)
-}
-
 pub fn p1(file: &str) -> anyhow::Result<usize> {
     tetris(file, 2022)
 }
@@ -369,15 +364,8 @@ mod tests {
         assert_eq!(p2(&inp).unwrap(), 1_514_285_714_288);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
-    }
-
-    #[test]
-    fn test_p_mid() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p_mid(&inp).unwrap(), 1_602_842);
+        assert_eq!(p2(&inp).unwrap(), 1_602_881_844_347);
     }
 }
