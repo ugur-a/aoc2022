@@ -317,7 +317,42 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
 mod tests {
     use super::*;
     use std::fs::read_to_string;
+    use PushRockErr::OutOfBounds as Oob;
 
+    #[test]
+    fn try_push_sideways() {
+        let chamber = Chamber::new();
+        let rock = ROCKS[0];
+        let mut raa = chamber.new_raa(rock);
+
+        assert_eq!(chamber.try_push_right(&mut raa), Ok(()));
+        assert_eq!(raa.rock.inner, [15, 0, 0, 0]);
+        assert_eq!(chamber.try_push_right(&mut raa), Err(Oob));
+        assert_eq!(raa.rock.inner, [15, 0, 0, 0]);
+        assert_eq!(chamber.try_push_left(&mut raa), Ok(()));
+        assert_eq!(raa.rock.inner, [30, 0, 0, 0]);
+        assert_eq!(chamber.try_push_left(&mut raa), Ok(()));
+        assert_eq!(raa.rock.inner, [60, 0, 0, 0]);
+        assert_eq!(chamber.try_push_left(&mut raa), Ok(()));
+        assert_eq!(raa.rock.inner, [120, 0, 0, 0]);
+        assert_eq!(chamber.try_push_left(&mut raa), Err(Oob));
+        assert_eq!(raa.rock.inner, [120, 0, 0, 0]);
+    }
+    #[test]
+    fn try_fall() {
+        let chamber = Chamber::new();
+        let rock = ROCKS[0];
+        let mut raa = chamber.new_raa(rock);
+
+        assert_eq!(chamber.try_fall(&mut raa), Ok(()));
+        assert_eq!(raa.altitude, 2);
+        assert_eq!(chamber.try_fall(&mut raa), Ok(()));
+        assert_eq!(raa.altitude, 1);
+        assert_eq!(chamber.try_fall(&mut raa), Ok(()));
+        assert_eq!(raa.altitude, 0);
+        assert_eq!(chamber.try_fall(&mut raa), Err(Oob));
+        assert_eq!(raa.altitude, 0);
+    }
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/test.txt").unwrap();
