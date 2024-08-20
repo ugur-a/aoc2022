@@ -25,7 +25,7 @@ macro_rules! impl_from_str_from_nom_parser {
 }
 
 #[macro_export]
-macro_rules! impl_from_str_for_obj_with_lieftimes_from_nom_parser {
+macro_rules! impl_from_str_for_obj_with_lifetimes_from_nom_parser {
     ($fn:ident, $obj:ident) => {
         impl<'input, 'output> TryFrom<&'input str> for $obj<'output>
         where

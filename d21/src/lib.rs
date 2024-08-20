@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::{bail, Context};
-use aoc2022lib::impl_from_str_for_obj_with_lieftimes_from_nom_parser;
+use aoc2022lib::impl_from_str_for_obj_with_lifetimes_from_nom_parser;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
@@ -106,7 +106,7 @@ fn monkey(i: &str) -> IResult<&str, Monkey> {
     })(i)
 }
 
-impl_from_str_for_obj_with_lieftimes_from_nom_parser!(monkey, Monkey);
+impl_from_str_for_obj_with_lifetimes_from_nom_parser!(monkey, Monkey);
 
 struct Monkeys<'a> {
     monkeys: HashMap<Name<'a>, Job<'a>>,
