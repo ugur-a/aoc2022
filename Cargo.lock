@@ -196,6 +196,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "aoc2022lib",
+ "itertools",
  "nom",
  "pathfinding",
  "petgraph",

@@ -1,5 +1,6 @@
 use anyhow::{anyhow, ensure, Context};
 use aoc2022lib::impl_from_str_for_obj_with_lifetimes_from_nom_parser;
+use itertools::Itertools;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -56,10 +57,10 @@ fn valve(i: &str) -> IResult<&str, Valve> {
 
 impl_from_str_for_obj_with_lifetimes_from_nom_parser!(valve, Valve);
 
-pub fn p1(file: &str) -> anyhow::Result<u32> {
-    const START_VALVE: &str = "AA";
-    const TIME_LIMIT: u32 = 30;
+const START_VALVE: &str = "AA";
+const TIME_LIMIT: u32 = 30;
 
+pub fn p1(file: &str) -> anyhow::Result<u32> {
     let valves = {
         let mut res = Vec::with_capacity(file.lines().count());
         for line in file.lines() {
@@ -136,8 +137,113 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
 
     Ok(total_releasable_pressure - total_pressure_unreleased)
 }
-pub fn p2(_file: &str) -> anyhow::Result<u32> {
-    todo!()
+
+pub fn p2(file: &str) -> anyhow::Result<u32> {
+    const START_TIME: u32 = 4;
+
+    let valves = {
+        let mut res = Vec::with_capacity(file.lines().count());
+        for line in file.lines() {
+            let valve = Valve::try_from(line)?;
+            res.push(valve);
+        }
+        res
+    };
+
+    let gr = UnGraphMap::<_, ()>::from_edges(valves.iter().flat_map(|v| {
+        v.neighbours
+            .iter()
+            .map(move |&neighbour| (v.name, neighbour))
+    }));
+
+    let apsp = floyd_warshall(&gr, |_| 1u32).map_err(|_| anyhow!("Negative cycle"))?;
+
+    let valve_flows: HashMap<_, _> = valves
+        .into_iter()
+        .filter(|v| v.flow_rate != 0)
+        .map(|v| (v.name, v.flow_rate))
+        .collect();
+
+    let openable_valve_names: Vec<_> = valve_flows.keys().copied().collect();
+
+    // it's always the best for each one to open half the valves
+    // if #openable_valves is odd, can just consider the case where you open one less valve,
+    // since opening one more valve will be exactly what the elephant does
+    let n_valves_you = openable_valve_names.len() / 2;
+
+    let total_pressure_unreleased = (openable_valve_names.iter().copied())
+        .combinations(n_valves_you)
+        .map(|you_valves| {
+            let elep_valves = openable_valve_names
+                .iter()
+                .filter(|v| !you_valves.contains(v))
+                .copied()
+                .collect_vec();
+
+            let total_pressure_unreleased: u32 = [you_valves, elep_valves]
+                .into_iter()
+                .map(|valves| {
+                    let (_path, half_pressure_unreleased) = dijkstra::dijkstra(
+                        &(START_VALVE, START_TIME, valves),
+                        |&(valve, time, ref closed_valves)| {
+                            let pressure_opportunity_cost =
+                                closed_valves.iter().map(|cv| valve_flows[cv]).sum::<u32>();
+
+                            let res: Vec<_> = (0..closed_valves.len())
+                                .filter_map(|i| {
+                                    let neighbour = closed_valves[i];
+
+                                    // time to reach the valve _and_ open it
+                                    let dtime = apsp[&(valve, neighbour)] + 1;
+
+                                    if time + dtime > TIME_LIMIT {
+                                        return None;
+                                    }
+
+                                    let (neighbour, closed_valves_left) = {
+                                        let mut cv = closed_valves.clone();
+                                        let neighbour = cv.remove(i);
+                                        (neighbour, cv)
+                                    };
+
+                                    Some((
+                                        (neighbour, time + dtime, closed_valves_left),
+                                        dtime * pressure_opportunity_cost,
+                                    ))
+                                })
+                                .collect();
+
+                            if res.is_empty() {
+                                let dtime = TIME_LIMIT - time;
+                                // can't reach anything, so just stay in place until the end
+                                // must include this successor, since this may be (and indeed is, in `real`)
+                                // a part of the optimal solution
+                                vec![(
+                                    (valve, TIME_LIMIT, closed_valves.clone()),
+                                    dtime * pressure_opportunity_cost,
+                                )]
+                            } else {
+                                res
+                            }
+                        },
+                        |&(_, time, ref closed_valves)| {
+                            closed_valves.is_empty() || time == TIME_LIMIT
+                        },
+                    )
+                    .unwrap();
+
+                    half_pressure_unreleased
+                })
+                .sum();
+            total_pressure_unreleased
+        })
+        .min()
+        .unwrap();
+
+    let total_releasable_pressure =
+        (TIME_LIMIT - START_TIME) * valve_flows.into_values().sum::<u32>();
+
+    Ok(total_releasable_pressure - total_pressure_unreleased)
 }
 
 #[cfg(test)]
@@ -161,9 +267,8 @@ mod tests {
         assert_eq!(p2(&inp).unwrap(), 1707);
     }
     #[test]
-    #[ignore]
     fn real_p2() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+        assert_eq!(p2(&inp).unwrap(), 2615);
     }
 }

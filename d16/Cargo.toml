@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow.workspace = true
 aoc2022lib.workspace = true
+itertools.workspace = true
 nom.workspace = true
 pathfinding.workspace = true
 
