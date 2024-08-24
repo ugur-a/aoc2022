@@ -60,6 +60,83 @@ impl_from_str_for_obj_with_lifetimes_from_nom_parser!(valve, Valve);
 const START_VALVE: &str = "AA";
 const TIME_LIMIT: u32 = 30;
 
+#[derive(Clone, PartialEq, Eq, Hash)]
+struct State<'a> {
+    valve: &'a str,
+    time: u32,
+    closed_valves: Vec<&'a str>,
+}
+
+impl<'a> State<'a> {
+    fn start(time: u32, closed_valves: Vec<&'a str>) -> Self {
+        Self {
+            valve: START_VALVE,
+            time,
+            closed_valves,
+        }
+    }
+    fn successors(
+        &self,
+        apsp: &HashMap<(&str, &str), u32>,
+        valve_flows: &HashMap<&str, u32>,
+    ) -> Vec<(Self, u32)> {
+        let &Self {
+            valve,
+            time,
+            ref closed_valves,
+        } = self;
+        let pressure_opportunity_cost = closed_valves.iter().map(|cv| valve_flows[cv]).sum::<u32>();
+
+        let res: Vec<_> = (0..closed_valves.len())
+            .filter_map(|i| {
+                let neighbour = closed_valves[i];
+
+                // time to reach the valve _and_ open it
+                let dtime = apsp[&(valve, neighbour)] + 1;
+
+                if time + dtime > TIME_LIMIT {
+                    return None;
+                }
+
+                let (neighbour, closed_valves_left) = {
+                    let mut cv = closed_valves.clone();
+                    let neighbour = cv.remove(i);
+                    (neighbour, cv)
+                };
+
+                Some((
+                    Self {
+                        valve: neighbour,
+                        time: time + dtime,
+                        closed_valves: closed_valves_left,
+                    },
+                    dtime * pressure_opportunity_cost,
+                ))
+            })
+            .collect();
+
+        if res.is_empty() {
+            let dtime = TIME_LIMIT - time;
+            // can't reach anything, so just stay in place until the end
+            // must include this successor, since this may be (and indeed is, in `real`)
+            // a part of the optimal solution
+            vec![(
+                Self {
+                    valve,
+                    time: TIME_LIMIT,
+                    closed_valves: closed_valves.clone(),
+                },
+                dtime * pressure_opportunity_cost,
+            )]
+        } else {
+            res
+        }
+    }
+    fn success(&self) -> bool {
+        self.closed_valves.is_empty() || self.time == TIME_LIMIT
+    }
+}
+
 pub fn p1(file: &str) -> anyhow::Result<u32> {
     let valves = {
         let mut res = Vec::with_capacity(file.lines().count());
@@ -87,49 +164,9 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
     let openable_valve_names: Vec<_> = valve_flows.keys().copied().collect();
 
     let (_path, total_pressure_unreleased) = dijkstra::dijkstra(
-        &(START_VALVE, 0, openable_valve_names),
-        |&(valve, time, ref closed_valves)| {
-            let pressure_opportunity_cost =
-                closed_valves.iter().map(|cv| valve_flows[cv]).sum::<u32>();
-
-            let res: Vec<_> = (0..closed_valves.len())
-                .filter_map(|i| {
-                    let neighbour = closed_valves[i];
-
-                    // time to reach the valve _and_ open it
-                    let dtime = apsp[&(valve, neighbour)] + 1;
-
-                    if time + dtime > TIME_LIMIT {
-                        return None;
-                    }
-
-                    let (neighbour, closed_valves_left) = {
-                        let mut cv = closed_valves.clone();
-                        let neighbour = cv.remove(i);
-                        (neighbour, cv)
-                    };
-
-                    Some((
-                        (neighbour, time + dtime, closed_valves_left),
-                        dtime * pressure_opportunity_cost,
-                    ))
-                })
-                .collect();
-
-            if res.is_empty() {
-                let dtime = TIME_LIMIT - time;
-                // can't reach anything, so just stay in place until the end
-                // must include this successor, since this may be (and indeed is, in `real`)
-                // a part of the optimal solution
-                vec![(
-                    (valve, TIME_LIMIT, closed_valves.clone()),
-                    dtime * pressure_opportunity_cost,
-                )]
-            } else {
-                res
-            }
-        },
-        |&(_, time, ref closed_valves)| closed_valves.is_empty() || time == TIME_LIMIT,
+        &State::start(0, openable_valve_names),
+        |state| state.successors(&apsp, &valve_flows),
+        State::success,
     )
     .context("no path")?;
 
@@ -184,51 +221,9 @@ pub fn p2(file: &str) -> anyhow::Result<u32> {
                 .into_iter()
                 .map(|valves| {
                     let (_path, half_pressure_unreleased) = dijkstra::dijkstra(
-                        &(START_VALVE, START_TIME, valves),
-                        |&(valve, time, ref closed_valves)| {
-                            let pressure_opportunity_cost =
-                                closed_valves.iter().map(|cv| valve_flows[cv]).sum::<u32>();
-
-                            let res: Vec<_> = (0..closed_valves.len())
-                                .filter_map(|i| {
-                                    let neighbour = closed_valves[i];
-
-                                    // time to reach the valve _and_ open it
-                                    let dtime = apsp[&(valve, neighbour)] + 1;
-
-                                    if time + dtime > TIME_LIMIT {
-                                        return None;
-                                    }
-
-                                    let (neighbour, closed_valves_left) = {
-                                        let mut cv = closed_valves.clone();
-                                        let neighbour = cv.remove(i);
-                                        (neighbour, cv)
-                                    };
-
-                                    Some((
-                                        (neighbour, time + dtime, closed_valves_left),
-                                        dtime * pressure_opportunity_cost,
-                                    ))
-                                })
-                                .collect();
-
-                            if res.is_empty() {
-                                let dtime = TIME_LIMIT - time;
-                                // can't reach anything, so just stay in place until the end
-                                // must include this successor, since this may be (and indeed is, in `real`)
-                                // a part of the optimal solution
-                                vec![(
-                                    (valve, TIME_LIMIT, closed_valves.clone()),
-                                    dtime * pressure_opportunity_cost,
-                                )]
-                            } else {
-                                res
-                            }
-                        },
-                        |&(_, time, ref closed_valves)| {
-                            closed_valves.is_empty() || time == TIME_LIMIT
-                        },
+                        &State::start(START_TIME, valves),
+                        |state| state.successors(&apsp, &valve_flows),
+                        State::success,
                     )
                     .unwrap();
 
