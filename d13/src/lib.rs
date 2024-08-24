@@ -111,9 +111,9 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::read_to_string;
     use test_case::test_case;
     use Item::{Integer as I, List as L};
-    use std::fs::read_to_string;
 
     #[test_case(I(5), I(6))]
     #[test_case(I(5), L(vec![I(6)]); "Integer VS List")]
