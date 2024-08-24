@@ -51,15 +51,10 @@ impl FromStr for Map {
         let height = s.lines().count();
         let width = s.lines().map(str::len).max().context("input is empty")?;
 
-        let map = {
-            s.lines()
-                .map(|line| {
-                    line.chars()
-                        .map(Point::try_from)
-                        .collect::<Result<Vec<_>, _>>()
-                })
-                .collect::<Result<Vec<_>, _>>()?
-        };
+        let map: Vec<Vec<_>> = s
+            .lines()
+            .map(|line| line.chars().map(Point::try_from).try_collect())
+            .try_collect()?;
 
         Ok(Self {
             height,

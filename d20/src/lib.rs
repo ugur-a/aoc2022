@@ -1,5 +1,5 @@
 use anyhow::Context;
-use std::str::FromStr;
+use itertools::Itertools;
 
 struct Number {
     value: i64,
@@ -38,16 +38,11 @@ impl Mix for Vec<Number> {
 }
 
 pub fn p1(file: &str) -> anyhow::Result<i64> {
-    let mut numbers: Vec<Number> = {
-        let mut numbers = Vec::with_capacity(file.lines().count());
-
-        for (idx, line) in file.lines().enumerate() {
-            let num = line.parse()?;
-            let num = Number::new(num, idx);
-            numbers.push(num);
-        }
-        numbers
-    };
+    let mut numbers: Vec<Number> = file
+        .lines()
+        .enumerate()
+        .map(|(idx, n)| n.parse().map(|n| Number::new(n, idx)))
+        .try_collect()?;
 
     numbers.mix()?;
 
@@ -72,13 +67,9 @@ pub fn p2(file: &str) -> anyhow::Result<i64> {
 
     let mut numbers: Vec<Number> = file
         .lines()
-        .map(i64::from_str)
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .map(|n| decryption_key * n)
         .enumerate()
-        .map(|(idx, n)| Number::new(n, idx))
-        .collect();
+        .map(|(i, n)| n.parse().map(|n: i64| Number::new(decryption_key * n, i)))
+        .try_collect()?;
 
     for _ in 0..num_mixes {
         numbers.mix()?;

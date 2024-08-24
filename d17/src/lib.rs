@@ -1,4 +1,5 @@
 use anyhow::bail;
+use itertools::Itertools;
 use std::{collections::HashMap, fmt::Display};
 
 #[derive(Clone, Copy)]
@@ -213,11 +214,7 @@ fn tetris(file: &str, num_rounds: usize) -> anyhow::Result<usize> {
     let mut rocks = ROCKS.into_iter().enumerate().cycle();
 
     let mut pushes = {
-        let mut pushes = Vec::with_capacity(file.len());
-        for c in file.trim_end().chars() {
-            let j = Jet::try_from(c)?;
-            pushes.push(j);
-        }
+        let pushes: Vec<_> = file.trim_end().chars().map(Jet::try_from).try_collect()?;
         pushes.into_iter().enumerate().cycle()
     };
 

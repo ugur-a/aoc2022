@@ -57,10 +57,7 @@ impl FromStr for Cave {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let paths = s
-            .lines()
-            .map(Path::from_str)
-            .collect::<Result<Vec<_>, _>>()?;
+        let paths: Vec<_> = s.lines().map(Path::from_str).try_collect()?;
 
         let borders = {
             let (left, right) = paths

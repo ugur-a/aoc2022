@@ -138,14 +138,7 @@ impl<'a> State<'a> {
 }
 
 pub fn p1(file: &str) -> anyhow::Result<u32> {
-    let valves = {
-        let mut res = Vec::with_capacity(file.lines().count());
-        for line in file.lines() {
-            let valve = Valve::try_from(line)?;
-            res.push(valve);
-        }
-        res
-    };
+    let valves: Vec<_> = file.lines().map(Valve::try_from).try_collect()?;
 
     let gr = UnGraphMap::<_, ()>::from_edges(valves.iter().flat_map(|v| {
         v.neighbours
@@ -178,14 +171,7 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
 pub fn p2(file: &str) -> anyhow::Result<u32> {
     const START_TIME: u32 = 4;
 
-    let valves = {
-        let mut res = Vec::with_capacity(file.lines().count());
-        for line in file.lines() {
-            let valve = Valve::try_from(line)?;
-            res.push(valve);
-        }
-        res
-    };
+    let valves: Vec<_> = file.lines().map(Valve::try_from).try_collect()?;
 
     let gr = UnGraphMap::<_, ()>::from_edges(valves.iter().flat_map(|v| {
         v.neighbours

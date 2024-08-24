@@ -163,6 +163,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "aoc2022lib",
+ "itertools",
  "nom",
  "test-case",
 ]
@@ -228,6 +229,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "aoc2022lib",
+ "itertools",
 ]
 
 [[package]]
@@ -275,6 +277,7 @@ name = "d25"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "itertools",
  "test-case",
 ]
 

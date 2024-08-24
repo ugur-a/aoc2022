@@ -143,10 +143,10 @@ where
 }
 
 pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
-    let mut monkeys = file
+    let mut monkeys: Vec<_> = file
         .split("\n\n")
         .map(Monkey::<u32>::from_str)
-        .collect::<Result<Vec<_>, _>>()?;
+        .try_collect()?;
 
     let mut activities: Vec<usize> = vec![0; monkeys.len()];
     let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
@@ -184,10 +184,10 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
 }
 
 pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
-    let mut monkeys = file
+    let mut monkeys: Vec<_> = file
         .split("\n\n")
         .map(Monkey::<u64>::from_str)
-        .collect::<Result<Vec<_>, _>>()?;
+        .try_collect()?;
 
     let divisibility_tests_lcm = monkeys
         .iter()

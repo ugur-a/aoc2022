@@ -1,4 +1,5 @@
 use aoc2022lib::impl_from_str_from_nom_parser;
+use itertools::Itertools;
 use std::{cmp::Ordering, fmt::Display, str::FromStr};
 
 use nom::{
@@ -94,7 +95,7 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
         .filter(|line| !line.is_empty())
         .chain(dividers)
         .map(Item::from_str)
-        .collect::<Result<Vec<_>, _>>()?;
+        .try_collect()?;
     packets.sort_unstable();
 
     let res: usize = dividers

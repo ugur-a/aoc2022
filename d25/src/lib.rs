@@ -1,6 +1,6 @@
-use std::{fmt::Display, str::FromStr};
-
 use anyhow::bail;
+use itertools::Itertools;
+use std::{fmt::Display, str::FromStr};
 
 enum SnafuDigit {
     MinusTwo,
@@ -56,11 +56,7 @@ impl FromStr for Snafu {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut digits = Vec::with_capacity(s.len());
-        for c in s.chars().rev() {
-            let d = SnafuDigit::try_from(c)?;
-            digits.push(d);
-        }
+        let digits = s.chars().rev().map(SnafuDigit::try_from).try_collect()?;
         Ok(Self { digits })
     }
 }
