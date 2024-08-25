@@ -5,6 +5,10 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
+grb = "=2.0.2"
+
+[target.'cfg(any())'.dependencies]
+grb-sys2 = "=10.1.0"
 
 [lints]
 workspace = true

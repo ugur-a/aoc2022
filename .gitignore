@@ -8,3 +8,6 @@ inputs
 flamegraph.svg
 perf.data
 perf.data.old
+
+# gurobi
+gurobi.log
