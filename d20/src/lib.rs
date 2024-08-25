@@ -62,16 +62,16 @@ pub fn p1(file: &str) -> anyhow::Result<i64> {
 }
 
 pub fn p2(file: &str) -> anyhow::Result<i64> {
-    let num_mixes = 10;
-    let decryption_key: i64 = 811_589_153;
+    const NUM_MIXES: i32 = 10;
+    const DECRYPTION_KEY: i64 = 811_589_153;
 
     let mut numbers: Vec<Number> = file
         .lines()
         .enumerate()
-        .map(|(i, n)| n.parse().map(|n: i64| Number::new(decryption_key * n, i)))
+        .map(|(i, n)| n.parse().map(|n: i64| Number::new(DECRYPTION_KEY * n, i)))
         .try_collect()?;
 
-    for _ in 0..num_mixes {
+    for _ in 0..NUM_MIXES {
         numbers.mix()?;
     }
 
