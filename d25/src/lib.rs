@@ -63,7 +63,7 @@ impl FromStr for Snafu {
 
 impl Display for Snafu {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s: String = self.digits.iter().rev().map(char::from).collect();
+        let s: Box<str> = self.digits.iter().rev().map(char::from).collect();
         write!(f, "{s}")
     }
 }
