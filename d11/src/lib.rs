@@ -149,7 +149,7 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
         .try_collect()?;
 
     let mut activities: Vec<usize> = vec![0; monkeys.len()];
-    let mut inventories_to_transfer = vec![Vec::new(); monkeys.len()];
+    let mut inventories_to_transfer = vec![vec![]; monkeys.len()];
     for _ in 0..num_rounds {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
             monkey.inventory.append(&mut inventories_to_transfer[idx]);
