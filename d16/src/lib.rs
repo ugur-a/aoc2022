@@ -68,9 +68,9 @@ struct State<'a> {
 }
 
 impl<'a> State<'a> {
-    fn start(time: u32, closed_valves: Vec<&'a str>) -> Self {
+    fn new(valve: &'a str, time: u32, closed_valves: Vec<&'a str>) -> Self {
         Self {
-            valve: START_VALVE,
+            valve,
             time,
             closed_valves,
         }
@@ -105,11 +105,7 @@ impl<'a> State<'a> {
                 };
 
                 Some((
-                    Self {
-                        valve: neighbour,
-                        time: time + dtime,
-                        closed_valves: closed_valves_left,
-                    },
+                    Self::new(neighbour, time + dtime, closed_valves_left),
                     dtime * pressure_opportunity_cost,
                 ))
             })
@@ -121,11 +117,7 @@ impl<'a> State<'a> {
             // must include this successor, since this may be (and indeed is, in `real`)
             // a part of the optimal solution
             vec![(
-                Self {
-                    valve,
-                    time: TIME_LIMIT,
-                    closed_valves: closed_valves.clone(),
-                },
+                Self::new(valve, TIME_LIMIT, closed_valves.clone()),
                 dtime * pressure_opportunity_cost,
             )]
         } else {
@@ -157,7 +149,7 @@ pub fn p1(file: &str) -> anyhow::Result<u32> {
     let openable_valve_names: Vec<_> = valve_flows.keys().copied().collect();
 
     let (_path, total_pressure_unreleased) = dijkstra::dijkstra(
-        &State::start(0, openable_valve_names),
+        &State::new(START_VALVE, 0, openable_valve_names),
         |state| state.successors(&apsp, &valve_flows),
         State::success,
     )
@@ -207,7 +199,7 @@ pub fn p2(file: &str) -> anyhow::Result<u32> {
                 .into_iter()
                 .map(|valves| {
                     let (_path, half_pressure_unreleased) = dijkstra::dijkstra(
-                        &State::start(START_TIME, valves),
+                        &State::new(START_VALVE, START_TIME, valves),
                         |state| state.successors(&apsp, &valve_flows),
                         State::success,
                     )
