@@ -84,7 +84,7 @@ impl<'a> State<'a> {
             valve,
             time,
             ref closed_valves,
-        } = self;
+        }: &State<'a> = self;
         let pressure_opportunity_cost = closed_valves.iter().map(|cv| valve_flows[cv]).sum::<u32>();
 
         let res: Vec<_> = (0..closed_valves.len())
