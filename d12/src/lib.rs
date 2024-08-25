@@ -17,22 +17,12 @@ impl HeightMap<usize> {
         let Point2D(x, y) = point;
         let this_height = self.heights[&point];
 
-        let mut potential_neighbours = Vec::new();
-        if x > 0 {
-            potential_neighbours.push(Point2D(x - 1, y));
-        }
-        if x < self.num_cols - 1 {
-            potential_neighbours.push(Point2D(x + 1, y));
-        }
-        if y > 0 {
-            potential_neighbours.push(Point2D(x, y - 1));
-        }
-        if y < self.num_rows - 1 {
-            potential_neighbours.push(Point2D(x, y + 1));
-        }
+        let neighbours = ((x > 0).then_some(Point2D(x - 1, y)).into_iter())
+            .chain((x < self.num_cols - 1).then_some(Point2D(x + 1, y)))
+            .chain((y > 0).then_some(Point2D(x, y - 1)))
+            .chain((y < self.num_rows - 1).then_some(Point2D(x, y + 1)));
 
-        potential_neighbours
-            .into_iter()
+        neighbours
             .filter(|point| self.heights[point] <= this_height + 1)
             .collect()
     }
