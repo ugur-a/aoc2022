@@ -88,23 +88,23 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
     Ok(res)
 }
 pub fn p2(file: &str) -> anyhow::Result<usize> {
-    let dividers = ["[[2]]", "[[6]]"];
+    let div1 = Item::from_str("[[2]]")?;
+    let div2 = Item::from_str("[[6]]")?;
 
     let mut packets: Vec<Item> = file
         .lines()
         .filter(|line| !line.is_empty())
-        .chain(dividers)
         .map(Item::from_str)
         .try_collect()?;
     packets.sort_unstable();
 
-    let res: usize = dividers
-        .map(|divider| divider.parse::<Item>().unwrap())
-        .map(|divider| packets.binary_search(&divider).unwrap() + 1)
-        .iter()
-        .product();
+    // binary_searches' Result:Err is the position where the divider _would've been placed_
+    let idx1 = packets.binary_search(&div1).unwrap_err();
+    // would've been shifted forward because of div1
+    let idx2 = packets.binary_search(&div2).unwrap_err() + 1;
 
-    Ok(res)
+    // AOC wants 1-based indexing
+    Ok((idx1 + 1) * (idx2 + 1))
 }
 
 #[allow(clippy::needless_pass_by_value)]
