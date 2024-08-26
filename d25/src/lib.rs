@@ -101,12 +101,11 @@ impl From<i64> for Snafu {
 }
 
 pub fn p1(file: &str) -> anyhow::Result<String> {
-    let mut sum = 0;
-    for line in file.lines() {
-        let snafu = Snafu::from_str(line)?;
-        let num = i64::from(snafu);
-        sum += num;
-    }
+    let sum: i64 = file
+        .lines()
+        .map(Snafu::from_str)
+        .map_ok(i64::from)
+        .fold_ok(0, |acc, n| acc + n)?;
     let snafu = Snafu::from(sum);
     Ok(snafu.to_string())
 }

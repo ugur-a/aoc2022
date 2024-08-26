@@ -1,11 +1,6 @@
-use std::{
-    collections::HashMap,
-    ops::{Add, Div, Mul, Sub},
-    str::FromStr,
-};
-
 use anyhow::{bail, Context};
 use aoc2022lib::impl_from_str_for_obj_with_lifetimes_from_nom_parser;
+use itertools::Itertools;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
@@ -13,6 +8,11 @@ use nom::{
     combinator::{map, map_res},
     sequence::{preceded, separated_pair, tuple},
     IResult,
+};
+use std::{
+    collections::HashMap,
+    ops::{Add, Div, Mul, Sub},
+    str::FromStr,
 };
 
 type Number = u64;
@@ -119,12 +119,11 @@ where
     type Error = nom::error::Error<String>;
 
     fn try_from(s: &'input str) -> Result<Self, Self::Error> {
-        let mut monkeys: HashMap<Name, Job> = HashMap::with_capacity(s.lines().count());
-
-        for line in s.lines() {
-            let monkey = Monkey::try_from(line)?;
-            monkeys.insert(monkey.name, monkey.job);
-        }
+        let monkeys = s
+            .lines()
+            .map(Monkey::try_from)
+            .map_ok(|monkey| (monkey.name, monkey.job))
+            .try_collect()?;
 
         Ok(Self { monkeys })
     }

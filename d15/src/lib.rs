@@ -60,12 +60,11 @@ impl FromStr for SensorsWithBeacons {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut sensors_with_beacons = HashMap::with_capacity(s.lines().count());
-
-        for line in s.lines() {
-            let SensorWithBeacon(sensor_pos, beacon_pos) = SensorWithBeacon::from_str(line)?;
-            sensors_with_beacons.insert(sensor_pos, beacon_pos);
-        }
+        let sensors_with_beacons = s
+            .lines()
+            .map(SensorWithBeacon::from_str)
+            .map_ok(|SensorWithBeacon(sensor_pos, beacon_pos)| (sensor_pos, beacon_pos))
+            .try_collect()?;
 
         Ok(Self(sensors_with_beacons))
     }
