@@ -42,12 +42,7 @@ struct RockAtAltitude {
 impl Display for RockAtAltitude {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let &Self { rock, altitude } = self;
-        for row in (rock.inner)
-            .iter()
-            .copied()
-            .rev()
-            .chain(std::iter::repeat(0u8).take(altitude))
-        {
+        for row in ((rock.inner).into_iter().rev()).chain(std::iter::repeat(0u8).take(altitude)) {
             writeln!(f, "{row:07b}")?;
         }
         Ok(())
