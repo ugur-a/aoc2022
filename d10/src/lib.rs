@@ -60,12 +60,11 @@ impl BiggestPrevious<usize> for BTreeMap<usize, i32> {
 
 #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
 pub fn p1(file: &str) -> i32 {
-    let interesting_cycles = (20..=220).step_by(40).collect::<Vec<_>>();
+    let interesting_cycles = (20..=220).step_by(40);
 
     let register_history = operations(file, 1);
 
     interesting_cycles
-        .into_iter()
         .map(|cycle| cycle as i32 * register_history.biggest_previous(cycle - 1).unwrap())
         .sum()
 }
