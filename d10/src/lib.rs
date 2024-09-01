@@ -59,7 +59,6 @@ impl BiggestPrevious<usize> for BTreeMap<usize, i32> {
     }
 }
 
-#[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
 pub fn p1(file: &str) -> i32 {
     let interesting_cycles = (20..=220).step_by(40);
 
@@ -70,7 +69,6 @@ pub fn p1(file: &str) -> i32 {
         .sum()
 }
 
-#[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
 pub fn p2(file: &str) -> String {
     struct Crt {
         width: usize,

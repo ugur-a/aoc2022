@@ -70,7 +70,6 @@ impl FromStr for SensorsWithBeacons {
     }
 }
 
-#[allow(clippy::cast_sign_loss, clippy::cast_possible_wrap)]
 pub fn p1(file: &str, analyzed_row_num: i32) -> anyhow::Result<usize> {
     let sensors_with_beacons = SensorsWithBeacons::from_str(file)?;
 
@@ -128,7 +127,6 @@ impl FromStr for SensorsWithDistances {
     }
 }
 
-#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 pub fn p2(file: &str, search_space_side_size: i32) -> anyhow::Result<u64> {
     let sensors_with_distances = SensorsWithDistances::from_str(file)?;
     let distress_beacon = sensors_with_distances
