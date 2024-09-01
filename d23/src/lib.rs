@@ -27,7 +27,7 @@ pub fn show_map(round: usize, positions: &[Pos]) {
         right,
         top,
         down,
-    } = min_enclosing_rectangle(&positions.iter());
+    } = min_enclosing_rectangle(positions.iter(), positions.iter());
 
     for y in top..=down {
         for x in left..=right {
@@ -50,17 +50,12 @@ struct Border2D<T, U = T> {
     down: U,
 }
 
-fn min_enclosing_rectangle<'a, I: Iterator<Item=&'a Pos> + Clone>(positions: &'a I) -> Border2D<isize> {
-    let (left, right) = positions.clone()
-        .map(Point2D::x)
-        .minmax()
-        .into_option()
-        .unwrap();
-    let (top, down) = positions.clone()
-        .map(Point2D::y)
-        .minmax()
-        .into_option()
-        .unwrap();
+fn min_enclosing_rectangle<'a, I>(positions1: I, positions2: I) -> Border2D<isize>
+where
+    I: Iterator<Item = &'a Pos>,
+{
+    let (left, right) = positions1.map(Point2D::x).minmax().into_option().unwrap();
+    let (top, down) = positions2.map(Point2D::y).minmax().into_option().unwrap();
 
     Border2D {
         left,
@@ -194,7 +189,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
             right,
             top,
             down,
-        } = min_enclosing_rectangle(&elf_positions.iter());
+        } = min_enclosing_rectangle(elf_positions.iter(), elf_positions.iter());
         let width: usize = (right - left + 1).try_into().unwrap();
         let height: usize = (down - top + 1).try_into().unwrap();
         width * height - elf_positions.len()
