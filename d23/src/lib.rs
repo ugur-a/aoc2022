@@ -136,28 +136,24 @@ fn second_half(
     dibs_counts: &mut HashMap<Pos, usize>,
 ) -> usize {
     let mut n_moves = 0;
-    let mut new_positions = HashSet::with_capacity(elf_positions.capacity());
-    for pos in elf_positions.drain() {
-        let new_pos = 
-        // don't do anything if haven't placed dibs in the first half
-        if let Some(dibs) = elf_dibs.remove(&pos) {
-            // don't actually move if others have dibs on the same space
-            if dibs_counts[&dibs] == 1 {
-                n_moves += 1;
-                dibs
-            }
-            else {
+    *elf_positions = elf_positions
+        .drain()
+        .map(|pos| {
+            // don't do anything if haven't placed dibs in the first half
+            if let Some(dibs) = elf_dibs.remove(&pos) {
+                // don't actually move if others have dibs on the same space
+                if dibs_counts[&dibs] == 1 {
+                    n_moves += 1;
+                    dibs
+                } else {
+                    pos
+                }
+            } else {
                 pos
             }
-        }
-        else {
-            pos
-        };
+        })
+        .collect();
 
-        new_positions.insert(new_pos);
-    }
-
-    *elf_positions = new_positions;
     elf_dibs.clear();
     dibs_counts.clear();
     n_moves
