@@ -112,10 +112,7 @@ fn first_half(
 
         // don't do anything if no elves around
         // TODO: reuse the result of these reads when looking at each direction separately later
-        if adj_positions
-            .iter()
-            .all(|pos| !elf_positions.contains(pos))
-        {
+        if adj_positions.iter().all(|pos| !elf_positions.contains(pos)) {
             continue;
         }
 
@@ -124,10 +121,7 @@ fn first_half(
             .clone()
             .map(|direction| &adj_positions[direction])
         {
-            if pos_triplet
-                .iter()
-                .any(|pos| elf_positions.contains(pos))
-            {
+            if pos_triplet.iter().any(|pos| elf_positions.contains(pos)) {
                 continue;
             }
 
@@ -145,7 +139,7 @@ fn second_half(
     elf_positions: &mut HashSet<Pos>,
     elf_dibs: &mut HashMap<Pos, Pos>,
     dibs_counts: &mut HashMap<Pos, usize>,
-) ->usize{
+) -> usize {
     let mut n_moves = 0;
     let mut new_positions = HashSet::with_capacity(elf_positions.capacity());
     for pos in elf_positions.drain() {
@@ -230,7 +224,6 @@ pub fn p2(file: &str) -> usize {
     }
     // Rust isn't smart enough to realise that the loop _will_ run at least once and return a result
     0
-
 }
 
 #[cfg(test)]
