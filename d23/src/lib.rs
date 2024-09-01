@@ -20,8 +20,7 @@ fn parse_map(s: &str) -> HashSet<Pos> {
     elf_positions
 }
 
-#[allow(dead_code)]
-fn show_map(round: usize, positions: &[Pos]) {
+pub fn show_map(round: usize, positions: &[Pos]) {
     println!("== End of Round {round} ==");
     let Border2D {
         left,
