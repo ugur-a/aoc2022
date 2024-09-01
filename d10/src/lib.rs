@@ -1,5 +1,6 @@
 use aoc2022lib::impl_from_str_from_nom_parser;
 
+use itertools::Itertools;
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::i32, combinator::map,
     sequence::preceded, IResult,
@@ -83,7 +84,7 @@ pub fn p2(file: &str) -> String {
 
     let register_history = operations(file, 1);
 
-    let rows: Vec<String> = (0..crt.height)
+    (0..crt.height)
         .map(|row_num| {
             (0..crt.width)
                 .map(|col_num| {
@@ -102,8 +103,7 @@ pub fn p2(file: &str) -> String {
                 })
                 .collect::<String>()
         })
-        .collect();
-    rows.join("\n")
+        .join("\n")
 }
 
 #[cfg(test)]
