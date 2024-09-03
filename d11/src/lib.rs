@@ -142,7 +142,8 @@ where
     }
 }
 
-pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
+pub fn p1(file: &str) -> anyhow::Result<usize> {
+    const NUM_ROUNDS: usize = 20;
     let mut monkeys: Vec<_> = file
         .split("\n\n")
         .map(Monkey::<u32>::from_str)
@@ -150,7 +151,7 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
 
     let mut activities: Vec<usize> = vec![0; monkeys.len()];
     let mut inventories_to_transfer = vec![vec![]; monkeys.len()];
-    for _ in 0..num_rounds {
+    for _ in 0..NUM_ROUNDS {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
             monkey.inventory.append(&mut inventories_to_transfer[idx]);
 
@@ -183,7 +184,8 @@ pub fn p1(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
         .product())
 }
 
-pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
+pub fn p2(file: &str) -> anyhow::Result<usize> {
+    const NUM_ROUNDS: usize = 10000;
     let mut monkeys: Vec<_> = file
         .split("\n\n")
         .map(Monkey::<u64>::from_str)
@@ -197,7 +199,7 @@ pub fn p2(file: &str, num_rounds: u32) -> anyhow::Result<usize> {
 
     let mut activities: Vec<usize> = vec![0; monkeys.len()];
     let mut inventories_to_transfer = vec![vec![]; monkeys.len()];
-    for _ in 0..num_rounds {
+    for _ in 0..NUM_ROUNDS {
         for (idx, monkey) in monkeys.iter_mut().enumerate() {
             monkey.inventory.append(&mut inventories_to_transfer[idx]);
 
@@ -237,21 +239,21 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp, 20).unwrap(), 10_605);
+        assert_eq!(p1(&inp).unwrap(), 10_605);
     }
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp, 20).unwrap(), 54_054);
+        assert_eq!(p1(&inp).unwrap(), 54_054);
     }
     #[test]
     fn test_p2() {
         let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp, 10000).unwrap(), 2_713_310_158);
+        assert_eq!(p2(&inp).unwrap(), 2_713_310_158);
     }
     #[test]
     fn real_p2() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp, 10000).unwrap(), 14_314_925_001);
+        assert_eq!(p2(&inp).unwrap(), 14_314_925_001);
     }
 }
