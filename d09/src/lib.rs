@@ -1,5 +1,6 @@
 use std::{collections::HashSet, iter, str::FromStr};
 
+use anyhow::{bail, Context};
 use aoc2022lib::points::Point2D;
 
 type Point = Point2D<i32>;
@@ -16,11 +17,8 @@ enum Direction2D {
     DownLeft,
 }
 
-#[derive(Debug)]
-struct ParseDirectionError;
-
 impl FromStr for Direction2D {
-    type Err = ParseDirectionError;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -28,7 +26,7 @@ impl FromStr for Direction2D {
             "D" => Ok(Direction2D::Down),
             "L" => Ok(Direction2D::Left),
             "R" => Ok(Direction2D::Right),
-            _ => Err(ParseDirectionError),
+            s => bail!("invalid direction: {s}"),
         }
     }
 }
@@ -62,22 +60,24 @@ impl Move2D for Point {
     }
 }
 
-fn inner(file: &str, rope_len: usize) -> usize {
+fn inner(file: &str, rope_len: usize) -> anyhow::Result<usize> {
     let mut rope = Rope::with_length(rope_len);
-    file.lines()
-        .flat_map(|r#move| {
-            let (direction, num_repeats) = r#move.split_once(' ').unwrap();
-            let direction = direction.parse::<Direction2D>().unwrap();
-            let num_repeats = num_repeats.parse::<usize>().unwrap();
-            iter::repeat(direction).take(num_repeats)
-        })
-        .map(|direction| {
-            rope.r#move(direction);
-            *rope.last().unwrap()
-        })
-        .chain(iter::once(Point2D(0, 0)))
-        .collect::<HashSet<_>>()
-        .len()
+    let mut movement_directions = Vec::with_capacity(file.lines().count());
+    for line in file.lines() {
+        let (direction, num_repeats) = line.split_once(' ').context("expected space")?;
+        let direction = Direction2D::from_str(direction)?;
+        let num_repeats = usize::from_str(num_repeats)?;
+        movement_directions.extend(iter::repeat(direction).take(num_repeats));
+    }
+
+    let mut visited_positions = HashSet::new();
+    visited_positions.insert(Point2D(0, 0));
+    for direction in movement_directions {
+        rope.r#move(direction);
+        visited_positions.insert(*rope.last().unwrap());
+    }
+
+    Ok(visited_positions.len())
 }
 
 type Rope = Vec<Point>;
@@ -135,11 +135,11 @@ impl Move2D for Rope {
     }
 }
 
-pub fn p1(file: &str) -> usize {
+pub fn p1(file: &str) -> anyhow::Result<usize> {
     inner(file, 2)
 }
 
-pub fn p2(file: &str) -> usize {
+pub fn p2(file: &str) -> anyhow::Result<usize> {
     inner(file, 10)
 }
 
@@ -157,26 +157,26 @@ mod tests {
     #[test]
     fn test_p1() {
         let inp = read_to_string("inputs/test1.txt").unwrap();
-        assert_eq!(p1(&inp), 13);
+        assert_eq!(p1(&inp).unwrap(), 13);
     }
     #[test]
     fn real_p1() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp), 5960);
+        assert_eq!(p1(&inp).unwrap(), 5960);
     }
     #[test]
     fn test1_p2() {
         let inp = read_to_string("inputs/test1.txt").unwrap();
-        assert_eq!(p2(&inp), 1);
+        assert_eq!(p2(&inp).unwrap(), 1);
     }
     #[test]
     fn test2_p2() {
         let inp = read_to_string("inputs/test2.txt").unwrap();
-        assert_eq!(p2(&inp), 36);
+        assert_eq!(p2(&inp).unwrap(), 36);
     }
     #[test]
     fn real_p2() {
         let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp), 2327);
+        assert_eq!(p2(&inp).unwrap(), 2327);
     }
 }
