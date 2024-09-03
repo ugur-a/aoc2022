@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 aoc2022lib.workspace = true
-derive_deref.workspace = true
 
 [lints]
 workspace = true

@@ -1,7 +1,5 @@
 use std::{collections::HashSet, iter, str::FromStr};
 
-use derive_deref::{Deref, DerefMut};
-
 use aoc2022lib::points::Point2D;
 
 type Point = Point2D<i32>;
@@ -66,9 +64,6 @@ impl Move2D for Point {
         };
     }
 }
-
-#[derive(Deref, DerefMut)]
-struct Moves(Vec<Direction2D>);
 
 pub fn p1(file: &str) -> usize {
     let mut rope = Rope::with_length(2);
