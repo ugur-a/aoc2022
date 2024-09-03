@@ -34,11 +34,11 @@ impl FromStr for Direction2D {
 }
 
 trait Move2D {
-    fn r#move(&mut self, direction: Direction2D);
+    fn r#move(&mut self, direction: Direction2D) -> &mut Self;
 }
 
 impl Move2D for Point {
-    fn r#move(&mut self, direction: Direction2D) {
+    fn r#move(&mut self, direction: Direction2D) -> &mut Self {
         use Direction2D as D;
         match direction {
             D::Up => self.1 += 1,
@@ -46,22 +46,19 @@ impl Move2D for Point {
             D::Left => self.0 -= 1,
             D::Right => self.0 += 1,
             D::UpRight => {
-                self.r#move(D::Up);
-                self.r#move(D::Right);
+                self.r#move(D::Up).r#move(D::Right);
             }
             D::UpLeft => {
-                self.r#move(D::Up);
-                self.r#move(D::Left);
+                self.r#move(D::Up).r#move(D::Left);
             }
             D::DownRight => {
-                self.r#move(D::Down);
-                self.r#move(D::Right);
+                self.r#move(D::Down).r#move(D::Right);
             }
             D::DownLeft => {
-                self.r#move(D::Down);
-                self.r#move(D::Left);
+                self.r#move(D::Down).r#move(D::Left);
             }
         };
+        self
     }
 }
 
@@ -95,7 +92,7 @@ impl RopeTrait for Rope {
 }
 
 impl Move2D for Rope {
-    fn r#move(&mut self, direction: Direction2D) {
+    fn r#move(&mut self, direction: Direction2D) -> &mut Self {
         // take the head and just move it
         let head = self.first_mut().unwrap();
         head.r#move(direction);
@@ -131,9 +128,10 @@ impl Move2D for Rope {
                 // 2. observe that all the necessary pulls have already been made and
                 //    the rest of the rope doesn't need to move, so don't check further
                 None => break,
-            }
+            };
             prev = *curr;
         }
+        self
     }
 }
 
