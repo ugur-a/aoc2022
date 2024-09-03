@@ -15,6 +15,7 @@
           packages = with pkgs; [
             gcc
           ];
+          GUROBI_HOME = pkgs.gurobi.outPath;
         };
       }
     );
