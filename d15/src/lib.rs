@@ -169,26 +169,18 @@ pub fn p2(file: &str, search_space_side_size: i32) -> anyhow::Result<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp, 10).unwrap(), 26);
+    #[test_case(EXAMPLE, 10 => 26)]
+    #[test_case(REAL, 2_000_000 => 4_748_135)]
+    fn test_p1(inp: &str, analyzed_row_num: i32) -> usize {
+        p1(inp, analyzed_row_num).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp, 2_000_000).unwrap(), 4_748_135);
-    }
-    #[test]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp, 20).unwrap(), 56_000_011);
-    }
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp, 4_000_000).unwrap(), 13_743_542_639_657);
+    #[test_case(EXAMPLE, 20 => 56_000_011)]
+    #[test_case(REAL, 4_000_000 => 13_743_542_639_657)]
+    fn test_p2(inp: &str, search_space_side_size: i32) -> u64 {
+        p2(inp, search_space_side_size).unwrap()
     }
 }

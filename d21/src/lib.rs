@@ -154,35 +154,25 @@ pub fn p1(file: &str) -> anyhow::Result<Number> {
     let number = monkeys.number("root").context("No root in list")?;
     Ok(number)
 }
-pub fn p2(_file: &str) -> anyhow::Result<u32> {
+pub fn p2(_file: &str) -> anyhow::Result<u64> {
     todo!()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 152);
+    #[test_case(EXAMPLE => 152)]
+    #[test_case(REAL => 31_017_034_894_002)]
+    fn test_p1(inp: &str) -> u64 {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 31_017_034_894_002);
-    }
-    #[test]
-    #[ignore]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
-    }
-    #[test]
-    #[ignore]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+    #[test_case(EXAMPLE => ignore 301)]
+    #[test_case(REAL => ignore 0)]
+    fn test_p2(inp: &str) -> u64 {
+        p2(inp).unwrap()
     }
 }

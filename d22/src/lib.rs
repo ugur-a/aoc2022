@@ -214,7 +214,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
     Ok(you.into_password())
 }
 
-pub fn p2(_file: &str) -> anyhow::Result<u32> {
+pub fn p2(_file: &str) -> anyhow::Result<usize> {
     todo!()
 }
 
@@ -222,6 +222,8 @@ pub fn p2(_file: &str) -> anyhow::Result<u32> {
 mod tests {
     use std::fs::read_to_string;
     use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
     use super::*;
     use FacingDirection::{Left as L, Right as R, Up as U};
@@ -334,26 +336,14 @@ mod tests {
         assert_eq!(you.position.1.a(), col_after);
     }
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 6032);
+    #[test_case(EXAMPLE => 6032)]
+    #[test_case(REAL => 27492)]
+    fn test_p1(inp: &str) -> usize {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 27492);
-    }
-    #[test]
-    #[ignore]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
-    }
-    #[test]
-    #[ignore]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+    #[test_case(EXAMPLE => ignore 5031)]
+    #[test_case(REAL => ignore 0)]
+    fn test_p2(inp: &str) -> usize {
+        p2(inp).unwrap()
     }
 }

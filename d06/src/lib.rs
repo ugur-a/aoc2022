@@ -30,13 +30,30 @@ pub fn p2(buffer: &str) -> Option<usize> {
 mod tests {
     use super::*;
     use test_case::test_case;
+    const EX1: &str = include_str!("../inputs/examples/1");
+    const EX2: &str = include_str!("../inputs/examples/2");
+    const EX3: &str = include_str!("../inputs/examples/3");
+    const EX4: &str = include_str!("../inputs/examples/4");
+    const EX5: &str = include_str!("../inputs/examples/5");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
-    #[test_case("mjqjpqmgbljsphdztnvjfqwrcgsmlb" => Some(7))]
-    #[test_case("bvwbjplbgvbhsrlpgdmjqwftvncz" => Some(5))]
-    #[test_case("nppdvjthqldpwncqszvftbrmjlhg" => Some(6))]
-    #[test_case("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg" => Some(10))]
-    #[test_case("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw" => Some(11))]
-    fn test_p1(inp: &str) -> Option<usize> {
-        p1(inp)
+    #[test_case(EX1 => 7)]
+    #[test_case(EX2 => 5)]
+    #[test_case(EX3 => 6)]
+    #[test_case(EX4 => 10)]
+    #[test_case(EX5 => 11)]
+    #[test_case(REAL => 1142)]
+    fn test_p1(inp: &str) -> usize {
+        p1(inp).unwrap()
+    }
+
+    #[test_case(EX1 => 19)]
+    #[test_case(EX2 => 23)]
+    #[test_case(EX3 => 23)]
+    #[test_case(EX4 => 29)]
+    #[test_case(EX5 => 26)]
+    #[test_case(REAL => 2803)]
+    fn test_p2(inp: &str) -> usize {
+        p2(inp).unwrap()
     }
 }

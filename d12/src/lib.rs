@@ -128,26 +128,18 @@ pub fn p2(file: &str) -> anyhow::Result<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 31);
+    #[test_case(EXAMPLE => 31)]
+    #[test_case(REAL => 370)]
+    fn test_p1(inp: &str) -> u32 {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 370);
-    }
-    #[test]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 29);
-    }
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 363);
+    #[test_case(EXAMPLE => 29)]
+    #[test_case(REAL => 363)]
+    fn test_p2(inp: &str) -> u32 {
+        p2(inp).unwrap()
     }
 }

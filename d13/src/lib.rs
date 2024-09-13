@@ -111,7 +111,6 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
     use test_case::test_case;
     use Item::{Integer as I, List as L};
 
@@ -139,35 +138,28 @@ mod tests {
         assert!(l0 > r0);
     }
 
-    #[test_case("[3,4]", L(vec![I(3),I(4)]))]
-    #[test_case("[]", L(vec![]))]
-    #[test_case("[[3],[]]", L(vec![L(vec![I(3)]), L(vec![])]))]
-    #[test_case("[[],[[]],[1]]", L(vec![L(vec![]), L(vec![L(vec![])]), L(vec![I(1)])]))]
-    #[test_case("[[[[]]],[]]", L(vec![L(vec![L(vec![L(vec![])])]), L(vec![])]))]
-    #[test_case("[[1],[2,3,4]]", L(vec![L(vec![I(1)]),L(vec![I(2),I(3),I(4)])]))]
-    #[test_case("[[1],4]", L(vec![L(vec![I(1)]),I(4)]))]
-    fn parse_item(s: &str, item: Item) {
-        assert_eq!(s.parse::<Item>().unwrap(), item);
+    #[test_case("[3,4]" => L(vec![I(3),I(4)]))]
+    #[test_case("[]" => L(vec![]))]
+    #[test_case("[[3],[]]" => L(vec![L(vec![I(3)]), L(vec![])]))]
+    #[test_case("[[],[[]],[1]]" => L(vec![L(vec![]), L(vec![L(vec![])]), L(vec![I(1)])]))]
+    #[test_case("[[[[]]],[]]" => L(vec![L(vec![L(vec![L(vec![])])]), L(vec![])]))]
+    #[test_case("[[1],[2,3,4]]" => L(vec![L(vec![I(1)]),L(vec![I(2),I(3),I(4)])]))]
+    #[test_case("[[1],4]" => L(vec![L(vec![I(1)]),I(4)]))]
+    fn parse_item(s: &str) -> Item {
+        s.parse::<Item>().unwrap()
     }
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 13);
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
+
+    #[test_case(EXAMPLE => 13)]
+    #[test_case(REAL => 5503)]
+    fn test_p1(inp: &str) -> usize {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 5503);
-    }
-    #[test]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 140);
-    }
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 20952);
+    #[test_case(EXAMPLE => 140)]
+    #[test_case(REAL => 20952)]
+    fn test_p2(inp: &str) -> usize {
+        p2(inp).unwrap()
     }
 }

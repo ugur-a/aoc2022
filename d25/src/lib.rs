@@ -116,7 +116,6 @@ pub fn p2(_file: &str) -> anyhow::Result<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
     use test_case::test_case;
 
     #[test_case(1, "1")]
@@ -157,26 +156,17 @@ mod tests {
         assert_eq!(i64::from(snafu), out);
     }
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), "2=-1=0");
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
+
+    #[test_case(EXAMPLE => "2=-1=0")]
+    #[test_case(REAL => "2-=2==00-0==2=022=10")]
+    fn test_p1(inp: &str) -> String {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), "2-=2==00-0==2=022=10");
-    }
-    #[test]
-    #[ignore]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
-    }
-    #[test]
-    #[ignore]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 0);
+    #[test_case(EXAMPLE => ignore 0)]
+    #[test_case(REAL => ignore 0)]
+    fn test_p2(inp: &str) -> u32 {
+        p2(inp).unwrap()
     }
 }

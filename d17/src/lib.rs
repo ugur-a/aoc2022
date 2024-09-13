@@ -303,7 +303,9 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
     use PushRockErr::OutOfBounds as Oob;
 
     #[test]
@@ -340,24 +342,14 @@ mod tests {
         assert_eq!(chamber.try_fall(&mut raa), Err(Oob));
         assert_eq!(raa.altitude, 0);
     }
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 3068);
+    #[test_case(EXAMPLE => 3068)]
+    #[test_case(REAL => 3206)]
+    fn test_p1(inp: &str) -> usize {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 3206);
-    }
-    #[test]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 1_514_285_714_288);
-    }
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 1_602_881_844_347);
+    #[test_case(EXAMPLE => 1_514_285_714_288)]
+    #[test_case(REAL => 1_602_881_844_347)]
+    fn test_p2(inp: &str) -> usize {
+        p2(inp).unwrap()
     }
 }

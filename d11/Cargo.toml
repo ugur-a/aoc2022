@@ -12,5 +12,8 @@ itertools.workspace = true
 nom.workspace = true
 num = "0.4.1"
 
+[dev-dependencies]
+test-case.workspace = true
+
 [lints]
 workspace = true

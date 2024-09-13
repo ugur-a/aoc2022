@@ -107,38 +107,20 @@ pub fn p2(file: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
+    const P2_OUT_EXAMPLE: &str = include_str!("../outputs/p2/example.txt");
+    const P2_OUT_REAL: &str = include_str!("../outputs/p2/real.txt");
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp), 13140);
+    #[test_case(EXAMPLE => 13140)]
+    #[test_case(REAL => 15360)]
+    fn test_p1(inp: &str) -> i32 {
+        p1(inp)
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp), 15360);
-    }
-    #[test]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        let out = "##..##..##..##..##..##..##..##..##..##..
-###...###...###...###...###...###...###.
-####....####....####....####....####....
-#####.....#####.....#####.....#####.....
-######......######......######......####
-#######.......#######.......#######.....";
-        assert_eq!(p2(&inp), out);
-    }
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        let out = "###..#..#.#....#..#...##..##..####..##..
-#..#.#..#.#....#..#....#.#..#....#.#..#.
-#..#.####.#....####....#.#......#..#..#.
-###..#..#.#....#..#....#.#.##..#...####.
-#....#..#.#....#..#.#..#.#..#.#....#..#.
-#....#..#.####.#..#..##...###.####.#..#.";
-        assert_eq!(p2(&inp), out);
+    #[test_case(EXAMPLE => P2_OUT_EXAMPLE)]
+    #[test_case(REAL => P2_OUT_REAL)]
+    fn test_p2(inp: &str) -> String {
+        p2(inp)
     }
 }

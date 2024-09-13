@@ -9,5 +9,8 @@ edition = "2021"
 anyhow.workspace = true
 aoc2022lib.workspace = true
 
+[dev-dependencies]
+test-case.workspace = true
+
 [lints]
 workspace = true

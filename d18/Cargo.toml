@@ -12,5 +12,8 @@ nom.workspace = true
 pathfinding.workspace = true
 aoc2022lib.workspace = true
 
+[dev-dependencies]
+test-case.workspace = true
+
 [lints]
 workspace = true

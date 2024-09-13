@@ -234,26 +234,18 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 10_605);
+    #[test_case(EXAMPLE => 10_605)]
+    #[test_case(REAL => 54_054)]
+    fn test_p1(inp: &str) -> usize {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 54_054);
-    }
-    #[test]
-    fn test_p2() {
-        let inp = read_to_string("inputs/test.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 2_713_310_158);
-    }
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 14_314_925_001);
+    #[test_case(EXAMPLE => 2_713_310_158)]
+    #[test_case(REAL => 14_314_925_001)]
+    fn test_p2(inp: &str) -> usize {
+        p2(inp).unwrap()
     }
 }

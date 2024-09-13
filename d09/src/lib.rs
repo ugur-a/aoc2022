@@ -146,7 +146,10 @@ pub fn p2(file: &str) -> anyhow::Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EX1: &str = include_str!("../inputs/examples/1");
+    const EX2: &str = include_str!("../inputs/examples/2");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
     #[test]
     fn move_2_rope() {
@@ -154,29 +157,15 @@ mod tests {
         rope.r#move(Direction2D::Up);
         assert_eq!(rope, vec![Point2D(0, 1), Point2D(0, 0)]);
     }
-    #[test]
-    fn test_p1() {
-        let inp = read_to_string("inputs/test1.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 13);
+    #[test_case(EX1 => 13)]
+    #[test_case(REAL => 5960)]
+    fn test_p1(inp: &str) -> usize {
+        p1(inp).unwrap()
     }
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), 5960);
-    }
-    #[test]
-    fn test1_p2() {
-        let inp = read_to_string("inputs/test1.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 1);
-    }
-    #[test]
-    fn test2_p2() {
-        let inp = read_to_string("inputs/test2.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 36);
-    }
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), 2327);
+    #[test_case(EX1 => 1)]
+    #[test_case(EX2 => 36)]
+    #[test_case(REAL => 2327)]
+    fn test_p2(inp: &str) -> usize {
+        p2(inp).unwrap()
     }
 }

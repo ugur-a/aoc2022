@@ -10,5 +10,8 @@ aoc2022lib.workspace = true
 anyhow.workspace = true
 itertools.workspace = true
 
+[dev-dependencies]
+test-case.workspace = true
+
 [lints]
 workspace = true

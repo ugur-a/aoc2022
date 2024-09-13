@@ -173,17 +173,19 @@ pub fn p2(file: &str) -> anyhow::Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use test_case::test_case;
+    const EXAMPLE: &str = include_str!("../inputs/example.txt");
+    const REAL: &str = include_str!("../inputs/real.txt");
 
-    #[test]
-    fn real_p1() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p1(&inp).unwrap(), "ZWHVFWQWW");
+    #[test_case(EXAMPLE => "CMZ"; "example")]
+    #[test_case(REAL => "ZWHVFWQWW"; "real")]
+    fn test_p1(inp: &str) -> String {
+        p1(inp).unwrap()
     }
 
-    #[test]
-    fn real_p2() {
-        let inp = read_to_string("inputs/real.txt").unwrap();
-        assert_eq!(p2(&inp).unwrap(), "HZFZCCWWV");
+    #[test_case(EXAMPLE => "MCD"; "example")]
+    #[test_case(REAL => "HZFZCCWWV"; "real")]
+    fn test_p2(inp: &str) -> String {
+        p2(inp).unwrap()
     }
 }

@@ -9,5 +9,8 @@ aoc2022lib.workspace = true
 bare_metal_modulo = "1.2.4"
 pathfinding.workspace = true
 
+[dev-dependencies]
+test-case.workspace = true
+
 [lints]
 workspace = true

@@ -9,6 +9,9 @@ aoc2022lib.workspace = true
 grb = "=2.0.2"
 nom.workspace = true
 
+[dev-dependencies]
+test-case.workspace = true
+
 [target.'cfg(any())'.dependencies]
 grb-sys2 = "=10.1.0"
 
