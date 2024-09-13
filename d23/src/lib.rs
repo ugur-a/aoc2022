@@ -159,7 +159,7 @@ fn second_half(
     n_moves
 }
 
-pub fn p1(file: &str) -> anyhow::Result<usize> {
+pub fn p1(file: &str) -> usize {
     const N_ROUNDS: usize = 10;
 
     let mut elf_positions = parse_map(file);
@@ -190,7 +190,7 @@ pub fn p1(file: &str) -> anyhow::Result<usize> {
         let height: usize = (down - top + 1).try_into().unwrap();
         width * height - elf_positions.len()
     };
-    Ok(n_ground)
+    n_ground
 }
 
 pub fn p2(file: &str) -> usize {
@@ -227,7 +227,7 @@ mod tests {
     #[test_case(EXAMPLE => 110)]
     #[test_case(REAL => 3987)]
     fn test_p1(inp: &str) -> usize {
-        p1(inp).unwrap()
+        p1(inp)
     }
     #[test_case(EXAMPLE => 20)]
     #[test_case(REAL => 938)]
