@@ -270,8 +270,10 @@ name = "d19"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "aoc2022lib",
  "grb",
  "grb-sys2",
+ "nom",
 ]
 
 [[package]]

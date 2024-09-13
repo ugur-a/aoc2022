@@ -5,7 +5,9 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
+aoc2022lib.workspace = true
 grb = "=2.0.2"
+nom.workspace = true
 
 [target.'cfg(any())'.dependencies]
 grb-sys2 = "=10.1.0"
