@@ -1,14 +1,14 @@
 // caused by grb::c
 #![allow(clippy::useless_conversion)]
 use core::array;
-use std::iter::zip;
+use std::{iter::zip, marker::PhantomData};
 
-use anyhow::bail;
 use grb::prelude::*;
 
 use crate::bp::Blueprint;
 
-pub(crate) struct BlueprintOptimizer<const TIME_LIMIT: usize> {
+pub(crate) struct BlueprintOptimizer<const TIME_LIMIT: usize, P> {
+    _marker: PhantomData<P>,
     pub(crate) model: Model,
     pub(crate) robots_costs: [[Var; 4]; 4],
 }
@@ -26,7 +26,7 @@ fn kmrm(
         .collect()
 }
 
-impl<const TIME_LIMIT: usize> BlueprintOptimizer<TIME_LIMIT> {
+impl<const TIME_LIMIT: usize, P> BlueprintOptimizer<TIME_LIMIT, P> {
     #[allow(clippy::useless_conversion)]
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::needless_range_loop)]
@@ -168,6 +168,7 @@ impl<const TIME_LIMIT: usize> BlueprintOptimizer<TIME_LIMIT> {
         Self {
             model,
             robots_costs,
+            _marker: PhantomData,
         }
     }
 
@@ -175,6 +176,7 @@ impl<const TIME_LIMIT: usize> BlueprintOptimizer<TIME_LIMIT> {
         let BlueprintOptimizer {
             model,
             robots_costs,
+            ..
         } = self;
         model
             .set_param(param::ScenarioNumber, bp.id as i32 - 1)
@@ -196,26 +198,13 @@ impl<const TIME_LIMIT: usize> BlueprintOptimizer<TIME_LIMIT> {
         }
     }
 
-    pub(crate) fn total_quality(&mut self) -> anyhow::Result<u32> {
-        self.model.optimize()?;
-
-        let num_scenarios = self.model.get_attr(attr::NumScenarios).unwrap();
-
-        let mut res = 0;
-        for n in 0..num_scenarios {
-            self.model.set_param(param::ScenarioNumber, n).unwrap();
-            let quality: u32 = {
-                let quality = self.model.get_attr(attr::ScenNObjVal).unwrap();
-                assert!(quality.is_finite());
-                // safety: checked in previous line
-                unsafe { quality.to_int_unchecked() }
-            };
-
-            res += dbg!(n + 1) as u32 * dbg!(quality);
-        }
-
-        Ok(res)
+    pub(crate) fn optimize(&mut self) -> anyhow::Result<()> {
+        Ok(self.model.optimize()?)
     }
+}
+
+pub(crate) trait Quality {
+    fn quality(self) -> u32;
 }
 
 #[cfg(test)]
@@ -224,6 +213,6 @@ mod test {
 
     #[test]
     fn new() {
-        let _o = BlueprintOptimizer::<24>::new(0);
+        let _o = BlueprintOptimizer::<24, ()>::new(0);
     }
 }
