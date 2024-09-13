@@ -131,9 +131,7 @@ fn check_scenicities_in_a_line(line: &mut [Tree]) {
         })
         .collect_vec();
 
-    line.iter_mut()
-        .zip(scenicities.iter())
-        .for_each(|(tree, scenicity)| tree.scenicity *= scenicity);
+    std::iter::zip(line, scenicities).for_each(|(tree, scenicity)| tree.scenicity *= scenicity);
 }
 
 pub fn p2(file: &str) -> anyhow::Result<usize> {
