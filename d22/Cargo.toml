@@ -11,6 +11,8 @@ aoc2022lib.workspace = true
 bare_metal_modulo = "1.2.4"
 derive_deref.workspace = true
 nom.workspace = true
+
+[dev-dependencies]
 test-case.workspace = true
 
 [lints]
