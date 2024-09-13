@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Context};
 use itertools::Itertools;
 
 /// Returns the transposed copy of a collection
@@ -40,15 +41,18 @@ impl Tree {
     }
 }
 
-fn forest(file: &str) -> Vec<Vec<Tree>> {
+fn forest(file: &str) -> anyhow::Result<Vec<Vec<Tree>>> {
     file.lines()
         .map(|line| {
             line.chars()
-                .map(|char| char.to_digit(10).unwrap() + 1)
-                .map(Tree::with_height)
-                .collect()
+                .map(|char| match char.to_digit(10) {
+                    Some(n) => Ok(n + 1),
+                    None => Err(anyhow!("invalid height: {char}")),
+                })
+                .map_ok(Tree::with_height)
+                .try_collect()
         })
-        .collect()
+        .try_collect()
 }
 
 /// Less exact than [`check_scenicities_in_a_line`] - checks whether
@@ -78,9 +82,9 @@ fn check_visibilities_in_a_line(line: &mut [Tree]) {
     }
 }
 
-pub fn p1(file: &str) -> usize {
+pub fn p1(file: &str) -> anyhow::Result<usize> {
     // create the map
-    let mut forest: Vec<Vec<Tree>> = forest(file);
+    let mut forest: Vec<Vec<Tree>> = forest(file)?;
 
     // analyze visibility horizontally
     for row in &mut forest {
@@ -95,11 +99,11 @@ pub fn p1(file: &str) -> usize {
         check_visibilities_in_a_line(col);
     }
 
-    forest
+    Ok(forest
         .into_iter()
         .flatten()
         .filter(Tree::is_visible)
-        .count()
+        .count())
 }
 
 /// More exact than [`check_visibilities_in_a_line`] - gets the exact scenicity values
@@ -132,8 +136,8 @@ fn check_scenicities_in_a_line(line: &mut [Tree]) {
         .for_each(|(tree, scenicity)| tree.scenicity *= scenicity);
 }
 
-pub fn p2(file: &str) -> usize {
-    let mut forest: Vec<Vec<Tree>> = forest(file);
+pub fn p2(file: &str) -> anyhow::Result<usize> {
+    let mut forest: Vec<Vec<Tree>> = forest(file)?;
 
     for row in &mut forest {
         check_scenicities_in_a_line(row);
@@ -150,7 +154,7 @@ pub fn p2(file: &str) -> usize {
         .flatten()
         .map(|tree| tree.scenicity)
         .max()
-        .unwrap()
+        .context("empty forest")
 }
 
 #[cfg(test)]
