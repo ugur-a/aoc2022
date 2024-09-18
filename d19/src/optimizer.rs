@@ -97,7 +97,6 @@ impl<const TIME_LIMIT: usize, P> BlueprintOptimizer<TIME_LIMIT, P> {
         }
 
         for minute in 0..TIME_LIMIT - 1 {
-            // rs_end_3 = rs_start_3 + rbs_2 = rs_end_2 + rbs_2
             for robot in 0..4 {
                 model
                     .add_constr(
@@ -108,7 +107,6 @@ impl<const TIME_LIMIT: usize, P> BlueprintOptimizer<TIME_LIMIT, P> {
                     .unwrap();
             }
 
-            // ms_end_3 = ms_start_3 - rcs_2 + rs_start_3 = ms_end_2 - rcs_2 + rs_end_2
             for material in 0..4 {
                 model
                     .add_constr(
@@ -123,7 +121,6 @@ impl<const TIME_LIMIT: usize, P> BlueprintOptimizer<TIME_LIMIT, P> {
 
         for minute in 0..TIME_LIMIT {
             for robot in 0..4 {
-                // rbs_3 == 1 => ms_start_3 >= rcs_2 <=> ms_end_2 => rcs_2
                 for material in 0..4 {
                     // whether can build robot, based on availability of each material
                     model
@@ -164,7 +161,6 @@ impl<const TIME_LIMIT: usize, P> BlueprintOptimizer<TIME_LIMIT, P> {
             .set_objective(materials[TIME_LIMIT - 1][3], grb::ModelSense::Maximize)
             .unwrap();
 
-        model.write("model.lp").unwrap();
         Self {
             model,
             robots_costs,
