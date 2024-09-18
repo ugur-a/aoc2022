@@ -27,10 +27,12 @@ fn operation(input: &str) -> IResult<&str, Operation> {
 
 impl_from_str_from_nom_parser!(operation, Operation);
 
-fn operations(file: &str, init_value: i32) -> anyhow::Result<BTreeMap<usize, i32>> {
+const INIT_REGISTER_VALUE: i32 = 1;
+
+fn operations(file: &str) -> anyhow::Result<BTreeMap<usize, i32>> {
     let mut register_history = BTreeMap::new();
     let mut cycle = 0;
-    let mut register_value = init_value;
+    let mut register_value = INIT_REGISTER_VALUE;
     register_history.insert(cycle, register_value);
     for line in file.lines() {
         match Operation::from_str(line)? {
@@ -62,7 +64,7 @@ impl BiggestPrevious<usize> for BTreeMap<usize, i32> {
 pub fn p1(file: &str) -> anyhow::Result<i32> {
     let interesting_cycles = (20..=220).step_by(40);
 
-    let register_history = operations(file, 1)?;
+    let register_history = operations(file)?;
 
     let res = interesting_cycles
         .map(|cycle| cycle as i32 * register_history.biggest_previous(cycle - 1).unwrap())
@@ -76,18 +78,18 @@ pub fn p2(file: &str) -> anyhow::Result<String> {
         height: usize,
     }
 
-    let crt = Crt {
+    const CRT: Crt = Crt {
         width: 40,
         height: 6,
     };
 
-    let register_history = operations(file, 1)?;
+    let register_history = operations(file)?;
 
-    let mut res = (0..crt.height)
+    let mut res = (0..CRT.height)
         .map(|row_num| {
-            (0..crt.width)
+            (0..CRT.width)
                 .map(|col_num| {
-                    let cycle = crt.width * row_num + col_num;
+                    let cycle = CRT.width * row_num + col_num;
 
                     // only check against the horizontal position of the sprite
                     let crt_position = col_num;
