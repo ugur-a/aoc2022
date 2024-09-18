@@ -82,7 +82,7 @@ pub fn p2(file: &str) -> anyhow::Result<String> {
 
     let register_history = operations(file, 1)?;
 
-    let res = (0..crt.height)
+    let mut res = (0..crt.height)
         .map(|row_num| {
             (0..crt.width)
                 .map(|col_num| {
@@ -102,6 +102,7 @@ pub fn p2(file: &str) -> anyhow::Result<String> {
                 .collect::<String>()
         })
         .join("\n");
+    res.push('\n');
     Ok(res)
 }
 
