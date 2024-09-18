@@ -31,6 +31,7 @@ fn operations(file: &str, init_value: i32) -> anyhow::Result<BTreeMap<usize, i32
     let mut register_history = BTreeMap::new();
     let mut cycle = 0;
     let mut register_value = init_value;
+    register_history.insert(cycle, register_value);
     for line in file.lines() {
         match Operation::from_str(line)? {
             Operation::Addx(num) => {
