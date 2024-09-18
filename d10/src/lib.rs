@@ -27,24 +27,23 @@ fn operation(input: &str) -> IResult<&str, Operation> {
 
 impl_from_str_from_nom_parser!(operation, Operation);
 
-fn operations(file: &str, init_value: i32) -> BTreeMap<usize, i32> {
+fn operations(file: &str, init_value: i32) -> anyhow::Result<BTreeMap<usize, i32>> {
     let mut register_history = BTreeMap::new();
     let mut cycle = 0;
     let mut register_value = init_value;
     for line in file.lines() {
-        match Operation::from_str(line) {
-            Ok(Operation::Addx(num)) => {
+        match Operation::from_str(line)? {
+            Operation::Addx(num) => {
                 cycle += 2;
                 register_value += num;
                 register_history.insert(cycle, register_value);
             }
-            Ok(Operation::Noop) => {
+            Operation::Noop => {
                 cycle += 1;
             }
-            _ => unimplemented!(),
         }
     }
-    register_history
+    Ok(register_history)
 }
 
 trait BiggestPrevious<Q> {
@@ -59,17 +58,18 @@ impl BiggestPrevious<usize> for BTreeMap<usize, i32> {
     }
 }
 
-pub fn p1(file: &str) -> i32 {
+pub fn p1(file: &str) -> anyhow::Result<i32> {
     let interesting_cycles = (20..=220).step_by(40);
 
-    let register_history = operations(file, 1);
+    let register_history = operations(file, 1)?;
 
-    interesting_cycles
+    let res = interesting_cycles
         .map(|cycle| cycle as i32 * register_history.biggest_previous(cycle - 1).unwrap())
-        .sum()
+        .sum();
+    Ok(res)
 }
 
-pub fn p2(file: &str) -> String {
+pub fn p2(file: &str) -> anyhow::Result<String> {
     struct Crt {
         width: usize,
         height: usize,
@@ -80,9 +80,9 @@ pub fn p2(file: &str) -> String {
         height: 6,
     };
 
-    let register_history = operations(file, 1);
+    let register_history = operations(file, 1)?;
 
-    (0..crt.height)
+    let res = (0..crt.height)
         .map(|row_num| {
             (0..crt.width)
                 .map(|col_num| {
@@ -101,7 +101,8 @@ pub fn p2(file: &str) -> String {
                 })
                 .collect::<String>()
         })
-        .join("\n")
+        .join("\n");
+    Ok(res)
 }
 
 #[cfg(test)]
@@ -116,11 +117,11 @@ mod tests {
     #[test_case(EXAMPLE => 13140)]
     #[test_case(REAL => 15360)]
     fn test_p1(inp: &str) -> i32 {
-        p1(inp)
+        p1(inp).unwrap()
     }
     #[test_case(EXAMPLE => P2_OUT_EXAMPLE)]
     #[test_case(REAL => P2_OUT_REAL)]
     fn test_p2(inp: &str) -> String {
-        p2(inp)
+        p2(inp).unwrap()
     }
 }
