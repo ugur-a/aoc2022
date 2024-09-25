@@ -101,16 +101,17 @@ impl Valley {
         pos: ValleyPos,
         time: usize,
     ) -> impl Iterator<Item = (ValleyPos, usize)> + '_ {
+        use ValleyPos as VP;
         let next_positions = match pos {
-            ValleyPos::Entrance => vec![Valley::start()],
-            ValleyPos::Exit => vec![self.end()],
-            vp @ ValleyPos::Inside(Point2D(x, y)) => std::iter::empty()
-                .chain((vp == Valley::start()).then_some(ValleyPos::Entrance))
-                .chain((vp == self.end()).then_some(ValleyPos::Exit))
-                .chain((x > 0).then(|| ValleyPos::Inside(Point2D(x - 1, y))))
-                .chain((y > 0).then(|| ValleyPos::Inside(Point2D(x, y - 1))))
-                .chain((x < self.width - 1).then_some(ValleyPos::Inside(Point2D(x + 1, y))))
-                .chain((y < self.height - 1).then_some(ValleyPos::Inside(Point2D(x, y + 1))))
+            VP::Entrance => vec![Valley::start()],
+            VP::Exit => vec![self.end()],
+            vp @ VP::Inside(Point2D(x, y)) => std::iter::empty()
+                .chain((vp == Valley::start()).then_some(VP::Entrance))
+                .chain((vp == self.end()).then_some(VP::Exit))
+                .chain((x > 0).then(|| VP::Inside(Point2D(x - 1, y))))
+                .chain((y > 0).then(|| VP::Inside(Point2D(x, y - 1))))
+                .chain((x < self.width - 1).then_some(VP::Inside(Point2D(x + 1, y))))
+                .chain((y < self.height - 1).then_some(VP::Inside(Point2D(x, y + 1))))
                 .collect(),
         };
 
@@ -121,18 +122,19 @@ impl Valley {
     }
 
     fn manhattan_distance(&self, p1: ValleyPos, p2: ValleyPos) -> usize {
+        use ValleyPos as VP;
         match (p1, p2) {
             // trivial
-            (ValleyPos::Inside(s), ValleyPos::Inside(o)) => s.manhattan_distance(o),
-            (ValleyPos::Exit, ValleyPos::Exit) | (ValleyPos::Entrance, ValleyPos::Entrance) => 0,
+            (VP::Inside(s), VP::Inside(o)) => s.manhattan_distance(o),
+            (VP::Exit, VP::Exit) | (VP::Entrance, VP::Entrance) => 0,
+
             // d(Entrance, X) = d(Entrance, Start) + d(Start, X) = 1 + d(Start, X)
-            (ValleyPos::Entrance, o) => 1 + self.manhattan_distance(Valley::start(), o),
+            (VP::Entrance, o) => 1 + self.manhattan_distance(Valley::start(), o),
             // d(X, Exit) = d(X, End) + d(End, Exit) = d(X, End) + 1
-            (s, ValleyPos::Exit) => self.manhattan_distance(s, self.end()) + 1,
+            (s, VP::Exit) => self.manhattan_distance(s, self.end()) + 1,
+
             // maintain cmp order Entrance->Inside->Exit
-            (s, o @ ValleyPos::Entrance) | (s @ ValleyPos::Exit, o) => {
-                self.manhattan_distance(o, s)
-            }
+            (s, o @ VP::Entrance) | (s @ VP::Exit, o) => self.manhattan_distance(o, s),
         }
     }
 }
