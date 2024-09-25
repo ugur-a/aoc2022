@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use anyhow::{bail, Context};
 use aoc2022lib::points::{ManhattanDistance, Point2D};
@@ -13,9 +13,7 @@ enum ValleyPos {
     Exit,
 }
 
-type PosMod = Point2D<ModNum<usize>>;
-
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 enum Direction {
     Left,
     Right,
@@ -36,28 +34,16 @@ impl TryFrom<char> for Direction {
     }
 }
 
+#[derive(PartialEq, Eq, Hash)]
 struct Blizzard {
-    pos_init: PosMod,
+    pos_init: Pos,
     direction: Direction,
-}
-
-impl Blizzard {
-    fn pos(&self, time: usize) -> Pos {
-        let Point2D(x, y) = self.pos_init;
-        let (x, y) = match self.direction {
-            Direction::Right => ((x + time).a(), y.a()),
-            Direction::Left => ((x - time).a(), y.a()),
-            Direction::Up => (x.a(), (y - time).a()),
-            Direction::Down => (x.a(), (y + time).a()),
-        };
-        Point2D(x, y)
-    }
 }
 
 struct Valley {
     width: usize,
     height: usize,
-    blizzards: Vec<Blizzard>,
+    blizzards: HashSet<Blizzard>,
 }
 
 impl FromStr for Valley {
@@ -73,18 +59,18 @@ impl FromStr for Valley {
         let height = s.lines().count() - 2;
 
         let n_blizzards = s.chars().filter(|c| "><^v".contains(*c)).count();
-        let mut blizzards = Vec::with_capacity(n_blizzards);
+        let mut blizzards = HashSet::with_capacity(n_blizzards);
 
         for (y, line) in s.lines().skip(1).enumerate() {
             for (x, char) in line.chars().skip(1).enumerate() {
                 let b = match char {
                     '.' | '#' => continue,
                     c => Blizzard {
-                        pos_init: Point2D(ModNum::new(x, width), ModNum::new(y, height)),
+                        pos_init: Point2D(x, y),
                         direction: Direction::try_from(c)?,
                     },
                 };
-                blizzards.push(b);
+                blizzards.insert(b);
             }
         }
 
@@ -106,10 +92,36 @@ impl Valley {
     fn collides(&self, pos: ValleyPos, time: usize) -> bool {
         match pos {
             ValleyPos::Entrance | ValleyPos::Exit => false,
-            ValleyPos::Inside(pos) => self
-                .blizzards
-                .iter()
-                .any(|blizzard| pos == blizzard.pos(time)),
+            ValleyPos::Inside(Point2D(x, y)) => {
+                let mod_x = ModNum::new(x, self.width);
+                let mod_y = ModNum::new(y, self.height);
+
+                // for each direction, calculate where the corresponding blizzard
+                // would have needed to start in order to end up @ position @ time
+                //
+                // e.g. for a rightward blizzard:
+                // x(t) == x <=> x(0) == (x - time) % width
+                let b_right = Blizzard {
+                    direction: Direction::Right,
+                    pos_init: Point2D((mod_x - time).a(), y),
+                };
+                let b_left = Blizzard {
+                    direction: Direction::Left,
+                    pos_init: Point2D((mod_x + time).a(), y),
+                };
+                let b_up = Blizzard {
+                    direction: Direction::Up,
+                    pos_init: Point2D(x, (mod_y + time).a()),
+                };
+                let b_down = Blizzard {
+                    direction: Direction::Down,
+                    pos_init: Point2D(x, (mod_y - time).a()),
+                };
+
+                [b_right, b_left, b_up, b_down]
+                    .into_iter()
+                    .any(|b| self.blizzards.contains(&b))
+            }
         }
     }
 
