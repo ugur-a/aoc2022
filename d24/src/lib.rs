@@ -137,64 +137,52 @@ impl Valley {
             (s, o @ VP::Entrance) | (s @ VP::Exit, o) => self.manhattan_distance(o, s),
         }
     }
+
+    /// Returns the final time
+    fn find_path(
+        &self,
+        start_pos: ValleyPos,
+        start_time: usize,
+        destination: ValleyPos,
+    ) -> anyhow::Result<usize> {
+        let (_, time) = astar::astar(
+            &(start_pos, start_time),
+            |&(pos, time)| self.next_positions(pos, time).map(|pt| (pt, 1)),
+            |&(pos, _)| self.manhattan_distance(pos, destination),
+            |&(pos, _)| pos == destination,
+        )
+        .context("no path found")?;
+        Ok(start_time + time)
+    }
 }
 
 pub fn p1(file: &str) -> anyhow::Result<usize> {
     let valley = Valley::from_str(file)?;
-    let mut time = 0;
+
+    let time = 0;
     let start = ValleyPos::Entrance;
     let destination = ValleyPos::Exit;
-    let (_, time1) = astar::astar(
-        &(start, time),
-        |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
-        |&(pos, _)| valley.manhattan_distance(pos, destination),
-        |&(pos, _)| pos == destination,
-    )
-    .context("no path found")?;
-    time = time1;
-    Ok(time)
+
+    valley.find_path(start, time, destination)
 }
 
 pub fn p2(file: &str) -> anyhow::Result<usize> {
     let valley = Valley::from_str(file)?;
 
     let mut time = 0;
-
-    // there
     let mut start = ValleyPos::Entrance;
     let mut destination = ValleyPos::Exit;
-    let (_, time1) = astar::astar(
-        &(start, time),
-        |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
-        |&(pos, _)| valley.manhattan_distance(pos, destination),
-        |&(pos, _)| pos == destination,
-    )
-    .context("no path found")?;
-    time += time1;
+
+    // there
+    time = valley.find_path(start, time, destination)?;
 
     // back
     std::mem::swap(&mut start, &mut destination);
-
-    let (_, time2) = astar::astar(
-        &(start, time),
-        |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
-        |&(pos, _)| valley.manhattan_distance(pos, destination),
-        |&(pos, _)| pos == destination,
-    )
-    .context("no path found")?;
-    time += time2;
+    time = valley.find_path(start, time, destination)?;
 
     // there again
     std::mem::swap(&mut start, &mut destination);
-
-    let (_, time3) = astar::astar(
-        &(start, time),
-        |&(pos, time)| valley.next_positions(pos, time).map(|pt| (pt, 1)),
-        |&(pos, _)| valley.manhattan_distance(pos, destination),
-        |&(pos, _)| pos == destination,
-    )
-    .context("no path found")?;
-    time += time3;
+    time = valley.find_path(start, time, destination)?;
 
     Ok(time)
 }
