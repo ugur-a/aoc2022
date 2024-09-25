@@ -118,27 +118,25 @@ impl Valley {
         pos: ValleyPos,
         time: usize,
     ) -> impl Iterator<Item = (ValleyPos, usize)> + '_ {
-        let positions = match pos {
+        let next_positions = match pos {
             ValleyPos::Entrance => {
-                vec![ValleyPos::Entrance, Valley::start()]
+                vec![Valley::start()]
             }
-            vp @ ValleyPos::Inside(Point2D(x, y)) => {
-                std::iter::once(ValleyPos::Inside(Point2D(x, y)))
-                    .chain((vp == Valley::start()).then_some(ValleyPos::Entrance))
-                    .chain((vp == self.end()).then_some(ValleyPos::Exit))
-                    .chain((x > 0).then(|| ValleyPos::Inside(Point2D(x - 1, y))))
-                    .chain((x < self.width - 1).then_some(ValleyPos::Inside(Point2D(x + 1, y))))
-                    .chain((y > 0).then(|| ValleyPos::Inside(Point2D(x, y - 1))))
-                    .chain((y < self.height - 1).then_some(ValleyPos::Inside(Point2D(x, y + 1))))
-                    .collect()
-            }
+            vp @ ValleyPos::Inside(Point2D(x, y)) => std::iter::empty()
+                .chain((vp == Valley::start()).then_some(ValleyPos::Entrance))
+                .chain((vp == self.end()).then_some(ValleyPos::Exit))
+                .chain((x > 0).then(|| ValleyPos::Inside(Point2D(x - 1, y))))
+                .chain((x < self.width - 1).then_some(ValleyPos::Inside(Point2D(x + 1, y))))
+                .chain((y > 0).then(|| ValleyPos::Inside(Point2D(x, y - 1))))
+                .chain((y < self.height - 1).then_some(ValleyPos::Inside(Point2D(x, y + 1))))
+                .collect(),
             ValleyPos::Exit => {
-                vec![ValleyPos::Exit, self.end()]
+                vec![self.end()]
             }
         };
 
-        positions
-            .into_iter()
+        std::iter::once(pos)
+            .chain(next_positions)
             .map(move |pos| (pos, time + 1))
             .filter(|&(pos, time)| !self.collides(pos, time))
     }
