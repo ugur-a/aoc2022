@@ -119,20 +119,16 @@ impl Valley {
         time: usize,
     ) -> impl Iterator<Item = (ValleyPos, usize)> + '_ {
         let next_positions = match pos {
-            ValleyPos::Entrance => {
-                vec![Valley::start()]
-            }
+            ValleyPos::Entrance => vec![Valley::start()],
+            ValleyPos::Exit => vec![self.end()],
             vp @ ValleyPos::Inside(Point2D(x, y)) => std::iter::empty()
                 .chain((vp == Valley::start()).then_some(ValleyPos::Entrance))
                 .chain((vp == self.end()).then_some(ValleyPos::Exit))
                 .chain((x > 0).then(|| ValleyPos::Inside(Point2D(x - 1, y))))
-                .chain((x < self.width - 1).then_some(ValleyPos::Inside(Point2D(x + 1, y))))
                 .chain((y > 0).then(|| ValleyPos::Inside(Point2D(x, y - 1))))
+                .chain((x < self.width - 1).then_some(ValleyPos::Inside(Point2D(x + 1, y))))
                 .chain((y < self.height - 1).then_some(ValleyPos::Inside(Point2D(x, y + 1))))
                 .collect(),
-            ValleyPos::Exit => {
-                vec![self.end()]
-            }
         };
 
         std::iter::once(pos)
