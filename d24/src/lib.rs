@@ -1,4 +1,4 @@
-use std::{collections::HashSet, str::FromStr};
+use std::str::FromStr;
 
 use anyhow::{bail, Context};
 use aoc2022lib::points::{ManhattanDistance, Point2D};
@@ -37,10 +37,7 @@ impl TryFrom<char> for Direction {
 struct Valley {
     width: usize,
     height: usize,
-    blizzards_right: HashSet<Pos>,
-    blizzards_left: HashSet<Pos>,
-    blizzards_up: HashSet<Pos>,
-    blizzards_down: HashSet<Pos>,
+    map: Vec<Vec<Option<Direction>>>,
 }
 
 impl FromStr for Valley {
@@ -55,35 +52,20 @@ impl FromStr for Valley {
             - 2;
         let height = s.lines().count() - 2;
 
-        let mut blizzards_right = HashSet::new();
-        let mut blizzards_left = HashSet::new();
-        let mut blizzards_up = HashSet::new();
-        let mut blizzards_down = HashSet::new();
-
-        for (y, line) in s.lines().skip(1).enumerate() {
-            for (x, char) in line.chars().skip(1).enumerate() {
+        let mut map = Vec::with_capacity(height);
+        for line in s.lines().skip(1) {
+            let mut row_vec = Vec::with_capacity(width);
+            for char in line.chars().skip(1) {
                 let b = match char {
-                    '.' | '#' => continue,
-                    _ => Point2D(x, y),
+                    '.' | '#' => None,
+                    c => Some(Direction::try_from(c)?),
                 };
-                let bs = match Direction::try_from(char)? {
-                    Direction::Right => &mut blizzards_right,
-                    Direction::Left => &mut blizzards_left,
-                    Direction::Up => &mut blizzards_up,
-                    Direction::Down => &mut blizzards_down,
-                };
-                bs.insert(b);
+                row_vec.push(b);
             }
+            map.push(row_vec);
         }
 
-        Ok(Self {
-            width,
-            height,
-            blizzards_right,
-            blizzards_left,
-            blizzards_up,
-            blizzards_down,
-        })
+        Ok(Self { width, height, map })
     }
 }
 
@@ -106,15 +88,10 @@ impl Valley {
                 //
                 // e.g. for a rightward blizzard:
                 // x(t) == x <=> x(0) == (x - time) % width
-                let b_right = Point2D((mod_x - time).a(), y);
-                let b_left = Point2D((mod_x + time).a(), y);
-                let b_up = Point2D(x, (mod_y + time).a());
-                let b_down = Point2D(x, (mod_y - time).a());
-
-                self.blizzards_right.contains(&b_right)
-                    || self.blizzards_left.contains(&b_left)
-                    || self.blizzards_up.contains(&b_up)
-                    || self.blizzards_down.contains(&b_down)
+                matches!(self.map[y][(mod_x - time).a()], Some(Direction::Right))
+                    || matches!(self.map[y][(mod_x + time).a()], Some(Direction::Left))
+                    || matches!(self.map[(mod_y + time).a()][x], Some(Direction::Up))
+                    || matches!(self.map[(mod_y - time).a()][x], Some(Direction::Down))
             }
         }
     }
