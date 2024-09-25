@@ -34,16 +34,13 @@ impl TryFrom<char> for Direction {
     }
 }
 
-#[derive(PartialEq, Eq, Hash)]
-struct Blizzard {
-    pos_init: Pos,
-    direction: Direction,
-}
-
 struct Valley {
     width: usize,
     height: usize,
-    blizzards: HashSet<Blizzard>,
+    blizzards_right: HashSet<Pos>,
+    blizzards_left: HashSet<Pos>,
+    blizzards_up: HashSet<Pos>,
+    blizzards_down: HashSet<Pos>,
 }
 
 impl FromStr for Valley {
@@ -58,26 +55,34 @@ impl FromStr for Valley {
             - 2;
         let height = s.lines().count() - 2;
 
-        let n_blizzards = s.chars().filter(|c| "><^v".contains(*c)).count();
-        let mut blizzards = HashSet::with_capacity(n_blizzards);
+        let mut blizzards_right = HashSet::new();
+        let mut blizzards_left = HashSet::new();
+        let mut blizzards_up = HashSet::new();
+        let mut blizzards_down = HashSet::new();
 
         for (y, line) in s.lines().skip(1).enumerate() {
             for (x, char) in line.chars().skip(1).enumerate() {
                 let b = match char {
                     '.' | '#' => continue,
-                    c => Blizzard {
-                        pos_init: Point2D(x, y),
-                        direction: Direction::try_from(c)?,
-                    },
+                    _ => Point2D(x, y),
                 };
-                blizzards.insert(b);
+                let bs = match Direction::try_from(char)? {
+                    Direction::Right => &mut blizzards_right,
+                    Direction::Left => &mut blizzards_left,
+                    Direction::Up => &mut blizzards_up,
+                    Direction::Down => &mut blizzards_down,
+                };
+                bs.insert(b);
             }
         }
 
         Ok(Self {
             width,
             height,
-            blizzards,
+            blizzards_right,
+            blizzards_left,
+            blizzards_up,
+            blizzards_down,
         })
     }
 }
@@ -101,26 +106,15 @@ impl Valley {
                 //
                 // e.g. for a rightward blizzard:
                 // x(t) == x <=> x(0) == (x - time) % width
-                let b_right = Blizzard {
-                    direction: Direction::Right,
-                    pos_init: Point2D((mod_x - time).a(), y),
-                };
-                let b_left = Blizzard {
-                    direction: Direction::Left,
-                    pos_init: Point2D((mod_x + time).a(), y),
-                };
-                let b_up = Blizzard {
-                    direction: Direction::Up,
-                    pos_init: Point2D(x, (mod_y + time).a()),
-                };
-                let b_down = Blizzard {
-                    direction: Direction::Down,
-                    pos_init: Point2D(x, (mod_y - time).a()),
-                };
+                let b_right = Point2D((mod_x - time).a(), y);
+                let b_left = Point2D((mod_x + time).a(), y);
+                let b_up = Point2D(x, (mod_y + time).a());
+                let b_down = Point2D(x, (mod_y - time).a());
 
-                [b_right, b_left, b_up, b_down]
-                    .into_iter()
-                    .any(|b| self.blizzards.contains(&b))
+                self.blizzards_right.contains(&b_right)
+                    || self.blizzards_left.contains(&b_left)
+                    || self.blizzards_up.contains(&b_up)
+                    || self.blizzards_down.contains(&b_down)
             }
         }
     }
