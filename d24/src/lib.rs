@@ -123,27 +123,14 @@ impl Valley {
                 vec![ValleyPos::Entrance, Valley::start()]
             }
             vp @ ValleyPos::Inside(Point2D(x, y)) => {
-                let mut positions = vec![ValleyPos::Inside(Point2D(x, y))];
-                if vp == Valley::start() {
-                    positions.push(ValleyPos::Entrance);
-                }
-                if vp == self.end() {
-                    positions.push(ValleyPos::Exit);
-                }
-
-                if x > 0 {
-                    positions.push(ValleyPos::Inside(Point2D(x - 1, y)));
-                }
-                if x < self.width - 1 {
-                    positions.push(ValleyPos::Inside(Point2D(x + 1, y)));
-                }
-                if y > 0 {
-                    positions.push(ValleyPos::Inside(Point2D(x, y - 1)));
-                }
-                if y < self.height - 1 {
-                    positions.push(ValleyPos::Inside(Point2D(x, y + 1)));
-                }
-                positions
+                std::iter::once(ValleyPos::Inside(Point2D(x, y)))
+                    .chain((vp == Valley::start()).then_some(ValleyPos::Entrance))
+                    .chain((vp == self.end()).then_some(ValleyPos::Exit))
+                    .chain((x > 0).then(|| ValleyPos::Inside(Point2D(x - 1, y))))
+                    .chain((x < self.width - 1).then_some(ValleyPos::Inside(Point2D(x + 1, y))))
+                    .chain((y > 0).then(|| ValleyPos::Inside(Point2D(x, y - 1))))
+                    .chain((y < self.height - 1).then_some(ValleyPos::Inside(Point2D(x, y + 1))))
+                    .collect()
             }
             ValleyPos::Exit => {
                 vec![ValleyPos::Exit, self.end()]
