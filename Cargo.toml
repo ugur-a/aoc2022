@@ -33,10 +33,10 @@ resolver = "2"
 libaoc = { git = "https://github.com/ugur-a/libaoc" }
 itertools = "0.13.0"
 test-case = "3.3.1"
-anyhow = "1.0.81"
+anyhow = "1.0.89"
 derive_deref = "1.1.1"
 nom = "7.1.3"
-pathfinding = "4.10.0"
+pathfinding = "4.11.0"
 
 [patch.crates-io]
 grb = { git = "https://github.com/ugur-a/rust-grb.git", branch = "feat/genconstr_indicator" }
