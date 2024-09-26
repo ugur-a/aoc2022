@@ -1,7 +1,7 @@
 use std::{collections::HashSet, iter, str::FromStr};
 
 use anyhow::{bail, Context};
-use aoc2022lib::points::Point2D;
+use libaoc::points::Point2D;
 
 type Point = Point2D<i32>;
 

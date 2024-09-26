@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::Context;
-use aoc2022lib::{impl_from_str_from_nom_parser, parse::n};
+use libaoc::{impl_from_str_from_nom_parser, parse::n};
 use derive_deref::Deref;
 use itertools::Itertools;
 use nom::{

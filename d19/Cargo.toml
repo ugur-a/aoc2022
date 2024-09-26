@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
-aoc2022lib.workspace = true
+libaoc.workspace = true
 grb = "=2.0.2"
 nom.workspace = true
 

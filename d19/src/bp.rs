@@ -1,4 +1,4 @@
-use aoc2022lib::impl_from_str_from_nom_parser;
+use libaoc::impl_from_str_from_nom_parser;
 use nom::{
     bytes::complete::tag,
     character::complete::u32,

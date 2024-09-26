@@ -2,7 +2,7 @@ use std::ops::{Add, Mul};
 use std::str::FromStr;
 
 use anyhow::Context;
-use aoc2022lib::parse::n;
+use libaoc::parse::n;
 use itertools::Itertools;
 use nom::{
     branch::alt,

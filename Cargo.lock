@@ -9,13 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 
 [[package]]
-name = "aoc2022lib"
-version = "0.1.0"
-dependencies = [
- "nom",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -134,9 +127,9 @@ name = "d05"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "derive_deref",
  "itertools",
+ "libaoc",
  "nom",
  "test-case",
 ]
@@ -171,7 +164,7 @@ name = "d09"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
+ "libaoc",
  "test-case",
 ]
 
@@ -180,8 +173,8 @@ name = "d10"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "nom",
  "test-case",
 ]
@@ -191,8 +184,8 @@ name = "d11"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "nom",
  "num",
  "test-case",
@@ -203,7 +196,7 @@ name = "d12"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
+ "libaoc",
  "pathfinding",
  "test-case",
 ]
@@ -213,8 +206,8 @@ name = "d13"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "nom",
  "test-case",
 ]
@@ -224,9 +217,9 @@ name = "d14"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "derive_deref",
  "itertools",
+ "libaoc",
  "nom",
  "test-case",
 ]
@@ -236,9 +229,9 @@ name = "d15"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "derive_deref",
  "itertools",
+ "libaoc",
  "nom",
  "rayon",
  "test-case",
@@ -249,8 +242,8 @@ name = "d16"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "nom",
  "pathfinding",
  "petgraph",
@@ -262,8 +255,8 @@ name = "d17"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "test-case",
 ]
 
@@ -272,8 +265,8 @@ name = "d18"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "nom",
  "pathfinding",
  "test-case",
@@ -284,9 +277,9 @@ name = "d19"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "grb",
  "grb-sys2",
+ "libaoc",
  "nom",
  "test-case",
 ]
@@ -296,8 +289,8 @@ name = "d20"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "test-case",
 ]
 
@@ -306,8 +299,8 @@ name = "d21"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "nom",
  "test-case",
 ]
@@ -317,10 +310,10 @@ name = "d22"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "bare_metal_modulo",
  "derive_deref",
  "itertools",
+ "libaoc",
  "nom",
  "test-case",
 ]
@@ -330,8 +323,8 @@ name = "d23"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "itertools",
+ "libaoc",
  "test-case",
 ]
 
@@ -340,8 +333,8 @@ name = "d24"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "aoc2022lib",
  "bare_metal_modulo",
+ "libaoc",
  "pathfinding",
  "test-case",
 ]
@@ -483,6 +476,14 @@ name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
+
+[[package]]
+name = "libaoc"
+version = "0.1.0"
+source = "git+https://github.com/ugur-a/libaoc#2f225c5b7f4b517ef2f5a0d53771217e4de77d17"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "memchr"

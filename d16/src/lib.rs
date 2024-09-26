@@ -1,5 +1,5 @@
 use anyhow::{anyhow, ensure, Context};
-use aoc2022lib::impl_from_str_for_obj_with_lifetimes_from_nom_parser;
+use libaoc::impl_from_str_for_obj_with_lifetimes_from_nom_parser;
 use itertools::Itertools;
 use nom::{
     branch::alt,

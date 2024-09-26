@@ -1,7 +1,6 @@
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
 members = [
-  "aoc2022lib",
   "d01",
   "d02",
   "d03",
@@ -31,7 +30,7 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-aoc2022lib = { path = "aoc2022lib" }
+libaoc = { git = "https://github.com/ugur-a/libaoc" }
 itertools = "0.13.0"
 test-case = "3.3.1"
 anyhow = "1.0.81"

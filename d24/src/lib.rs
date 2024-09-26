@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{bail, Context};
-use aoc2022lib::points::{ManhattanDistance, Point2D};
+use libaoc::points::{ManhattanDistance, Point2D};
 use bare_metal_modulo::{MNum, ModNum};
 use pathfinding::directed::astar;
 

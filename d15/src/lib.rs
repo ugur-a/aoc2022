@@ -3,7 +3,7 @@ use std::{
     str::FromStr,
 };
 
-use aoc2022lib::{
+use libaoc::{
     impl_from_str_from_nom_parser,
     points::{ManhattanDistance, Point2D},
 };

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::Context;
-use aoc2022lib::points::Point2D;
+use libaoc::points::Point2D;
 use pathfinding::directed::astar;
 
 struct HeightMap<T> {

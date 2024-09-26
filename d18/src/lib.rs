@@ -10,7 +10,7 @@ use nom::{
 };
 use pathfinding::directed::dfs::dfs_reach;
 
-use aoc2022lib::{impl_from_str_from_nom_parser, points::Point3D};
+use libaoc::{impl_from_str_from_nom_parser, points::Point3D};
 
 type DropletCube = Point3D<i8>;
 

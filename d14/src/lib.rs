@@ -7,7 +7,7 @@ use std::{
 };
 
 use anyhow::bail;
-use aoc2022lib::{impl_from_str_from_nom_parser, points::Point2D};
+use libaoc::{impl_from_str_from_nom_parser, points::Point2D};
 use derive_deref::Deref;
 use itertools::Itertools;
 use nom::{

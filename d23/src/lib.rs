@@ -1,4 +1,4 @@
-use aoc2022lib::points::Point2D;
+use libaoc::points::Point2D;
 use itertools::Itertools;
 use std::{
     collections::{HashMap, HashSet},

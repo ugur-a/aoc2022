@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 itertools.workspace = true
 anyhow.workspace = true
-aoc2022lib.workspace = true
+libaoc.workspace = true
 nom.workspace = true
 
 [dev-dependencies]
