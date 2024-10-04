@@ -121,7 +121,7 @@ fn first_half(
             }
 
             elf_dibs.insert(*pos, pos_triplet[1]);
-            *dibs_counts.entry(pos_triplet[1]).or_insert(0) += 1;
+            *dibs_counts.entry(pos_triplet[1]).or_default() += 1;
             break;
         }
     }
