@@ -100,7 +100,7 @@ name = "d01"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
 ]
 
 [[package]]
@@ -112,14 +112,14 @@ name = "d03"
 version = "0.1.0"
 dependencies = [
  "intersection",
- "itertools",
+ "itertools 0.13.0",
 ]
 
 [[package]]
 name = "d04"
 version = "0.1.0"
 dependencies = [
- "itertools",
+ "itertools 0.13.0",
 ]
 
 [[package]]
@@ -128,7 +128,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "derive_deref",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "test-case",
@@ -146,7 +146,7 @@ name = "d07"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "test-case",
 ]
 
@@ -155,7 +155,7 @@ name = "d08"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "test-case",
 ]
 
@@ -173,7 +173,7 @@ name = "d10"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "test-case",
@@ -184,7 +184,7 @@ name = "d11"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "num",
@@ -206,7 +206,7 @@ name = "d13"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "test-case",
@@ -218,7 +218,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "derive_deref",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "test-case",
@@ -230,7 +230,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "derive_deref",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "rayon",
@@ -242,7 +242,7 @@ name = "d16"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "pathfinding",
@@ -255,7 +255,7 @@ name = "d17"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "test-case",
 ]
@@ -265,7 +265,7 @@ name = "d18"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "pathfinding",
@@ -289,7 +289,7 @@ name = "d20"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "test-case",
 ]
@@ -299,7 +299,7 @@ name = "d21"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "test-case",
@@ -312,7 +312,7 @@ dependencies = [
  "anyhow",
  "bare_metal_modulo",
  "derive_deref",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "nom",
  "test-case",
@@ -323,7 +323,7 @@ name = "d23"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "libaoc",
  "test-case",
 ]
@@ -344,7 +344,7 @@ name = "d25"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.13.0",
  "test-case",
 ]
 
@@ -464,6 +464,15 @@ checksum = "133d3551b09a5131c0ffc31eaefdafdd58b1cdd272f7d1bab4db623c245a266c"
 
 [[package]]
 name = "itertools"
+version = "0.5.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4833d6978da405305126af4ac88569b5d71ff758581ce5a987dbfa3755f694fc"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
@@ -480,8 +489,10 @@ checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
 [[package]]
 name = "libaoc"
 version = "0.1.0"
-source = "git+https://github.com/ugur-a/libaoc#2f225c5b7f4b517ef2f5a0d53771217e4de77d17"
+source = "git+https://github.com/ugur-a/libaoc#547e071af8e061096ab5dd6f0407c36063391dee"
 dependencies = [
+ "anyhow",
+ "itertools 0.5.10",
  "nom",
 ]
 

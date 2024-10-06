@@ -1,5 +1,7 @@
-use libaoc::points::Point2D;
-use itertools::Itertools;
+use libaoc::points::{
+    two_d::{min_enclosing_rectangle, Border2D},
+    Point2D,
+};
 use std::{
     collections::{HashMap, HashSet},
     ops::RangeInclusive,
@@ -39,29 +41,6 @@ pub fn show_map(round: usize, positions: &[Pos]) {
             }
         }
         println!(" {y}");
-    }
-}
-
-#[derive(Debug)]
-struct Border2D<T, U = T> {
-    left: T,
-    right: T,
-    top: U,
-    down: U,
-}
-
-fn min_enclosing_rectangle<'a, I>(positions1: I, positions2: I) -> Border2D<isize>
-where
-    I: Iterator<Item = &'a Pos>,
-{
-    let (left, right) = positions1.map(Point2D::x).minmax().into_option().unwrap();
-    let (top, down) = positions2.map(Point2D::y).minmax().into_option().unwrap();
-
-    Border2D {
-        left,
-        right,
-        top,
-        down,
     }
 }
 

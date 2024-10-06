@@ -1,7 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::Context;
-use libaoc::points::Point2D;
+use libaoc::points::{Neighbours, Point2D};
 use pathfinding::directed::astar;
 
 struct HeightMap<T> {
@@ -14,15 +14,10 @@ struct HeightMap<T> {
 
 impl HeightMap<usize> {
     fn climbable_neighbours(&self, point: Point2D<usize>) -> Vec<Point2D<usize>> {
-        let Point2D(x, y) = point;
         let this_height = self.heights[&point];
 
-        let neighbours = ((x > 0).then_some(Point2D(x - 1, y)).into_iter())
-            .chain((x < self.num_cols - 1).then_some(Point2D(x + 1, y)))
-            .chain((y > 0).then_some(Point2D(x, y - 1)))
-            .chain((y < self.num_rows - 1).then_some(Point2D(x, y + 1)));
-
-        neighbours
+        point
+            .neighbours4_upper_bounded(Point2D(self.num_cols, self.num_rows))
             .filter(|point| self.heights[point] <= this_height + 1)
             .collect()
     }
